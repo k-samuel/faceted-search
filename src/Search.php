@@ -72,8 +72,8 @@ class Search
     }
 
     /**
-     * @param array $filters
-     * @return array
+     * @param array<mixed> $filters
+     * @return array<int>
      */
     public function findAcceptableFilters(array $filters = []): array
     {
