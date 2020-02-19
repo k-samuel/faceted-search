@@ -53,7 +53,7 @@ class Index
             $values = array_unique($values);
             foreach ($values as $value){
                 if(is_bool($value)){
-                    $value = intval($value);
+                    $value = (int) $value;
                 }
                 $this->data[$fieldName][$value][] = $recordId;
             }

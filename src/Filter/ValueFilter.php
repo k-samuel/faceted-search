@@ -60,7 +60,7 @@ class ValueFilter extends AbstractFilter
             return [];
         }
 
-        if (is_null($result)) {
+        if ($result === null) {
             $result = $filterResults;
         } else {
             // find intersect of start records and faceted results
