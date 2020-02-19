@@ -30,6 +30,11 @@ namespace KSamuel\FacetedSearch;
 
 use KSamuel\FacetedSearch\Filter\FilterInterface;
 
+/**
+ * Class Search
+ * Search in faceted index. Easily handles 100,000 products with 10 properties.
+ * @package KSamuel\FacetedSearch
+ */
 class Search
 {
     /**
@@ -72,6 +77,7 @@ class Search
     }
 
     /**
+     * Find acceptable filter values
      * @param array<mixed> $filters
      * @return array<array>
      */

@@ -31,10 +31,12 @@ namespace KSamuel\FacetedSearch\Filter;
 interface FilterInterface
 {
     /**
+     * Get field name
      * @return string
      */
     public function getFieldName() : string;
     /**
+     * Filter faceted data
      * @param array<array> $facetedData
      * @param array<int>|null $inputRecords
      * @return array<int>

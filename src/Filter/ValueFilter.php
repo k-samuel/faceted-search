@@ -28,12 +28,14 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Filter;
 
+/**
+ * Simple filter for faceted index. Filter item by value
+ * @package KSamuel\FacetedSearch\Filter
+ */
 class ValueFilter extends AbstractFilter
 {
     /**
-     * @param array<array> $facetedData
-     * @param array<int>|null $inputRecords
-     * @return array<int>
+     * @inheritDoc
      */
     public function filterResults(array $facetedData, ?array $inputRecords = null) : array
     {

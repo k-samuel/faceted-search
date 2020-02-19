@@ -31,9 +31,7 @@ namespace KSamuel\FacetedSearch\Filter;
 class RangeFilter extends AbstractFilter
 {
     /**
-     * @param array<array> $facetedData
-     * @param array<int>|null $inputRecords
-     * @return array<int>
+     * @inheritDoc
      */
     public function filterResults(array $facetedData, ?array $inputRecords = null) : array
     {
@@ -73,8 +71,7 @@ class RangeFilter extends AbstractFilter
     }
 
     /**
-     * @param mixed $value
-     * @return void
+     * @inheritDoc
      * @throws \Exception
      */
     public function setValue($value) : void

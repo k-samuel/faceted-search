@@ -54,7 +54,7 @@ abstract class AbstractFilter implements FilterInterface
     }
 
     /**
-     * @return string
+     * @inheritDoc
      */
     public function getFieldName() : string
     {
@@ -62,6 +62,7 @@ abstract class AbstractFilter implements FilterInterface
     }
 
     /**
+     * Set filter value
      * @param mixed $value
      * @return void
      */
@@ -71,6 +72,7 @@ abstract class AbstractFilter implements FilterInterface
     }
 
     /**
+     * Get filter value
      * @return mixed
      */
     public function getValue()
@@ -78,9 +80,7 @@ abstract class AbstractFilter implements FilterInterface
         return $this->value;
     }
     /**
-     * @param array<array> $facetedData
-     * @param array<int>|null $inputRecords
-     * @return array<int>
+     * @inheritDoc
      */
     abstract public function filterResults(array $facetedData, ?array $inputRecords = null) : array;
 }

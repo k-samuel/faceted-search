@@ -29,9 +29,14 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch;
 
+/**
+ * Simple faceted index
+ * @package KSamuel\FacetedSearch
+ */
 class Index
 {
     /**
+     * Index data
      * @var array<array>
      */
     protected $data = [];
@@ -80,6 +85,7 @@ class Index
     }
 
     /**
+     * Get field data section from index
      * @param string $fieldName
      * @return array<array>
      */
