@@ -10,14 +10,13 @@ Simple and fast faceted search without external servers like ElasticSearch and o
 Easily handles 100,000 products with 10 properties. If you divide the indexes into product groups or categories, 
 then for a long time you will not need scaling and more serious tools.
 
-##Install
+## Install
 
 `
 composer require k-samuel/faceted-search
 `
 
-##Example 
-
+## Example 
 
 Best Practice is to get separate index for each goods category or product type and index only required fields
 
