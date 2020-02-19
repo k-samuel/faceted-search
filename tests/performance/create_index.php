@@ -11,7 +11,7 @@ $type = ['normal','middle','good'];
 
 $index = new \KSamuel\FacetedSearch\Index();
 
-for($i=1; $i<50000;$i++){
+for($i=1; $i<100000;$i++){
     $countWh = rand(0, count($warehouses));
     $wh = [];
     for($k=0;$k<$countWh;$k++) {
@@ -19,10 +19,13 @@ for($i=1; $i<50000;$i++){
     }
     $rec = [
         'color' => $colors[rand(0,5)],
+        'back_color' => $colors[rand(0,5)],
         'size' => rand(34,50),
         'brand' =>  $brands[rand(0,count($brands)-1)],
         'price' => rand(1000,8000),
+        'discount' => rand(0,10),
         'combined' => rand(0,1),
+        'quantity' => rand(0,100),
         'warehouse' => array_unique($wh),
         'type' => $type[rand(0,count($type)-1)]
     ];
@@ -31,4 +34,4 @@ for($i=1; $i<50000;$i++){
 
 file_put_contents('./facet.json', json_encode($index->getData()));
 
-echo microtime(true) - $t;
+echo microtime(true) - $t."\n";

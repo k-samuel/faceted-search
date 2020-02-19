@@ -43,10 +43,14 @@ abstract class AbstractFilter implements FilterInterface
     /**
      * AbstractFilter constructor.
      * @param string $fieldName
+     * @param mixed $value
      */
-    public function __construct(string $fieldName)
+    public function __construct(string $fieldName, $value = null)
     {
         $this->fieldName = $fieldName;
+        if($value !== null){
+            $this->setValue($value);
+        }
     }
 
     /**

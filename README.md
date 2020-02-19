@@ -5,7 +5,11 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/b9d174969c1b457fa8a6c3b753266698)](https://www.codacy.com/manual/kirill.a.egorov/faceted-search?utm_source=github.com&utm_medium=referral&utm_content=k-samuel/faceted-search&utm_campaign=Badge_Coverage)
 # PHP Faceted search library
 
-Simple and fast faceted search without external servers like ElasticSearch and others
+Simple and fast faceted search without external servers like ElasticSearch and others.
+
+Easily handles 100,000 products with 10 properties. If you divide the indexes into product groups or categories, 
+then for a long time you will not need scaling and more serious tools.
+
 
 ## Install
 
@@ -15,6 +19,13 @@ composer require k-samuel/faceted-search
 
 ## Example 
 
+
+Best Practice is to get separate index for each goods category or product type and index only required fields
+
+If price and quantity of your products frequently changes, it is better to keep this data in DB and use facets 
+for pre filtering.  In that case you can decrease number of checked records by setting the search list into the 
+second argument of $search->find method. For example list of ProductId in stock to exclude not available products.
+
 Create faceted index using console and Crontab
 ```php
 <?php
@@ -23,8 +34,6 @@ use KSamuel\FacetedSearch\Index;
 $searchIndex = new Index();
 /*
  * Getting products data from DB
- * Best Practice is to get separate index for each goods category or product type and  
- * index only required fields
  */
 $data = [
     ['id'=>7, 'color'=>'black', 'price'=>100, 'sale'=>true, 'size'=>36],   
@@ -43,7 +52,7 @@ $indexData = $searchIndex->getData();
 file_put_contents('./first-index.json', json_encode($indexData));
 ```
 
-Using index in your application
+Using in your application
 
 ```php
 <?php
@@ -59,16 +68,11 @@ $searchIndex->setData($indexData);
 // create search 
 $search = new Search($searchIndex);
 // get request params and create search filters
-$filter1 = new ValueFilter('color');
-// value from request params
-$filter1->setValue(['black']);
-
-// RangeFilter example for numeric property ranges (min - max)
-$filter2 = new RangeFilter('size');
-$filter2->setValue(['min'=>36, 'max'=>40]);
-
-$filters = [$filter1, $filter2];
-
+$filters = [
+    new ValueFilter('color', ['black']),
+    // RangeFilter example for numeric property ranges (min - max)
+    new RangeFilter('size', ['min'=>36, 'max'=>40])
+];
 $records = $search->find($filters);
 // Now we have filtered list of record identifiers.
 // Find records in your storage and send results into client application
@@ -77,6 +81,6 @@ $records = $search->find($filters);
 // It can be used for updating client ui.
 $filterData = $search->findAcceptableFilters($filters);
 
-// If set $filters to empty array [], all acceptable values will be returned without filtering
+// If $filters is an empty array [], all acceptable values will be returned without filtering
 $filterData = $search->findAcceptableFilters([]);
 ```
