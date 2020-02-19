@@ -1,6 +1,6 @@
 [![PHP Version](https://img.shields.io/badge/php-7.3%2B-blue.svg)](https://packagist.org/packages/k-samuel/faceted-search)
 [![Total Downloads](https://img.shields.io/packagist/dt/k-samuel/faceted-search.svg?style=flat-square)](https://packagist.org/packages/k-samuel/faceted-search)
-[![Build Status](https://travis-ci.org/dvelum/dvelum-core.svg?branch=master)](https://travis-ci.org/k-samuel/faceted-search)
+[![Build Status](https://travis-ci.org/k-samuel/faceted-search.svg?branch=master)](https://travis-ci.org/k-samuel/faceted-search)
 
 # PHP Faceted search library
 
@@ -15,7 +15,7 @@ composer require k-samuel/faceted-search
 
 ## Example 
 
-Create faceted index in background
+Create faceted index using console and crontab
 ```php
 <?php
 use KSamuel\FacetedSearch\Index;
