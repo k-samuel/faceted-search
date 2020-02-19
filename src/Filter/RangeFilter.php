@@ -28,6 +28,10 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Filter;
 
+/**
+ * Range filter for faceted index. Filter item by range (min,max)
+ * @package KSamuel\FacetedSearch\Filter
+ */
 class RangeFilter extends AbstractFilter
 {
     /**
