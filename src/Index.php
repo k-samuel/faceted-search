@@ -49,6 +49,8 @@ class Index
             if(!is_array($values)){
                 $values = [$values];
             }
+
+            $values = array_unique($values);
             foreach ($values as $value){
                 if(is_bool($value)){
                     $value = intval($value);

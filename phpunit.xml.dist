@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<phpunit bootstrap="tests/unit/bootstrap.php"
+<phpunit
     colors="true"
     convertErrorsToExceptions="false"
     convertNoticesToExceptions="false"

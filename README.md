@@ -15,7 +15,7 @@ composer require k-samuel/faceted-search
 
 ## Example 
 
-Create faceted index using console and crontab
+Create faceted index using console and Crontab
 ```php
 <?php
 use KSamuel\FacetedSearch\Index;
