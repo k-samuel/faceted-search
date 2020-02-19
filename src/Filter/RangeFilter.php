@@ -38,7 +38,6 @@ class RangeFilter extends AbstractFilter
     public function filterResults(array $facetedData, ?array $inputRecords = null) : array
     {
         $result = [];
-
         $value = $this->getValue();
         $min = null;
         $max = null;
@@ -47,18 +46,16 @@ class RangeFilter extends AbstractFilter
         $max = $value['max'];
 
         // collect list for different values of one property
-        if(!is_null($min) || !is_null($max))
+        if($min !== null || $max !== null)
         {
             $limitData = [];
             foreach ($facetedData as $value => $records){
-                if (!is_null($min) && (float) $value < (float) $min) {
+                if ($min !== null && (float) $value < (float) $min) {
                     continue;
                 }
-
-                if (!is_null($max) && (float) $value > (float) $max) {
+                if ($max !== null && (float) $value > (float) $max) {
                     continue;
                 }
-
                 $limitData = array_merge($limitData, $records);
             }
 
@@ -66,7 +63,7 @@ class RangeFilter extends AbstractFilter
                 return [];
             }
 
-            if (is_null($inputRecords)) {
+            if ($inputRecords === null) {
                 $result = $limitData;
             } else {
                 $result = array_intersect($inputRecords, $limitData);

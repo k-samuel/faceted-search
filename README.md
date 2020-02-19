@@ -1,17 +1,17 @@
 [![PHP Version](https://img.shields.io/badge/php-7.3%2B-blue.svg)](https://packagist.org/packages/k-samuel/faceted-search)
 [![Total Downloads](https://img.shields.io/packagist/dt/k-samuel/faceted-search.svg?style=flat-square)](https://packagist.org/packages/k-samuel/faceted-search)
 [![Build Status](https://travis-ci.org/k-samuel/faceted-search.svg?branch=master)](https://travis-ci.org/k-samuel/faceted-search)
-
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/b9d174969c1b457fa8a6c3b753266698)](https://www.codacy.com/manual/kirill.a.egorov/faceted-search?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=k-samuel/faceted-search&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/b9d174969c1b457fa8a6c3b753266698)](https://www.codacy.com/manual/kirill.a.egorov/faceted-search?utm_source=github.com&utm_medium=referral&utm_content=k-samuel/faceted-search&utm_campaign=Badge_Coverage)
 # PHP Faceted search library
 
-Simple and fast faceted search without ELK stack
+Simple and fast faceted search without external servers like ElasticSearch and others
 
 ## Install
 
 `
 composer require k-samuel/faceted-search
 `
-
 
 ## Example 
 
@@ -21,8 +21,11 @@ Create faceted index using console and crontab
 use KSamuel\FacetedSearch\Index;
 
 $searchIndex = new Index();
-// Getting data from DB
-// Best Practice is to get separate index for each goods category or product type  
+/*
+ * Getting products data from DB
+ * Best Practice is to get separate index for each goods category or product type and  
+ * index only required fields
+ */
 $data = [
     ['id'=>7, 'color'=>'black', 'price'=>100, 'sale'=>true, 'size'=>36],   
     ['id'=>9, 'color'=>'green', 'price'=>100, 'sale'=>true, 'size'=>40], 
@@ -40,7 +43,7 @@ $indexData = $searchIndex->getData();
 file_put_contents('./first-index.json', json_encode($indexData));
 ```
 
-Using index in your controller
+Using index in your application
 
 ```php
 <?php
@@ -70,8 +73,10 @@ $records = $search->find($filters);
 // Now we have filtered list of record identifiers.
 // Find records in your storage and send results into client application
 
-// Also we can send acceptable filters values for current selection.// 
+// Also we can send acceptable filters values for current selection.
 // It can be used for updating client ui.
-// If set $filters to empty array [], all acceptable values will be returned without filtering
 $filterData = $search->findAcceptableFilters($filters);
+
+// If set $filters to empty array [], all acceptable values will be returned without filtering
+$filterData = $search->findAcceptableFilters([]);
 ```

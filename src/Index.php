@@ -85,8 +85,8 @@ class Index
     {
         if(isset($this->data[$fieldName])){
             return $this->data[$fieldName];
-        }else{
-            return [];
         }
+
+        return [];
     }
 }

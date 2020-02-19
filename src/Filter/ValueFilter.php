@@ -42,7 +42,7 @@ class ValueFilter extends AbstractFilter
         $value = $this->getValue();
         if(!is_array($value)){
             if(is_bool($value)){
-                $value = intval($value);
+                $value = (int) $value;
             }
             $value = [$value];
         }
