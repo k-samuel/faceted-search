@@ -59,7 +59,11 @@ class Search
      */
     public function find(array $filters, ?array $inputRecords = null) : array
     {
+        if(empty($inputRecords)){
+            $inputRecords = null;
+        }
         $result = $inputRecords;
+
         /**
          * @var FilterInterface $filter
          */
@@ -79,20 +83,21 @@ class Search
     /**
      * Find acceptable filter values
      * @param array<mixed> $filters
+     * @param array<int> $inputRecords
      * @return array<array>
      */
-    public function findAcceptableFilters(array $filters = []): array
+    public function findAcceptableFilters(array $filters = [], array $inputRecords = []): array
     {
         $result = [];
         $facetsData = $this->index->getData();
 
         foreach ($facetsData as $filterName => $filterValues) {
-            if(empty($filters)){
+            if(empty($filters) && empty($inputRecords)){
                 $result[$filterName] = array_keys($filterValues);
             }else{
                 $filtersCopy = $filters;
                 unset($filtersCopy[$filterName]);
-                $recordIds = $this->find($filtersCopy);
+                $recordIds = $this->find($filtersCopy, $inputRecords);
                 foreach ($filterValues as $filterValue => $data) {
                     if (!empty(array_intersect($data, $recordIds))) {
                         $result[$filterName][] = $filterValue;
