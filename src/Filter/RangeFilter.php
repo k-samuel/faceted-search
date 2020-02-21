@@ -41,8 +41,6 @@ class RangeFilter extends AbstractFilter
     {
         $result = [];
         $value = $this->getValue();
-        $min = null;
-        $max = null;
 
         $min = $value['min'];
         $max = $value['max'];
