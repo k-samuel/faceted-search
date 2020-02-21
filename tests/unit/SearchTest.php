@@ -63,8 +63,7 @@ class SearchTest extends TestCase
             $index->addRecord($id, $item);
         }
         $facets = new Search($index);
-        $filter = new ValueFilter('color');
-        $filter->setValue('black');
+        $filter = new ValueFilter('color' ,'black');
 
         $acceptableFilters = $facets->findAcceptableFilters([$filter]);
 
@@ -72,7 +71,7 @@ class SearchTest extends TestCase
             'vendor' => ['Apple','Samsung','Xiaomi'],
             'model' => ['Iphone X Pro Max','Galaxy S20', 'Galaxy A5', 'MI 9'],
             'price' => [80999, 70599, 15000, 26000],
-            'color' => ['black'],
+            'color' => ['black','white','yellow'],
             'has_phones' => [1],
             'cam_mp' => [40, 105, 12, 48],
             'sale' => [1,0]
@@ -83,7 +82,11 @@ class SearchTest extends TestCase
         foreach($acceptableFilters as $field=>&$values){
             sort($values);
         }unset($values);
-        $this->assertEquals($expect, $acceptableFilters);
+
+        foreach ($expect as $filter => $values){
+            $this->assertArrayHasKey($filter, $acceptableFilters);
+            $this->assertEquals($values, $acceptableFilters[$filter]);
+        }
     }
 
     public function getTestData() : array

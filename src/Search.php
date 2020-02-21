@@ -62,7 +62,17 @@ class Search
         if(empty($inputRecords)){
             $inputRecords = null;
         }
+
         $result = $inputRecords;
+
+        // if no filters passed
+        if(empty($filters)){
+            $total = $this->index->getAllRecordId();
+            if(!empty($inputRecords)){
+                return array_intersect($total, $inputRecords);
+            }
+            return $total;
+        }
 
         /**
          * @var FilterInterface $filter
@@ -82,7 +92,7 @@ class Search
 
     /**
      * Find acceptable filter values
-     * @param array<mixed> $filters
+     * @param array<FilterInterface> $filters
      * @param array<int> $inputRecords
      * @return array<array>
      */
@@ -90,12 +100,22 @@ class Search
     {
         $result = [];
         $facetsData = $this->index->getData();
+        $indexedFilters = [];
+
+        if(!empty($filters)){
+            // index filters by field
+            foreach ($filters as $filter){
+                /** @var FilterInterface $filter */
+                $indexedFilters[$filter->getFieldName()] = $filter;
+            }
+        }
 
         foreach ($facetsData as $filterName => $filterValues) {
-            if(empty($filters) && empty($inputRecords)){
+            if(empty($indexedFilters) && empty($inputRecords)){
                 $result[$filterName] = array_keys($filterValues);
             }else{
-                $filtersCopy = $filters;
+                $filtersCopy = $indexedFilters;
+                // do not apply self filtering
                 unset($filtersCopy[$filterName]);
                 $recordIds = $this->find($filtersCopy, $inputRecords);
                 foreach ($filterValues as $filterValue => $data) {

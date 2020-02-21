@@ -29,6 +29,8 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch;
 
+use PhpParser\Node\Stmt\Foreach_;
+
 /**
  * Simple faceted index
  * @package KSamuel\FacetedSearch
@@ -96,5 +98,20 @@ class Index
         }
 
         return [];
+    }
+
+    /**
+     * Get all records from index
+     * @return array<int>
+     */
+    public function getAllRecordId() : array
+    {
+        $result = [];
+        foreach ($this->data as $field => $values){
+            foreach ($values as $list){
+                $result = array_merge($result, $list);
+            }
+        }
+        return array_unique($result);
     }
 }
