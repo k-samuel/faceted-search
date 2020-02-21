@@ -18,13 +18,13 @@ composer require k-samuel/faceted-search
 
 ## Example 
 
-Best Practice is to get separate index for each goods category or product type and index only required fields
+Best Practice is to get separate index for each goods category or product type and index only required fields.
 
-If price and quantity of your products frequently changes, it is better to keep this data in DB and use facets 
-for pre filtering.  In that case you can decrease number of checked records by setting the search list into the 
-second argument of $search->find method. For example list of ProductId in stock to exclude not available products.
+If price and quantity of your products frequently changes, it is better to keep them in database and use facets 
+for pre filtering. You can decrease number of checked records by setting records list to search in. For example list of 
+ProductId in stock to exclude not available products.
 
-Create faceted index using console and Crontab
+Create faceted index using console/crontab etc.
 ```php
 <?php
 use KSamuel\FacetedSearch\Index;
@@ -44,9 +44,9 @@ foreach($data as $item){
    unset($item['id']);
    $searchIndex->add($recordId, $item);
 }
-// save index data to some storage DB
+// save index data to some storage 
 $indexData = $searchIndex->getData();
-// For simplifying example we will use file to store data
+// We will use file for example
 file_put_contents('./first-index.json', json_encode($indexData));
 ```
 
@@ -63,7 +63,7 @@ use KSamuel\FacetedSearch\Filter\RangeFilter;
 $indexData = json_decode(file_get_contents('./first-index.json'), true);
 $searchIndex = new Index();
 $searchIndex->setData($indexData);
-// create search 
+// create search instance
 $search = new Search($searchIndex);
 // get request params and create search filters
 $filters = [
@@ -71,14 +71,15 @@ $filters = [
     // RangeFilter example for numeric property ranges (min - max)
     new RangeFilter('size', ['min'=>36, 'max'=>40])
 ];
+// find records using filters
 $records = $search->find($filters);
 // Now we have filtered list of record identifiers.
-// Find records in your storage and send results into client application
+// Find records in your storage and send results into client application.
 
 // Also we can send acceptable filters values for current selection.
-// It can be used for updating client ui.
+// It can be used for updating client UI.
 $filterData = $search->findAcceptableFilters($filters);
 
-// If $filters is an empty array [], all acceptable values will be returned without filtering
+// If $filters is an empty array [], all acceptable values will be returned
 $filterData = $search->findAcceptableFilters([]);
 ```
