@@ -18,7 +18,7 @@ composer require k-samuel/faceted-search
 
 ## Example 
 
-Best Practice is to get separate index for each goods category or product type and index only required fields.
+Its better to create index for each goods category or product type and index only required fields.
 
 If price and quantity of your products frequently changes, it is better to keep them in database and use facets 
 for pre filtering. You can decrease number of checked records by setting records list to search in. For example list of 
