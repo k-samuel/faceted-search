@@ -61,6 +61,8 @@ class Search
     {
         if(empty($inputRecords)){
             $inputRecords = null;
+        }else{
+            $inputRecords = array_flip($inputRecords);
         }
 
         $result = $inputRecords;
@@ -69,7 +71,7 @@ class Search
         if(empty($filters)){
             $total = $this->index->getAllRecordId();
             if(!empty($inputRecords)){
-                return array_intersect($total, $inputRecords);
+                return array_keys(array_intersect_key(array_flip($total), $inputRecords));
             }
             return $total;
         }
@@ -84,10 +86,11 @@ class Search
             }
             $result = $filter->filterResults($indexData, $result);
         }
+
         if(empty($result)){
             $result = [];
         }
-        return $result;
+        return array_values($result);
     }
 
     /**
@@ -109,7 +112,7 @@ class Search
                 $indexedFilters[$filter->getFieldName()] = $filter;
             }
         }
-
+        $count = 0;
         foreach ($facetsData as $filterName => $filterValues) {
             if(empty($indexedFilters) && empty($inputRecords)){
                 $result[$filterName] = array_keys($filterValues);
@@ -118,8 +121,12 @@ class Search
                 // do not apply self filtering
                 unset($filtersCopy[$filterName]);
                 $recordIds = $this->find($filtersCopy, $inputRecords);
+                if(!empty($recordIds)){
+                    $recordIds = array_flip($recordIds);
+                }
                 foreach ($filterValues as $filterValue => $data) {
-                    if (!empty(array_intersect($data, $recordIds))) {
+                    $count++;
+                    if (!empty(array_intersect_key($data, $recordIds))) {
                         $result[$filterName][] = $filterValue;
                     }
                 }

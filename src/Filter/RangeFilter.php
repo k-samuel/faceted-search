@@ -56,7 +56,7 @@ class RangeFilter extends AbstractFilter
                 if ($max !== null && (float) $value > (float) $max) {
                     continue;
                 }
-                $limitData = array_merge($limitData, $records);
+                $limitData = $limitData + $records;
             }
 
             if (empty($limitData)) {
@@ -66,10 +66,10 @@ class RangeFilter extends AbstractFilter
             if ($inputRecords === null) {
                 $result = $limitData;
             } else {
-                $result = array_intersect($inputRecords, $limitData);
+                $result = array_intersect_key(array_flip($inputRecords), $limitData);
             }
         }
-        return array_values($result);
+        return array_keys($result);
     }
 
     /**

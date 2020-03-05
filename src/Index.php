@@ -62,7 +62,7 @@ class Index
                 if(is_bool($value)){
                     $value = (int) $value;
                 }
-                $this->data[$fieldName][$value][] = $recordId;
+                $this->data[$fieldName][$value][$recordId] = true;
             }
         }
         return true;
@@ -109,9 +109,13 @@ class Index
         $result = [];
         foreach ($this->data as $field => $values){
             foreach ($values as $list){
-                $result = array_merge($result, $list);
+                $result = $result + $list;
             }
         }
-        return array_unique($result);
+        /**
+         * @var array<int>
+         */
+        $keys = array_keys($result);
+        return $keys;
     }
 }

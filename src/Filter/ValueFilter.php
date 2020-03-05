@@ -39,8 +39,6 @@ class ValueFilter extends AbstractFilter
      */
     public function filterResults(array $facetedData, ?array $inputRecords = null) : array
     {
-        $result = $inputRecords;
-
         $value = $this->getValue();
         if(!is_array($value)){
             if(is_bool($value)){
@@ -54,7 +52,7 @@ class ValueFilter extends AbstractFilter
         // collect list for different values of one property
         foreach ($value as $item) {
             if (isset($facetedData[$item])) {
-                $filterResults = array_merge($filterResults, $facetedData[$item]);
+                $filterResults = $filterResults + $facetedData[$item];
             }
         }
 
@@ -62,12 +60,12 @@ class ValueFilter extends AbstractFilter
             return [];
         }
 
-        if ($result === null) {
+        if ($inputRecords === null) {
             $result = $filterResults;
         } else {
             // find intersect of start records and faceted results
-            $result = array_intersect($result, $filterResults);
+            $result = array_intersect_key(array_flip($inputRecords), $filterResults);
         }
-        return array_values($result);
+        return array_keys($result);
     }
 }
