@@ -29,6 +29,7 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch;
 
+use KSamuel\FacetedSearch\Indexer\IndexerInterface;
 use PhpParser\Node\Stmt\Foreach_;
 
 /**
@@ -42,6 +43,10 @@ class Index
      * @var array<array>
      */
     protected $data = [];
+    /**
+     * @var array<IndexerInterface>
+     */
+    protected $indexers = [];
 
     /**
      * Add record to index
@@ -58,11 +63,21 @@ class Index
             }
 
             $values = array_unique($values);
-            foreach ($values as $value){
-                if(is_bool($value)){
-                    $value = (int) $value;
+
+            if(isset($this->indexers[$fieldName])){
+                if(!isset($this->data[$fieldName])){
+                    $this->data[$fieldName] = [];
                 }
-                $this->data[$fieldName][$value][$recordId] = true;
+                if(!$this->indexers[$fieldName]->add($this->data[$fieldName], $recordId, $values)){
+                    return false;
+                }
+            }else{
+                foreach ($values as $value){
+                    if(is_bool($value)){
+                        $value = (int) $value;
+                    }
+                    $this->data[$fieldName][$value][$recordId] = true;
+                }
             }
         }
         return true;
@@ -117,5 +132,15 @@ class Index
          */
         $keys = array_keys($result);
         return $keys;
+    }
+
+    /**
+     * Add specialized indexer for field
+     * @param string $fieldName
+     * @param IndexerInterface $indexer
+     */
+    public function addIndexer(string $fieldName, IndexerInterface $indexer) : void
+    {
+        $this->indexers[$fieldName] = $indexer;
     }
 }

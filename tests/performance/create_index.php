@@ -10,6 +10,8 @@ $warehouses = [1,10,23,345,43,5476,34,675,34,24,789,45,65,34,54];
 $type = ['normal','middle','good'];
 
 $index = new \KSamuel\FacetedSearch\Index();
+$rangeIndexer = new \KSamuel\FacetedSearch\Indexer\Number\RangeIndexer(250);
+$index->addIndexer('price', $rangeIndexer);
 
 for($i=1; $i<100000;$i++){
     $countWh = rand(0, count($warehouses));

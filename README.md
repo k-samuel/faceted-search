@@ -16,7 +16,7 @@ then for a long time you will not need scaling and more serious tools.
 composer require k-samuel/faceted-search
 `
 
-## Example 
+## Examples 
 
 Its better to create index for each goods category or product type and index only required fields.
 
@@ -83,3 +83,52 @@ $filterData = $search->findAcceptableFilters($filters);
 // If $filters is an empty array [], all acceptable values will be returned
 $filterData = $search->findAcceptableFilters([]);
 ```
+
+### Indexers
+
+To speed up the search of RangeFilter by data with high variability of values, you can use the Range Indexer.
+
+For example, a search on product price ranges. Prices can be divided into ranges with the desired step.
+
+```php
+<?php
+use KSamuel\FacetedSearch\Index;
+use KSamuel\FacetedSearch\Search;
+use KSamuel\FacetedSearch\Indexer\Number\RangeIndexer;
+use KSamuel\FacetedSearch\Filter\RangeFilter;
+
+$index = new Index();
+$rangeIndexer = new RangeIndexer(100);
+$index->addIndexer('price', $rangeIndexer);
+
+$index->addRecord(1,['price'=>90]);
+$index->addRecord(2,['price'=>100]);
+$index->addRecord(3,['price'=>150]);
+$index->addRecord(4,['price'=>200]);
+
+
+$filters = [
+  new RangeFilter('price', ['min'=>100,'max'=>200])
+];
+
+$search = new Search($index);
+$search->find($filters);
+
+// will return [2,3]
+```
+RangeListIndexer allows you to use custom ranges list
+```php
+<?php
+use KSamuel\FacetedSearch\Index;
+use KSamuel\FacetedSearch\Indexer\Number\RangeListIndexer;
+
+$index = new Index();
+$rangeIndexer = new RangeListIndexer([100,500,1000]); // (0-99)[0],(100-499)[100],(500-999)[500],(1000 & >)[1000] 
+$index->addIndexer('price', $rangeIndexer);
+```
+Also you can create your own indexers with range detection method
+
+
+### More Examples 
+* [Performance test. Create index for 100.000 goods](./tests/performance/create_index.php)
+* [Performance test. Find records in large index](./tests/performance/find.php)

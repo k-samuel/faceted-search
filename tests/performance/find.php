@@ -18,12 +18,12 @@ $search = new Search($index);
 $filters = [
     new ValueFilter('color','black'),
     new ValueFilter('warehouse', [789,45,65,1,10]),
-    new RangeFilter('price', ['min'=> 1000,'max'=>3500])
+    new RangeFilter('price', ['min'=> 1000,'max'=>7000])
 ];
 
 $results = $search->find($filters);
 
-echo 'Results: '.count($results) . "\n";
+echo 'Results: ' . count($results) . "\n";
 echo microtime(true) - $t . "s\n";
 
 
