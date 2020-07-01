@@ -30,7 +30,6 @@ declare(strict_types=1);
 namespace KSamuel\FacetedSearch;
 
 use KSamuel\FacetedSearch\Indexer\IndexerInterface;
-use PhpParser\Node\Stmt\Foreach_;
 
 /**
  * Simple faceted index
