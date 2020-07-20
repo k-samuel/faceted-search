@@ -1,0 +1,64 @@
+.catBox{
+    width:150px;
+    margin:5px;
+    list-style: none;
+}
+.menu{
+    width:100%;
+    list-style: none;
+}
+li{
+    cursor: pointer;
+    margin: 5px;
+    padding:5px;
+}
+
+li.selected{
+    text-decoration: underline;
+}
+
+
+
+.filterLabel{
+    font-weight: bold;
+    margin: 4px;
+    font-size: 14px;
+}
+.filterValue{
+    font-size: 10px;
+    height: 18px;
+    float: left;
+    width: 150px;
+    margin:2px 6px 2px 2px;
+    display: block;
+}
+
+.filterGrid{
+    max-height: 160px;
+    overflow: scroll;
+    padding: 4px;
+    border: 1px solid #ccc;
+}
+.content{
+    display: flex;
+}
+#filters{
+    width:160px;
+}
+
+#results{
+    padding: 0px 6px 6px 6px;
+}
+
+.card{
+    padding: 4px;
+    margin:10px;
+    margin-top: 6px;
+    min-width:180px;
+    height:100px;
+    border:1px solid #ccc;
+    float: left;
+}
+.card .title{
+    font-weight: bold;
+}

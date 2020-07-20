@@ -31,5 +31,8 @@
         "phpunit/phpunit": "^9",
         "phpstan/phpstan": "^0.12",
         "codacy/coverage": "dev-master"
+    },
+    "archive": {
+        "exclude": ["/examples"]
     }
 }

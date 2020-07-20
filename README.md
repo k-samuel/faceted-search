@@ -42,7 +42,7 @@ foreach($data as $item){
    $recordId = $item['id'];
    // no ned to add faceted index by id
    unset($item['id']);
-   $searchIndex->add($recordId, $item);
+   $searchIndex->addRecord($recordId, $item);
 }
 // save index data to some storage 
 $indexData = $searchIndex->getData();
@@ -126,9 +126,10 @@ $index = new Index();
 $rangeIndexer = new RangeListIndexer([100,500,1000]); // (0-99)[0],(100-499)[100],(500-999)[500],(1000 & >)[1000] 
 $index->addIndexer('price', $rangeIndexer);
 ```
-Also you can create your own indexers with range detection method
+Also, you can create your own indexers with range detection method
 
 
 ### More Examples 
+* [Demo (need web server)](./examples/index.html)  
 * [Performance test. Create index for 100.000 goods](./tests/performance/create_index.php)
 * [Performance test. Find records in large index](./tests/performance/find.php)
