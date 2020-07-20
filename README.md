@@ -130,6 +130,6 @@ Also, you can create your own indexers with range detection method
 
 
 ### More Examples 
-* [Demo (need web server)](./examples/index.html)  
+* [Demo (need web server)](./examples)  
 * [Performance test. Create index for 100.000 goods](./tests/performance/create_index.php)
 * [Performance test. Find records in large index](./tests/performance/find.php)
