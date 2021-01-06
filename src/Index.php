@@ -121,8 +121,9 @@ class Index
     public function getAllRecordId() : array
     {
         $result = [];
-        foreach ($this->data as $field => $values){
+        foreach ($this->data as  $values){
             foreach ($values as $list){
+                // fast array merge
                 $result = $result + $list;
             }
         }
