@@ -1,0 +1,47 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ master, develop]
+  pull_request:
+    branches: [ master, develop]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.operating-system }}
+    strategy:
+      matrix:
+        operating-system: ['ubuntu-latest']
+        php-versions: ['7.3','7.4','8']
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-versions }}
+        extensions: mbstring, intl, mysqli, gd
+        ini-values: post_max_size=256M, max_execution_time=180
+        coverage: xdebug  
+        tools: php-cs-fixer, phpunit 
+
+    - name: Validate composer.json and composer.lock
+      run: composer validate
+      
+    - name: Install dependencies
+      if: steps.composer-cache.outputs.cache-hit != 'true'
+      run: composer install --prefer-dist --no-progress --no-suggest
+
+    - name: PHPStan tests
+      run: php -d memory_limit=256M ./vendor/bin/phpstan analyse src
+      
+    - name: PHPUnit tests
+      run: ./vendor/bin/phpunit -c ./phpunit.xml.dist --coverage-clover coverage.xml
+      
+    - name: Send Coverage report
+      run: php vendor/bin/codacycoverage clover coverage.xml 
+      env: 
+         CODACY_PROJECT_TOKEN: ${{secrets.CODACY}}
