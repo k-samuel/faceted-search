@@ -58,6 +58,7 @@ use KSamuel\FacetedSearch\Index;
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Filter\RangeFilter;
+use KSamuel\FacetedSearch\Sorter\ByField;
 
 // load index by product category (use request params)
 $indexData = json_decode(file_get_contents('./first-index.json'), true);
@@ -82,6 +83,14 @@ $filterData = $search->findAcceptableFilters($filters);
 
 // If $filters is an empty array [], all acceptable values will be returned
 $filterData = $search->findAcceptableFilters([]);
+
+// Also you can sort results using FacetedIndex
+$sorter = new ByField($searchIndex);
+$records = $sorter->sort($records, 'price', ByField::SORT_DESC);
+
+
+
+
 ```
 
 ### Indexers
