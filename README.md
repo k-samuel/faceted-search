@@ -81,6 +81,12 @@ $records = $search->find($filters);
 // It can be used for updating client UI.
 $filterData = $search->findAcceptableFilters($filters);
 
+// If you want to get acceptable filters values with items count use
+// note that filters is not applied for itself for counting
+// values count of a particular field depends only on filters imposed on other fields 
+$filterData = $search->findAcceptableFiltersCount($filters);
+
+
 // If $filters is an empty array [], all acceptable values will be returned
 $filterData = $search->findAcceptableFilters([]);
 

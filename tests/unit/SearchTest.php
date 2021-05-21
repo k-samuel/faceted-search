@@ -89,6 +89,41 @@ class SearchTest extends TestCase
         }
     }
 
+    public function  testGetAcceptableFiltersCount()
+    {
+        $records = $this->getTestData();
+        $index = new Index();
+        foreach ($records as $id=>$item){
+            $index->addRecord($id, $item);
+        }
+        $facets = new Search($index);
+        $filter = new ValueFilter('color' ,'black');
+
+        $acceptableFilters = $facets->findAcceptableFiltersCount([$filter]);
+
+        $expect = [
+            'vendor' => ['Apple'=>1,'Samsung'=>2,'Xiaomi'=>1],
+            'model' => ['Iphone X Pro Max'=>1,'Galaxy S20'=>1, 'Galaxy A5'=>1, 'MI 9'=>1],
+            'price' => [80999=>1, 70599=>1, 15000=>1, 26000=>1],
+            // self filtering is not using by facets logic
+            'color' => ['black'=>4,'white'=>1,'yellow'=>1],
+            'has_phones' => [1=>4],
+            'cam_mp' => [40=>1, 105=>1, 12=>1, 48=>1],
+            'sale' => [1=>3,0=>1]
+        ];
+        foreach($expect as $field=>&$values){
+            sort($values);
+        }unset($values);
+        foreach($acceptableFilters as $field=>&$values){
+            sort($values);
+        }unset($values);
+
+        foreach ($expect as $filter => $values){
+            $this->assertArrayHasKey($filter, $acceptableFilters);
+            $this->assertEquals($values, $acceptableFilters[$filter]);
+        }
+    }
+
     public function getTestData() : array
     {
         return [

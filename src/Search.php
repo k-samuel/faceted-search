@@ -92,14 +92,13 @@ class Search
         }
         return array_values($result);
     }
-
     /**
      * Find acceptable filter values
      * @param array<FilterInterface> $filters
      * @param array<int> $inputRecords
      * @return array<array>
      */
-    public function findAcceptableFilters(array $filters = [], array $inputRecords = []): array
+    private function findFilters(array $filters = [], array $inputRecords = [], bool $countValues = false) : array
     {
         $result = [];
         $facetsData = $this->index->getData();
@@ -108,11 +107,13 @@ class Search
         if(!empty($filters)){
             // index filters by field
             foreach ($filters as $filter){
-                /** @var FilterInterface $filter */
+                /**
+                 * @var FilterInterface $filter
+                 */
                 $indexedFilters[$filter->getFieldName()] = $filter;
             }
         }
-        $count = 0;
+
         foreach ($facetsData as $filterName => $filterValues) {
             if(empty($indexedFilters) && empty($inputRecords)){
                 $result[$filterName] = array_keys($filterValues);
@@ -125,13 +126,41 @@ class Search
                     $recordIds = array_flip($recordIds);
                 }
                 foreach ($filterValues as $filterValue => $data) {
-                    $count++;
-                    if (!empty(array_intersect_key($data, $recordIds))) {
-                        $result[$filterName][] = $filterValue;
+                    // need to count values
+                    if($countValues){
+                        $intersect = array_intersect_key($data, $recordIds);
+                        if(!empty($intersect)){
+                            $result[$filterName][$filterValue] = count($intersect);
+                        }
+                    }else{
+                        if(!empty(array_intersect_key($data, $recordIds))) {
+                            $result[$filterName][] = $filterValue;
+                        }
                     }
                 }
             }
         }
         return $result;
+    }
+    /**
+     * Find acceptable filter values
+     * @param array<FilterInterface> $filters
+     * @param array<int> $inputRecords
+     * @return array<array>
+     */
+    public function findAcceptableFilters(array $filters = [], array $inputRecords = []): array
+    {
+        return $this->findFilters($filters, $inputRecords, false);
+    }
+
+    /**
+     * Find acceptable filters with values count
+     * @param array<FilterInterface> $filters
+     * @param array<int> $inputRecords
+     * @return array<array>
+     */
+    public function findAcceptableFiltersCount(array $filters = [], array $inputRecords = []): array
+    {
+        return $this->findFilters($filters, $inputRecords, true);
     }
 }
