@@ -47,8 +47,10 @@ foreach ($results as $id) {
 
 //test acceptable
 $t = microtime(true);
-$filters = $search->findAcceptableFilters($filters);
-
+$filtersData = $search->findAcceptableFilters($filters);
 echo 'Filters: ' . count($filters) . "\t\t" . (microtime(true) - $t) . "s" . PHP_EOL;
 
-
+//test acceptable with count
+$t = microtime(true);
+$filtersData = $search->findAcceptableFiltersCount($filters);
+echo 'Filters with count: ' . count($filters) . "\t" . (microtime(true) - $t) . "s" . PHP_EOL;
