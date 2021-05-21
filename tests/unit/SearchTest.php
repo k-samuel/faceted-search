@@ -112,10 +112,47 @@ class SearchTest extends TestCase
             'sale' => [1=>3,0=>1]
         ];
         foreach($expect as $field=>&$values){
-            sort($values);
+            asort($values);
         }unset($values);
         foreach($acceptableFilters as $field=>&$values){
-            sort($values);
+            asort($values);
+        }unset($values);
+
+        foreach ($expect as $filter => $values){
+            $this->assertArrayHasKey($filter, $acceptableFilters);
+            $this->assertEquals($values, $acceptableFilters[$filter]);
+        }
+    }
+
+    public function testGetAcceptableFiltersCountMulty()
+    {
+        $records = [
+            ['color'=>'black', 'size'=>7, 'group'=>'A'],
+            ['color'=>'black', 'size'=>8, 'group'=>'A'],
+            ['color'=>'white', 'size'=>7, 'group'=>'B'],
+            ['color'=>'yellow', 'size'=>7, 'group'=>'C'],
+            ['color'=>'black', 'size'=>7, 'group'=>'C'],
+        ];
+        $index = new Index();
+        foreach ($records as $id=>$item){
+            $index->addRecord($id, $item);
+        }
+        $facets = new Search($index);
+        $filter = new ValueFilter('color' ,'black');
+        $filter2 = new ValueFilter('size' ,7);
+
+        $acceptableFilters = $facets->findAcceptableFiltersCount([$filter, $filter2]);
+
+        $expect = [
+            'color' => ['black'=>2,'white'=>1,'yellow'=>1],
+            'size' => [7=>2,8=>1],
+            'group' => ['A'=>1,'C'=>1],
+        ];
+        foreach($expect as $field=>&$values){
+            asort($values);
+        }unset($values);
+        foreach($acceptableFilters as $field=>&$values){
+            asort($values);
         }unset($values);
 
         foreach ($expect as $filter => $values){
