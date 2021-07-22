@@ -1,6 +1,6 @@
 # Changelog
 ### v1.2.6 (22.07.2021)
-* New examples and Demo using from "mens-shoe-prices" DataSet
+* New examples and Demo using "mens-shoe-prices" DataSet
 * Fixed findAcceptableFiltersCount logics for cases with empty filters
 * Readme updates
 
