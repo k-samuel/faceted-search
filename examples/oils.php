@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <link rel="stylesheet" type="text/css" href="static/style.css"/>
+    <title>Faceted Search example</title>
+    <script src="static/js.js"></script>
+</head>
+<body>
+<i>Structured test Dataset</i>
+<div class="catBox">
+    Category:
+    <ul class="menu">
+        <li class="selected">Oils Catalog</li>
+        <li><a href="./clothing.php">Clothing Catalog</a></li>
+    </ul>
+</div>
+<div class="clear"></div>
+<hr>
+<div id="content" class="content">
+    <div>
+        <div class="boxLabel">Filters</div>
+        <div class="treePanel">
+            <div id="filters" class="shoe"></div>
+        </div>
+    </div>
+    <div style="width: 100%">
+        <div id="contentLoader" style="width:100%; display: none" align="center"><img src="static/ajax-loader.gif">
+        </div>
+        <div id="results"></div>
+    </div>
+</div>
+<script language="JavaScript">
+    /**
+     * Show product cards
+     * @param containerId
+     * @param result
+     */
+    function showResults(containerId, result) {
+        let s = '';
+        s += '<div style="clear: both; text-align: center;">' + result.data.length + ' items from <b>' + result.count + '</b> results.</div>';
+        result.data.forEach(function (value) {
+            s += '<div class="card">';
+            s += '<div class="title">' + value.fields.maker + '</div>';
+            s += '<div class="title">' + value.fields.model + '</div>';
+            s += '<div class="properties"><img src="static/oil.png" align="left" width="50" hspace="2"/>'
+            s += '<span>Viscosity: ' + value.fields.viscosity + '<br>';
+            s += '<span>Volume: ' + value.fields.volume + '<br>';
+            s += '</div>';
+            s += '</div>'
+        });
+        document.getElementById(containerId).innerHTML = s;
+    }
+
+    function filterChange() {
+        let filters = JSON.stringify(getChecked('content'));
+        showLoader('contentLoader');
+        ajax.post('./query.php?cat=oils', {'filters': filters}, function (data) {
+            let result = JSON.parse(data);
+            updateFilters('filters', result.filters);
+            showResults('results', result.results);
+            hideLoader('contentLoader');
+        });
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+        filterChange();
+    });
+</script>
+</body>
+</html>
