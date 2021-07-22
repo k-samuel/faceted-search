@@ -1,20 +1,19 @@
 <?php
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
 
-include './autoload.php';
+include '../vendor/autoload.php';
 
 use KSamuel\FacetedSearch\Index;
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 
-// load index by product category (use request params)
-$indexData = json_decode(file_get_contents('./data/oils-index.json'), true);
-$searchIndex = new Index();
-$searchIndex->setData($indexData);
-// create search instance
-$search = new Search($searchIndex);
-
-// do not use $_POST in production code
-$request = $_POST['request'] ?? null;
+$index = 'oils';
+$pageLimit = 20;
+if($_GET['cat'] === 'shoe'){
+    $index = 'shoe';
+}
 $filters = [];
 if (isset($_POST['filters'])) {
     $filtersData = json_decode($_POST['filters'], true);
@@ -23,30 +22,44 @@ if (isset($_POST['filters'])) {
     }
 }
 
-$pageLimit = 40;
-if ($request == 'filters') {
-    $data = $search->findAcceptableFilters($filters);
-    foreach ($data as $filterName => &$filterValues) {
-        sort($filterValues);
+
+
+// load index by product category (use request params)
+$indexData = json_decode(file_get_contents('./data/'.$index.'-index.json'), true);
+$searchIndex = new Index();
+$searchIndex->setData($indexData);
+// create search instance
+$search = new Search($searchIndex);
+
+function findFilters(Search $search, array $filters):array
+{
+    $data = $search->findAcceptableFiltersCount($filters);
+    foreach ($data as &$filterValues) {
+        ksort($filterValues);
     }
     unset($filterValues);
-    $result = [
-        'data' => $data
-    ];
-} elseif ($request == 'data') {
+    return ['data' => $data];
+}
+
+function findProducts(Search $search, array $filters, string $index, int $pageLimit):array{
+    // find product id
     $data = $search->find($filters);
     $resultItems = [];
     $count = count($data);
     if (!empty($data)) {
         $data = array_chunk($data, $pageLimit);
         $data = $data[0];
-        $db = include './data/oils-db.php';
+        // get product info from DB
+        $db = include './data/'.$index.'-db.php';
         foreach ($data as $id) {
             $resultItems[] = $db[$id];
         }
     }
-    $result = ['data' => $resultItems, 'count' => $count];
-} else {
-    $result = ['data' => []];
+    return ['data' => $resultItems, 'count' => $count, 'limit' => $pageLimit];
 }
+
+$result = [
+    'filters' => findFilters($search, $filters),
+    'results' => findProducts($search, $filters, $index, $pageLimit),
+];
 echo json_encode($result);

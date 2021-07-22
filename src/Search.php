@@ -116,7 +116,14 @@ class Search
 
         foreach ($facetsData as $filterName => $filterValues) {
             if(empty($indexedFilters) && empty($inputRecords)){
-                $result[$filterName] = array_keys($filterValues);
+                // need to count values
+                if($countValues){
+                    foreach ($filterValues as $key => $list){
+                        $result[$filterName][$key] = count($list);
+                    }
+                }else{
+                    $result[$filterName] = array_keys($filterValues);
+                }
             }else{
                 $filtersCopy = $indexedFilters;
                 // do not apply self filtering

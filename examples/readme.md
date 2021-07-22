@@ -1,2 +1,8 @@
-Launch index.html from this directory using web server with php 7.4
-![](static/pic.png) 
+Launch in current directory
+
+`cd [path/to/examples]`
+
+``` php -S localhost:8000 ```
+
+![](static/pic.png)
+![](static/pic2.png) 

@@ -18,13 +18,15 @@ composer require k-samuel/faceted-search
 
 ## Examples 
 
-Its better to create index for each goods category or product type and index only required fields.
+_* Create index for each product category or type and index only required fields._
 
-If price and quantity of your products frequently changes, it is better to keep them in database and use facets 
-for pre filtering. You can decrease number of checked records by setting records list to search in. For example list of 
-ProductId in stock to exclude not available products.
 
-Create faceted index using console/crontab etc.
+Use database to keep frequently changing fields (price/quantity/etc) and facets for pre-filtering.
+
+You can decrease the number of processed records by setting records list to search in. 
+For example: list of ProductId "in stock" to exclude not available products.
+
+Create index using console/crontab etc.
 ```php
 <?php
 use KSamuel\FacetedSearch\Index;
@@ -50,7 +52,7 @@ $indexData = $searchIndex->getData();
 file_put_contents('./first-index.json', json_encode($indexData));
 ```
 
-Using in your application
+Using in application
 
 ```php
 <?php
@@ -145,6 +147,6 @@ Also, you can create your own indexers with range detection method
 
 
 ### More Examples 
-* [Demo (need web server)](./examples)  
+* [Demo](./examples)  
 * [Performance test. Create index for 100.000 goods](./tests/performance/create_index.php)
 * [Performance test. Find records in large index](./tests/performance/find.php)
