@@ -89,6 +89,41 @@ class SearchTest extends TestCase
         }
     }
 
+    public function  testGetAcceptableFiltersCountNoFilters()
+    {
+        $records = [
+            ['color'=>'black', 'size'=>7, 'group'=>'A'],
+            ['color'=>'black', 'size'=>8, 'group'=>'A'],
+            ['color'=>'white', 'size'=>7, 'group'=>'B'],
+            ['color'=>'yellow', 'size'=>7, 'group'=>'C'],
+            ['color'=>'black', 'size'=>7, 'group'=>'C'],
+        ];
+        $index = new Index();
+        foreach ($records as $id=>$item){
+            $index->addRecord($id, $item);
+        }
+        $facets = new Search($index);
+
+        $acceptableFilters = $facets->findAcceptableFiltersCount();
+
+        $expect = [
+            'color' => ['black'=>3,'white'=>1,'yellow'=>1],
+            'size' => [7=>4,8=>1],
+            'group' => ['A'=>2,'B'=>1,'C'=>2],
+        ];
+        foreach($expect as $field=>&$values){
+            asort($values);
+        }unset($values);
+        foreach($acceptableFilters as $field=>&$values){
+            asort($values);
+        }unset($values);
+
+        foreach ($expect as $filter => $values){
+            $this->assertArrayHasKey($filter, $acceptableFilters);
+            $this->assertEquals($values, $acceptableFilters[$filter]);
+        }
+    }
+
     public function  testGetAcceptableFiltersCount()
     {
         $records = $this->getTestData();
