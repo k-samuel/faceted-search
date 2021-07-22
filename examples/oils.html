@@ -8,12 +8,12 @@
     <script src="static/js.js"></script>
 </head>
 <body>
-<i>Not structured Dataset from https://data.world/datafiniti/mens-shoe-prices</i>
+<i>Structured test Dataset</i>
 <div class="catBox">
     Category:
     <ul class="menu">
-        <li><a href="./oils.php">Oils Catalog</a></li>
-        <li class="selected">Clothing Catalog</li>
+        <li class="selected">Oils Catalog</li>
+        <li><a href="./clothing.html">Clothing Catalog</a></li>
     </ul>
 </div>
 <div class="clear"></div>
@@ -31,7 +31,6 @@
         <div id="results"></div>
     </div>
 </div>
-
 <script language="JavaScript">
     /**
      * Show product cards
@@ -40,18 +39,14 @@
      */
     function showResults(containerId, result) {
         let s = '';
-        s += '<div style="clear: both; text-align: center;"> ' + result.data.length + ' items from <b>' + result.count + '</b> results.</div>';
+        s += '<div style="clear: both; text-align: center;">' + result.data.length + ' items from <b>' + result.count + '</b> results.</div>';
         result.data.forEach(function (value) {
-            s += '<div class="card shoe">';
-            s += '<div class="title">' + value.brand + '</div>';
-            if (value.image.length) {
-                s += '<div class="img"><img src="' + value.image + '" onerror="if (this.src != \'static/shoe_icon.png\') this.src = \'static/shoe_icon.png\';" align="left" width="150" hspace="2" height="150"/></div>'
-            } else {
-                s += '<div class="img"><img src="static/shoe_icon.png" align="left" width="150" hspace="2" height="150"/></div>'
-            }
-            s += '<div class="title">' + value.name + '</div>';
-            s += '<div class="properties">';
-            s += '<span>Price: $' + value.price + '<br>';
+            s += '<div class="card">';
+            s += '<div class="title">' + value.fields.maker + '</div>';
+            s += '<div class="title">' + value.fields.model + '</div>';
+            s += '<div class="properties"><img src="static/oil.png" align="left" width="50" hspace="2"/>'
+            s += '<span>Viscosity: ' + value.fields.viscosity + '<br>';
+            s += '<span>Volume: ' + value.fields.volume + '<br>';
             s += '</div>';
             s += '</div>'
         });
@@ -61,14 +56,13 @@
     function filterChange() {
         let filters = JSON.stringify(getChecked('content'));
         showLoader('contentLoader');
-        ajax.post('./query.php?cat=shoe', {'filters': filters}, function (data) {
+        ajax.post('./query.php?cat=oils', {'filters': filters}, function (data) {
             let result = JSON.parse(data);
             updateFilters('filters', result.filters);
             showResults('results', result.results);
             hideLoader('contentLoader');
         });
     }
-
     document.addEventListener('DOMContentLoaded', function () {
         filterChange();
     });
