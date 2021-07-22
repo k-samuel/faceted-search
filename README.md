@@ -147,4 +147,4 @@ Also, you can create your own indexers with range detection method
 
 ### More Examples 
 * [Demo](./examples)  
-* [Performance test](./tests/performance/create_index.php)
+* [Performance test](./tests/performance/readme.md)
