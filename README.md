@@ -7,8 +7,12 @@
 
 Simple and fast faceted search without external servers like ElasticSearch and others.
 
-Easily handles 100,000 products with 10 properties. If you divide the indexes into product groups or categories, 
-then for a long time you will not need scaling and more serious tools.
+    Faceted search is a search method that utilizes the metadata attributed to a product in a store, 
+    providing visitors an opportunity to filter and refine their search queries when looking for 
+    specific products.
+
+Easily handles 100,000 products with 10 properties. 
+Divide product groups or categories into separate indexes and for a long time you will not need scaling and more serious tools.
 
 ## Install
 
