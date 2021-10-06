@@ -12,23 +12,25 @@ then for a long time you will not need scaling and more serious tools.
 
 The library is optimized for performance at the expense of RAM consumption.
 
-## Performance tests
-
-| items count (10 prop) | Memory   | Find (3 filters) | Get Filters (3 filters)| Sort by field| Results Found    |
-|----------------------:|---------:|-----------------:|-----------------------:|-------------:|-----------------:|
-| 10,000                | ~7Mb     | ~0.0009 s.       | ~0.01 s.               | ~0.001 s.    | 922              |
-| 50,000                | ~48Mb    | ~0.011 s.        | ~0.15 s.               | ~0.01 s.     | 4565             |
-| 100,000               | ~98Mb    | ~0.015 s.        | ~0.20 s.               | ~0.01 s.     | 9163             |
-| 300,000               | ~236Mb   | ~0.049 s.        | ~0.63 s.               | ~0.11 s.     | 27191            |
-| 1000,000              | ~820Mb   | ~0.209 s.        | ~2.38 s.               | ~0.47 s.     | 90070            |
-
-
 
 ## Install
 
 `
 composer require k-samuel/faceted-search
 `
+
+## Performance tests
+
+Tests on sets of products with 10 attributes, search with filters by 3 fields.
+
+| items count     | Memory   | Find             | Get Filters            | Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-----------------------:|-------------:|-----------------:|
+| 10,000          | ~7Mb     | ~0.0009 s.       | ~0.01 s.               | ~0.001 s.    | 922              |
+| 50,000          | ~48Mb    | ~0.011 s.        | ~0.15 s.               | ~0.01 s.     | 4565             |
+| 100,000         | ~98Mb    | ~0.015 s.        | ~0.20 s.               | ~0.01 s.     | 9163             |
+| 300,000         | ~236Mb   | ~0.049 s.        | ~0.63 s.               | ~0.11 s.     | 27191            |
+| 1000,000        | ~820Mb   | ~0.209 s.        | ~2.38 s.               | ~0.47 s.     | 90070            |
+
 
 ## Examples 
 
