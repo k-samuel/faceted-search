@@ -1,7 +1,7 @@
 <?php
 
 $t = microtime(true);
-$resultsCount = 100000;
+$resultsCount = 1000000;
 
 $colors = ['red', 'green', 'blue', 'yellow', 'black', 'white'];
 $brands = [
@@ -45,7 +45,7 @@ for ($i = 1; $i < $resultsCount; $i++) {
         'back_color' => $colors[rand(0, 5)],
         'size' => rand(34, 50),
         'brand' => $brands[rand(0, count($brands) - 1)],
-        'price' => rand(1000, 8000),
+        'price' => rand(1000, 10000),
         'discount' => rand(0, 10),
         'combined' => rand(0, 1),
         'quantity' => rand(0, 100),

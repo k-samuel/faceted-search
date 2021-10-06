@@ -130,8 +130,7 @@ class Index
         /**
          * @var array<int>
          */
-        $keys = array_keys($result);
-        return $keys;
+        return array_keys($result);
     }
 
     /**

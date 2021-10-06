@@ -7,8 +7,22 @@
 
 Simple and fast faceted search without external servers like ElasticSearch and others.
 
-Easily handles 100,000 products with 10 properties. If you divide the indexes into product groups or categories, 
+Easily handles 300,000 products with 10 properties. If you divide the indexes into product groups or categories, 
 then for a long time you will not need scaling and more serious tools.
+
+The library is optimized for performance at the expense of RAM consumption.
+
+## Performance tests
+
+| items count (10 prop) | Memory   | Find (3 filters) | Get Filters (3 filters)| Sort by field| Results Found    |
+|----------------------:|---------:|-----------------:|-----------------------:|-------------:|-----------------:|
+| 10,000                | ~7 Mb    | ~0.0009 s.       | ~0.01 s.               | ~0.001 s.    | 922              |
+| 50,000                | ~48 Mb   | ~0.011 s.        | ~0.15 s.               | ~0.01 s.     | 4565             |
+| 100,000               | ~98 Mb   | ~0.015 s.        | ~0.20 s.               | ~0.01 s.     | 9163             |
+| 300,000               | ~236 Mb  | ~0.049 s.        | ~0.63 s.               | ~0.11 s.     | 27191            |
+| 1000,000              | ~820 Mb  | ~0.209 s.        | ~2.38 s.               | ~0.47 s.     | 90070            |
+
+
 
 ## Install
 
@@ -104,8 +118,9 @@ $records = $sorter->sort($records, 'price', ByField::SORT_DESC);
 ### Indexers
 
 To speed up the search of RangeFilter by data with high variability of values, you can use the Range Indexer.
-
 For example, a search on product price ranges. Prices can be divided into ranges with the desired step.
+
+Note that RangeFilter is slow solution, it is better to avoid facets for highly variadic data
 
 ```php
 <?php
