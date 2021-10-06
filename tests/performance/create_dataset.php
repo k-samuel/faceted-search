@@ -1,7 +1,7 @@
 <?php
 
 $t = microtime(true);
-$resultsCount = 1000000;
+$resultsCount = 100000;
 
 $colors = ['red', 'green', 'blue', 'yellow', 'black', 'white'];
 $brands = [
