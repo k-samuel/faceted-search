@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * MIT License
@@ -37,53 +38,71 @@ class RangeFilter extends AbstractFilter
     /**
      * @inheritDoc
      */
-    public function filterResults(array $facetedData, ?array $inputRecords = null) : array
+    public function filterResults(array $facetedData, ?array $inputRecords = null): array
     {
-        $result = [];
         $value = $this->getValue();
 
         $min = $value['min'];
         $max = $value['max'];
 
+        if ($min === null && $max === null) {
+            return [];
+        }
+
         // collect list for different values of one property
-        if($min !== null || $max !== null)
-        {
-            $limitData = [];
-            foreach ($facetedData as $value => $records){
-                if ($min !== null && (float) $value < (float) $min) {
-                    continue;
-                }
-                if ($max !== null && (float) $value > (float) $max) {
-                    continue;
-                }
+        $limitData = [];
+        foreach ($facetedData as $value => $records) {
+            if ($min !== null && (float)$value < (float)$min) {
+                continue;
+            }
+            if ($max !== null && (float)$value > (float)$max) {
+                continue;
+            }
+            if (empty($limitData)) {
+                $limitData = $records;
+            } else {
                 $limitData = $limitData + $records;
             }
+        }
 
-            if (empty($limitData)) {
-                return [];
-            }
+        if (empty($limitData)) {
+            return [];
+        }
 
-            if ($inputRecords === null) {
-                $result = $limitData;
-            } else {
-                $result = array_intersect_key(array_flip($inputRecords), $limitData);
+        if ($inputRecords === null) {
+            return array_keys($limitData);
+        }
+
+        $input = array_flip($inputRecords);
+        if (count($input) < count($limitData)) {
+            $start = &$input;
+            $compare = &$limitData;
+        } else {
+            $start = &$limitData;
+            $compare = &$input;
+        }
+
+        $result = [];
+        foreach ($start as $index => $exists) {
+            if (isset($compare[$index])) {
+                $result[] = $index;
             }
         }
-        return array_keys($result);
+        return $result;
     }
 
     /**
      * @inheritDoc
      * @throws \Exception
      */
-    public function setValue($value) : void
+    public function setValue($value): void
     {
-        if(!is_array($value) || (!isset($value['min']) && !isset($value['max']))){
+        if (!is_array($value) || (!isset($value['min']) && !isset($value['max']))) {
             throw new \Exception('Wrong value format for RangeFilter. Expected format ["min"=>0,"max"=>100]');
         }
         $this->value = [
-            'min'=>$value['min']?? null,
-            'max'=>$value['max']?? null,
+            'min' => $value['min'] ?? null,
+            'max' => $value['max'] ?? null,
         ];
     }
 }

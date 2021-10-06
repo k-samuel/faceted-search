@@ -11,31 +11,50 @@ use KSamuel\FacetedSearch\Sorter\ByField;
 $t = microtime(true);
 $m = memory_get_usage();
 $indexData = json_decode(file_get_contents('./facet.json'), true);
-echo "index memory usage: " . (string)(int)((memory_get_usage() - $m) / 1024 / 1024) . "Mb" . PHP_EOL;
-echo 'loading: ' . (microtime(true) - $t) . "s" . PHP_EOL;
+$time = (microtime(true) - $t);
+$memUse = (int)((memory_get_usage() - $m) / 1024 / 1024);
 
-$t = microtime(true);
+
 $index = new Index();
 $index->setData($indexData);
+
+$resultData[] = ['Index memory usage', (string) $memUse. "Mb",''];
+$resultData[] = ['Loading time', number_format($time,6) . 's', ''];
 
 $search = new Search($index);
 
 $filters = [
     new ValueFilter('color', 'black'),
     new ValueFilter('warehouse', [789, 45, 65, 1, 10]),
-    new RangeFilter('price', ['min' => 1000, 'max' => 7000])
+    new ValueFilter('type', ["normal", "middle"]),
 ];
 
+$filters2 = [
+    new ValueFilter('color', 'black'),
+    new ValueFilter('warehouse', [789, 45, 65, 1, 10]),
+    new RangeFilter('price', ['min' => 1000, 'max' => 5000])
+];
+
+
 /// test find
+$t = microtime(true);
 $results = $search->find($filters);
-echo 'Results: ' . count($results) . "\t\t" . (microtime(true) - $t) . "s" . PHP_EOL;
+$time = microtime(true) - $t;
+$resultData[] = ['Find Results', number_format($time,6) . "s", count($results)];
+
+/// test find with Range
+$t = microtime(true);
+$results2 = $search->find($filters2);
+$time = microtime(true) - $t;
+$resultData[] = ['Find Results (ranges)', number_format($time,6) . "s", count($results2)];
 
 // test sort
 $sorter = new ByField($index);
 $sortField = 'quantity';
 $t = microtime(true);
 $results = $sorter->sort($results, $sortField, ByField::SORT_DESC);
-echo 'Sort by quantity DESC: '. "\t" . (microtime(true) - $t) . "s" . PHP_EOL;
+$time = microtime(true) - $t;
+$resultData[] = ['Sort by quantity DESC', number_format($time,6) . "s", count($results)];
 
 // uncoment to verify results
 /*
@@ -48,9 +67,26 @@ foreach ($results as $id) {
 //test acceptable
 $t = microtime(true);
 $filtersData = $search->findAcceptableFilters($filters);
-echo 'Filters: ' . count($filters) . "\t\t" . (microtime(true) - $t) . "s" . PHP_EOL;
+$time = microtime(true) - $t;
+$resultData[] = ['Filters', number_format($time,6) . "s", count($filters)];
 
 //test acceptable with count
 $t = microtime(true);
 $filtersData = $search->findAcceptableFiltersCount($filters);
-echo 'Filters with count: ' . count($filters) . "\t" . (microtime(true) - $t) . "s" . PHP_EOL;
+$time = microtime(true) - $t;
+$resultData[] = ['Filters with count', number_format($time,6) . "s", count($filters)];
+
+
+$colLen = [25, 14, 10];
+echo str_repeat("-", 56) . PHP_EOL;
+foreach ($resultData as $index => $cols) {
+    if ($index === 2) {
+        echo str_repeat("-", 56) . PHP_EOL;
+    }
+
+    foreach ($cols as $id => $item) {
+        echo '| ' . str_pad(' ' . $item, $colLen[$id]);
+    }
+    echo "|" . PHP_EOL;
+}
+echo str_repeat("-", 56) . PHP_EOL;

@@ -1,4 +1,8 @@
 # Changelog
+### v1.2.7 (07.10.2021)
+* Small performance enhancements
+* Performance tests update
+* Readme.md updated with performance test results
 ### v1.2.6 (22.07.2021)
 * New examples and Demo using "mens-shoe-prices" DataSet
 * Fixed findAcceptableFiltersCount logics for cases with empty filters

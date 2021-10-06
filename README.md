@@ -1,18 +1,17 @@
 [![PHP Version](https://img.shields.io/badge/php-7.3%2B-blue.svg)](https://packagist.org/packages/k-samuel/faceted-search)
 [![Total Downloads](https://img.shields.io/packagist/dt/k-samuel/faceted-search.svg?style=flat-square)](https://packagist.org/packages/k-samuel/faceted-search)
-![Build and Test](https://github.com/k-samuel/faceted-search/workflows/Build%20and%20Test/badge.svg?branch=master&event=push)
+![Build and Test](https://github.com/k-samuel/faceted-search/workflows/Build%20and%20Test/badge.svg?branch=develop&event=push)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/b9d174969c1b457fa8a6c3b753266698)](https://www.codacy.com/manual/kirill.a.egorov/faceted-search?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=k-samuel/faceted-search&amp;utm_campaign=Badge_Grade)
 [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/b9d174969c1b457fa8a6c3b753266698)](https://www.codacy.com/manual/kirill.a.egorov/faceted-search?utm_source=github.com&utm_medium=referral&utm_content=k-samuel/faceted-search&utm_campaign=Badge_Coverage)
 # PHP Faceted search library
 
 Simple and fast faceted search without external servers like ElasticSearch and others.
 
-    Faceted search is a search method that utilizes the metadata attributed to a product in a store, 
-    providing visitors an opportunity to filter and refine their search queries when looking for 
-    specific products.
+Easily handles 300,000 products with 10 properties. If you divide the indexes into product groups or categories, 
+then for a long time you will not need scaling and more serious tools.
 
-Easily handles 100,000 products with 10 properties. 
-Divide product groups or categories into separate indexes and for a long time you will not need scaling and more serious tools.
+The library is optimized for performance at the expense of RAM consumption.
+
 
 ## Install
 
@@ -20,7 +19,20 @@ Divide product groups or categories into separate indexes and for a long time yo
 composer require k-samuel/faceted-search
 `
 
-## Examples 
+## Performance tests
+
+Tests on sets of products with 10 attributes, search with filters by 3 fields.
+
+| items count     | Memory   | Find             | Get Filters            | Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-----------------------:|-------------:|-----------------:|
+| 10,000          | ~7Mb     | ~0.0009 s.       | ~0.01 s.               | ~0.001 s.    | 922              |
+| 50,000          | ~48Mb    | ~0.011 s.        | ~0.15 s.               | ~0.01 s.     | 4565             |
+| 100,000         | ~98Mb    | ~0.015 s.        | ~0.20 s.               | ~0.01 s.     | 9163             |
+| 300,000         | ~236Mb   | ~0.049 s.        | ~0.63 s.               | ~0.11 s.     | 27191            |
+| 1000,000        | ~820Mb   | ~0.209 s.        | ~2.38 s.               | ~0.47 s.     | 90070            |
+
+
+## Notes 
 
 _* Create index for each product category or type and index only required fields._
 
@@ -29,6 +41,8 @@ Use database to keep frequently changing fields (price/quantity/etc) and facets 
 
 You can decrease the number of processed records by setting records list to search in. 
 For example: list of ProductId "in stock" to exclude not available products.
+
+## Examples
 
 Create index using console/crontab etc.
 ```php
@@ -108,8 +122,9 @@ $records = $sorter->sort($records, 'price', ByField::SORT_DESC);
 ### Indexers
 
 To speed up the search of RangeFilter by data with high variability of values, you can use the Range Indexer.
-
 For example, a search on product price ranges. Prices can be divided into ranges with the desired step.
+
+Note that RangeFilter is slow solution, it is better to avoid facets for highly variadic data
 
 ```php
 <?php

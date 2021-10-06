@@ -52,7 +52,12 @@ class ValueFilter extends AbstractFilter
         // collect list for different values of one property
         foreach ($value as $item) {
             if (isset($facetedData[$item])) {
-                $filterResults = $filterResults + $facetedData[$item];
+                if(empty($filterResults)){
+                    $filterResults = $facetedData[$item];
+                }else{
+                    $filterResults = $filterResults + $facetedData[$item];
+                }
+
             }
         }
 
@@ -61,11 +66,25 @@ class ValueFilter extends AbstractFilter
         }
 
         if ($inputRecords === null) {
-            $result = $filterResults;
-        } else {
-            // find intersect of start records and faceted results
-            $result = array_intersect_key(array_flip($inputRecords), $filterResults);
+            return array_keys($filterResults);
         }
-        return array_keys($result);
+
+        // find intersect of start records and faceted results
+        $input = array_flip($inputRecords);
+        if(count($input) < count($filterResults)){
+            $start = &$input;
+            $compare = &$filterResults;
+        }else{
+            $start = &$filterResults;
+            $compare = &$input;
+        }
+        $result = [];
+        foreach($start as $index=>$exists)
+        {
+            if(isset($compare[$index])){
+                $result[] = $index;
+            }
+        }
+        return $result;
     }
 }
