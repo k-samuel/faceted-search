@@ -32,7 +32,7 @@ Tests on sets of products with 10 attributes, search with filters by 3 fields.
 | 1000,000        | ~820Mb   | ~0.209 s.        | ~2.38 s.               | ~0.47 s.     | 90070            |
 
 
-## Examples 
+## Notes 
 
 _* Create index for each product category or type and index only required fields._
 
@@ -41,6 +41,8 @@ Use database to keep frequently changing fields (price/quantity/etc) and facets 
 
 You can decrease the number of processed records by setting records list to search in. 
 For example: list of ProductId "in stock" to exclude not available products.
+
+## Examples
 
 Create index using console/crontab etc.
 ```php
