@@ -8,7 +8,8 @@
 Simple and fast faceted search without external servers like ElasticSearch and others.
 
 Easily handles 300,000 products with 10 properties. If you divide the indexes into product groups or categories, 
-then for a long time you will not need scaling and more serious tools.
+then for a long time you will not need scaling and more serious tools. Especially in conjunction with 
+RoadRunner or Swoole.
 
 The library is optimized for performance at the expense of RAM consumption.
 
