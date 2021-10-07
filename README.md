@@ -178,7 +178,7 @@ Also, you can create your own indexers with range detection method
 
 ### Tested but discarded concepts
 
-Bitmap
+**Bitmap**
 - (+) Significantly less RAM consumption
 - (+) Comparable search speed with filtering
 - (-) Limited by property variability, may not fit into the selected bit mask
@@ -186,12 +186,12 @@ Bitmap
 - (-) The need to rebuild the index after each addition of an element or at the final stage of formation
 - (-) Slow aggregates creation
 
-Bloom Filter.
+**Bloom Filter**
 - (+) Very low memory consumption
 - (-) Possibility of false positives
 - (-) Slow index creation
 - (-) Longer search in the list of products
-- (-) Very slow aggregates creation
+- (-) Very slow aggregates
 
-Creating multiple indexes for different operations
-- Increased consumption of RAM 
+**Creating multiple indexes for different operations**
+- (-) Increased consumption of RAM 
