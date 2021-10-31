@@ -20,17 +20,32 @@ The library is optimized for performance at the expense of RAM consumption.
 composer require k-samuel/faceted-search
 `
 
+[Change Log](./changelog.md)
+
 ## Performance tests
 
 Tests on sets of products with 10 attributes, search with filters by 3 fields.
 
-| Items count     | Memory   | Find             | Get Filters            | Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-----------------------:|-------------:|-----------------:|
-| 10,000          | ~7Mb     | ~0.0009 s.       | ~0.01 s.               | ~0.001 s.    | 922              |
-| 50,000          | ~48Mb    | ~0.011 s.        | ~0.15 s.               | ~0.01 s.     | 4565             |
-| 100,000         | ~98Mb    | ~0.015 s.        | ~0.20 s.               | ~0.01 s.     | 9163             |
-| 300,000         | ~236Mb   | ~0.049 s.        | ~0.63 s.               | ~0.11 s.     | 27191            |
-| 1000,000        | ~820Mb   | ~0.209 s.        | ~2.38 s.               | ~0.47 s.     | 90070            |
+PHP 7.4.21 (no xdebug extension)
+
+| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
+| 10,000          | ~7Mb     | ~0.0004 s.       | ~0.003 s.                | ~0.001 s.    | 866              |
+| 50,000          | ~49Mb    | ~0.004 s.        | ~0.02 s.                 | ~0.007 s.    | 4538             |
+| 100,000         | ~98Mb    | ~0.008 s.        | ~0.05 s.                 | ~0.01 s.     | 8993             |
+| 300,000         | ~236Mb   | ~0.034 s.        | ~0.18 s.                 | ~0.11 s.     | 27281            |
+| 1000,000        | ~820Mb   | ~0.126 s.        | ~0.76 s.                 | ~0.44 s.     | 89403            |
+
+PHP 8.0.12 + JIT (no xdebug extension)
+
+| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
+| 10,000          | ~7Mb     | ~0.0004 s.       | ~0.003 s.                | ~0.001 s.    | 866              |
+| 50,000          | ~49Mb    | ~0.007 s.        | ~0.03 s.                 | ~0.008 s.    | 4538             |
+| 100,000         | ~98Mb    | ~0.016 s.        | ~0.07 s.                 | ~0.02 s.     | 8993             |
+| 300,000         | ~236Mb   | ~0.047 s.        | ~0.23 s.                 | ~0.15 s.     | 27281            |
+| 1000,000        | ~820Mb   | ~0.164 s.        | ~0.86 s.                 | ~0.46 s.     | 89403            |
+
 
 * Items count - Products in index
 * Memory - RAM used for index

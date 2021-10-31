@@ -103,6 +103,7 @@ class Search
         $result = [];
         $facetsData = $this->index->getData();
         $indexedFilters = [];
+        $filteredRecords = [];
 
         if(!empty($filters)){
             // index filters by field
@@ -111,6 +112,10 @@ class Search
                  * @var FilterInterface $filter
                  */
                 $indexedFilters[$filter->getFieldName()] = $filter;
+            }
+            $filteredRecords = $this->find($indexedFilters, $inputRecords);
+            if(!empty($filteredRecords)){
+                $filteredRecords = array_flip($filteredRecords);
             }
         }
 
@@ -127,11 +132,17 @@ class Search
             }else{
                 $filtersCopy = $indexedFilters;
                 // do not apply self filtering
-                unset($filtersCopy[$filterName]);
-                $recordIds = $this->find($filtersCopy, $inputRecords);
-                if(!empty($recordIds)){
-                    $recordIds = array_flip($recordIds);
+                if(isset($filtersCopy[$filterName])){
+                    unset($filtersCopy[$filterName]);
+                    $recordIds = $this->find($filtersCopy, $inputRecords);
+                    if(!empty($recordIds)){
+                        $recordIds = array_flip($recordIds);
+                    }
+                }else{
+                    $recordIds = $filteredRecords;
                 }
+
+
                 foreach ($filterValues as $filterValue => $data) {
                     // need to count values
                     if($countValues){

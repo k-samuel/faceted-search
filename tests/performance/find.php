@@ -17,7 +17,8 @@ $memUse = (int)((memory_get_usage() - $m) / 1024 / 1024);
 
 $index = new Index();
 $index->setData($indexData);
-
+$count = count($index->getAllRecordId());
+$resultData[] = ['Total items', (string) $count,''];
 $resultData[] = ['Index memory usage', (string) $memUse. "Mb",''];
 $resultData[] = ['Loading time', number_format($time,6) . 's', ''];
 
