@@ -1,4 +1,10 @@
 # Changelog
+
+### v1.2.8 (31.10.2021)
+Up to 50% acceleration of aggregates
+* Performance optimization for aggregates (getFilters). Reduced the number of passes for filter aggregates.
+* PHP 8 performance tests added
+* Readme updated with performance test comparison (php7/php8)
 ### v1.2.7 (07.10.2021)
 * Small performance enhancements
 * Performance tests update

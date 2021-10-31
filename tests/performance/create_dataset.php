@@ -34,7 +34,7 @@ $type = ['normal', 'middle', 'good'];
 
 $dataSet = [];
 
-for ($i = 1; $i < $resultsCount; $i++) {
+for ($i = 1; $i <= $resultsCount; $i++) {
     $countWh = rand(0, count($warehouses));
     $wh = [];
     for ($k = 0; $k < $countWh; $k++) {
