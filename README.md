@@ -13,14 +13,13 @@ RoadRunner or Swoole.
 
 The library is optimized for performance at the expense of RAM consumption.
 
+[Changelog](./changelog.md)
 
 ## Install
 
 `
 composer require k-samuel/faceted-search
 `
-
-[Change Log](./changelog.md)
 
 ## Performance tests
 
