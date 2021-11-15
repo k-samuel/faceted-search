@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 class FieldTest extends TestCase
 {
 
-    public function testSort()
+    public function testSortDesc()
     {
         $data = [
             1 => ['size' => 12, 'tag' => 1],
@@ -28,5 +28,26 @@ class FieldTest extends TestCase
         $sorter = new ByField($index);
         $sorted = $sorter->sort($results, 'size', ByField::SORT_DESC);
         $this->assertEquals([3, 1, 4, 2], $sorted);
+    }
+
+    public function testSortAsc()
+    {
+        $data = [
+            1 => ['size' => 12, 'tag' => 1],
+            2 => ['size' => 7, 'tag' => 1],
+            3 => ['size' => 100, 'tag' => 1],
+            4 => ['size' => 8, 'tag' => 1],
+            5 => ['size' => 8, 'tag' => 2]
+        ];
+        $index = new Index();
+        foreach ($data as $id => $values) {
+            $index->addRecord($id, $values);
+        }
+        $search = new Search($index);
+        $results = $search->find([new ValueFilter('tag', 1)]);
+
+        $sorter = new ByField($index);
+        $sorted = $sorter->sort($results, 'size', ByField::SORT_ASC);
+        $this->assertEquals([2, 4, 1, 3], $sorted);
     }
 }

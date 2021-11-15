@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * MIT License
@@ -62,22 +63,28 @@ class ByField
      *
      * @return int[]
      */
-    public function sort(array $results, string $field, int $direction = self::SORT_ASC, int $sortFlags = SORT_REGULAR) : array
-    {
+    public function sort(
+        array $results,
+        string $field,
+        int $direction = self::SORT_ASC,
+        int $sortFlags = SORT_REGULAR
+    ): array {
         $data = $this->index->getFieldData($field);
-        if($direction === self::SORT_ASC){
+        if ($direction === self::SORT_ASC) {
             ksort($data, $sortFlags);
-        }else{
+        } else {
             krsort($data, $sortFlags);
         }
 
+        $results = array_flip($results);
+
         $sorted = [];
-        foreach ($data as $value => $records){
-            $ids = array_intersect_key($records, array_flip($results));
-            if(empty($ids)){
+        foreach ($data as $records) {
+            $ids = array_intersect_key($records, $results);
+            if (empty($ids)) {
                 continue;
             }
-            foreach (array_keys($ids) as $id){
+            foreach ($ids as $id => $flag) {
                 $sorted[] = $id;
             }
         }

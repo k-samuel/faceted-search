@@ -1,5 +1,34 @@
 # Changelog
 
+### v1.3.0 (16.11.2021)
+Performance update
+* Fixed bug with input records filtration in find method
+* Reduced memory allocation and calls of array_flip (FilterInterface changed)
+* Sort method optimized (up to 10x faster)
+* PHPStan updated to 1.x
+
+Bench v1.3.0 PHP 7.4.25 (no xdebug extension)
+
+| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
+| 10,000          | ~7Mb     | ~0.0004 s.       | ~0.003 s.                | ~0.0002 s.   | 907              |
+| 50,000          | ~49Mb    | ~0.003 s.        | ~0.019 s.                | ~0.0008 s.   | 4550             |
+| 100,000         | ~98Mb    | ~0.007 s.        | ~0.042 s.                | ~0.002 s.    | 8817             |
+| 300,000         | ~242Mb   | ~0.021 s.        | ~0.167 s.                | ~0.009 s.    | 26891            |
+| 1,000,000       | ~812Mb   | ~0.107 s.        | ~0.687 s.                | ~0.036 s.    | 90520            |
+
+Bench v1.2.8 PHP 7.4.25 (no xdebug extension)
+
+| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
+| 10,000          | ~7Mb     | ~0.0004 s.       | ~0.003 s.                | ~0.001 s.    | 907              |
+| 50,000          | ~49Mb    | ~0.004 s.        | ~0.022 s.                | ~0.007 s.    | 4550             |
+| 100,000         | ~98Mb    | ~0.009 s.        | ~0.049 s.                | ~0.015 s.    | 8817             |
+| 300,000         | ~242Mb   | ~0.026 s.        | ~0.182 s.                | ~0.109 s.    | 26891            |
+| 1,000,000       | ~812Mb   | ~0.125 s.        | ~0.776 s.                | ~0.472 s.    | 90520            |
+
+
+
 ### v1.2.8 (31.10.2021)
 Up to 50% acceleration of aggregates
 * Performance optimization for aggregates (getFilters). Reduced the number of passes for filter aggregates.

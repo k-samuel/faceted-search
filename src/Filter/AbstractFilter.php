@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * MIT License
@@ -48,7 +49,7 @@ abstract class AbstractFilter implements FilterInterface
     public function __construct(string $fieldName, $value = null)
     {
         $this->fieldName = $fieldName;
-        if($value !== null){
+        if ($value !== null) {
             $this->setValue($value);
         }
     }
@@ -56,7 +57,7 @@ abstract class AbstractFilter implements FilterInterface
     /**
      * @inheritDoc
      */
-    public function getFieldName() : string
+    public function getFieldName(): string
     {
         return $this->fieldName;
     }
@@ -66,7 +67,7 @@ abstract class AbstractFilter implements FilterInterface
      * @param mixed $value
      * @return void
      */
-    public function setValue($value) : void
+    public function setValue($value): void
     {
         $this->value = $value;
     }
@@ -79,8 +80,9 @@ abstract class AbstractFilter implements FilterInterface
     {
         return $this->value;
     }
+
     /**
      * @inheritDoc
      */
-    abstract public function filterResults(array $facetedData, ?array $inputRecords = null) : array;
+    abstract public function filterResults(array $facetedData, ?array $inputIdKeys = null): array;
 }
