@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * MIT License
@@ -37,12 +38,12 @@ class ValueFilter extends AbstractFilter
     /**
      * @inheritDoc
      */
-    public function filterResults(array $facetedData, ?array $inputRecords = null) : array
+    public function filterResults(array $facetedData, ?array $inputIdKeys = null): array
     {
         $value = $this->getValue();
-        if(!is_array($value)){
-            if(is_bool($value)){
-                $value = (int) $value;
+        if (!is_array($value)) {
+            if (is_bool($value)) {
+                $value = (int)$value;
             }
             $value = [$value];
         }
@@ -52,12 +53,12 @@ class ValueFilter extends AbstractFilter
         // collect list for different values of one property
         foreach ($value as $item) {
             if (isset($facetedData[$item])) {
-                if(empty($filterResults)){
+                if (empty($filterResults)) {
                     $filterResults = $facetedData[$item];
-                }else{
-                    $filterResults = $filterResults + $facetedData[$item];
+                } else {
+                    // array sum (faster than array_merge here)
+                    $filterResults += $facetedData[$item];
                 }
-
             }
         }
 
@@ -65,24 +66,25 @@ class ValueFilter extends AbstractFilter
             return [];
         }
 
-        if ($inputRecords === null) {
-            return array_keys($filterResults);
+        if ($inputIdKeys === null) {
+            /**
+             * @var array<int,bool>$filterResults
+             */
+            return $filterResults;
         }
 
         // find intersect of start records and faceted results
-        $input = array_flip($inputRecords);
-        if(count($input) < count($filterResults)){
-            $start = &$input;
+        if (count($inputIdKeys) < count($filterResults)) {
+            $start = &$inputIdKeys;
             $compare = &$filterResults;
-        }else{
+        } else {
             $start = &$filterResults;
-            $compare = &$input;
+            $compare = &$inputIdKeys;
         }
         $result = [];
-        foreach($start as $index=>$exists)
-        {
-            if(isset($compare[$index])){
-                $result[] = $index;
+        foreach ($start as $index => $exists) {
+            if (isset($compare[$index])) {
+                $result[$index] = true;
             }
         }
         return $result;

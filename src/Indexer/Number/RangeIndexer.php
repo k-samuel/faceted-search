@@ -46,7 +46,10 @@ class RangeIndexer implements IndexerInterface
     }
 
     /**
-     * @inheritDoc
+     * @param array<int|string,array<int>> $indexContainer
+     * @param int $recordId
+     * @param array<int,int|float> $values
+     * @return bool
      */
     public function add(&$indexContainer, int $recordId, array $values) : bool
     {

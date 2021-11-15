@@ -39,7 +39,7 @@ class Index
 {
     /**
      * Index data
-     * @var array<array>
+     * @var array<int|string,array<int|string,array<int>>>
      */
     protected $data = [];
     /**
@@ -50,7 +50,7 @@ class Index
     /**
      * Add record to index
      * @param int $recordId
-     * @param array<int|bool|string|array> $recordValues -  ['fieldName'=>'fieldValue','fieldName2'=>['val1','val2']]
+     * @param array<int|string,array<int,mixed>> $recordValues -  ['fieldName'=>'fieldValue','fieldName2'=>['val1','val2']]
      * @return bool
      */
     public function addRecord(int $recordId, array $recordValues) : bool
@@ -84,7 +84,7 @@ class Index
 
     /**
      * Get index data. Can be used for storing it to DB
-     * @return array<array>
+     * @return array<int|string,array<int|string,array<int>>>
      */
     public function getData() : array
     {
@@ -93,7 +93,7 @@ class Index
 
     /**
      * Set index data. Can be used for restoring from DB
-     * @param array<array> $data
+     * @param array<int|string,array<int|string,array<int>>> $data
      */
     public function setData(array $data) : void
     {
@@ -103,7 +103,7 @@ class Index
     /**
      * Get field data section from index
      * @param string $fieldName
-     * @return array<array>
+     * @return array<int|string,array<int>>
      */
     public function getFieldData(string $fieldName) : array
     {
@@ -124,7 +124,7 @@ class Index
         foreach ($this->data as  $values){
             foreach ($values as $list){
                 // fast array merge
-                $result = $result + $list;
+                $result+= $list;
             }
         }
         /**

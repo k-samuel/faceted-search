@@ -65,8 +65,6 @@ class Search
             $inputRecords = array_flip($inputRecords);
         }
 
-        $result = $inputRecords;
-
         // if no filters passed
         if(empty($filters)){
             $total = $this->index->getAllRecordId();
@@ -75,6 +73,11 @@ class Search
             }
             return $total;
         }
+
+        /**
+         * @var array<int,int> $inputRecords
+         */
+        $result = $inputRecords;
 
         /**
          * @var FilterInterface $filter
@@ -90,13 +93,13 @@ class Search
         if(empty($result)){
             $result = [];
         }
-        return array_values($result);
+        return array_keys($result);
     }
     /**
      * Find acceptable filter values
      * @param array<FilterInterface> $filters
      * @param array<int> $inputRecords
-     * @return array<array>
+     * @return array<string,array<int|string,int|string>>
      */
     private function findFilters(array $filters = [], array $inputRecords = [], bool $countValues = false) : array
     {
@@ -120,6 +123,9 @@ class Search
         }
 
         foreach ($facetsData as $filterName => $filterValues) {
+            /**
+             * @var string $filterName
+             */
             if(empty($indexedFilters) && empty($inputRecords)){
                 // need to count values
                 if($countValues){
@@ -164,7 +170,7 @@ class Search
      * Find acceptable filter values
      * @param array<FilterInterface> $filters
      * @param array<int> $inputRecords
-     * @return array<array>
+     * @return array<string,array<int|string,int|string>>
      */
     public function findAcceptableFilters(array $filters = [], array $inputRecords = []): array
     {
@@ -175,7 +181,7 @@ class Search
      * Find acceptable filters with values count
      * @param array<FilterInterface> $filters
      * @param array<int> $inputRecords
-     * @return array<array>
+     * @return array<string,array<int|string,int|string>>
      */
     public function findAcceptableFiltersCount(array $filters = [], array $inputRecords = []): array
     {

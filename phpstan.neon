@@ -1,11 +1,9 @@
 includes:
 	- phar://phpstan.phar/conf/config.levelmax.neon
 parameters:
-	bootstrap: %currentWorkingDirectory%/tests/phpstan/bootstrap.php
-	autoload_directories:
+	bootstrapFiles:
+	    -  %currentWorkingDirectory%/tests/phpstan/bootstrap.php
+	scanDirectories:
 	    -  %currentWorkingDirectory%/src
 	    -  %currentWorkingDirectory%/tests/unit
-	autoload_files: []
-	polluteCatchScopeWithTryAssignments: true
-	reportUnmatchedIgnoredErrors: false
 

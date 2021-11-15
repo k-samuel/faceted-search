@@ -38,12 +38,15 @@ class RangeFilter extends AbstractFilter
     /**
      * @inheritDoc
      */
-    public function filterResults(array $facetedData, ?array $inputRecords = null): array
+    public function filterResults(array $facetedData, ?array $inputIdKeys = null): array
     {
+        /**
+         * @var array{min:int|float|null,max:int|float|null} $value
+         */
         $value = $this->getValue();
 
-        $min = $value['min'];
-        $max = $value['max'];
+        $min = $value['min'] ?? null;
+        $max = $value['max'] ?? null;
 
         if ($min === null && $max === null) {
             return [];
@@ -61,7 +64,8 @@ class RangeFilter extends AbstractFilter
             if (empty($limitData)) {
                 $limitData = $records;
             } else {
-                $limitData = $limitData + $records;
+                // array sum (faster than array_merge here)
+                $limitData+= $records;
             }
         }
 
@@ -69,36 +73,38 @@ class RangeFilter extends AbstractFilter
             return [];
         }
 
-        if ($inputRecords === null) {
-            return array_keys($limitData);
+        if ($inputIdKeys === null) {
+            /**
+             * @var array<int,bool>$limitData
+             */
+            return $limitData;
         }
 
-        $input = array_flip($inputRecords);
-        if (count($input) < count($limitData)) {
-            $start = &$input;
+        if (count($inputIdKeys) < count($limitData)) {
+            $start = &$inputIdKeys;
             $compare = &$limitData;
         } else {
             $start = &$limitData;
-            $compare = &$input;
+            $compare = &$inputIdKeys;
         }
 
         $result = [];
         foreach ($start as $index => $exists) {
             if (isset($compare[$index])) {
-                $result[] = $index;
+                $result[$index] = true;
             }
         }
         return $result;
     }
 
     /**
-     * @inheritDoc
-     * @throws \Exception
+     * @param mixed|array{min:int|float,max:int|float} $value
+     * @throws \InvalidArgumentException
      */
     public function setValue($value): void
     {
         if (!is_array($value) || (!isset($value['min']) && !isset($value['max']))) {
-            throw new \Exception('Wrong value format for RangeFilter. Expected format ["min"=>0,"max"=>100]');
+            throw new \InvalidArgumentException('Wrong value format for RangeFilter. Expected format ["min"=>0,"max"=>100]');
         }
         $this->value = [
             'min' => $value['min'] ?? null,

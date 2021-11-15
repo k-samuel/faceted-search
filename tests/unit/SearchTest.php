@@ -55,6 +55,22 @@ class SearchTest extends TestCase
         $this->assertEquals([], $result);
     }
 
+    public function testFindWithLimit()
+    {
+        $records = $this->getTestData();
+        $index = new Index();
+
+        foreach ($records as $id=>$item){
+            $index->addRecord($id, $item);
+        }
+        $facets = new Search($index);
+        $filter = new ValueFilter('vendor');
+        $filter->setValue(['Samsung','Apple']);
+        $result = $facets->find([$filter],[1,3]);
+        $this->assertEquals([1,3], $result);
+
+    }
+
     public function testGetAcceptableFilters()
     {
         $records = $this->getTestData();

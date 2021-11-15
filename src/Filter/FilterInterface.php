@@ -37,9 +37,9 @@ interface FilterInterface
     public function getFieldName() : string;
     /**
      * Filter faceted data
-     * @param array<array> $facetedData
-     * @param array<int>|null $inputRecords
-     * @return array<int>
+     * @param array<int|string,array<int>> $facetedData
+     * @param array<int,bool|int>|null $inputIdKeys - RecordId passed into keys of an array (performance issue)
+     * @return array<int,bool> - results in keys
      */
-    public function filterResults(array $facetedData, ?array $inputRecords = null) : array;
+    public function filterResults(array $facetedData, ?array $inputIdKeys = null) : array;
 }
