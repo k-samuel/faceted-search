@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * MIT License
@@ -57,18 +58,18 @@ class Search
      * @param array<int>|null $inputRecords - list of record id to search in. Use it for limit results
      * @return array<int>
      */
-    public function find(array $filters, ?array $inputRecords = null) : array
+    public function find(array $filters, ?array $inputRecords = null): array
     {
-        if(empty($inputRecords)){
+        if (empty($inputRecords)) {
             $inputRecords = null;
-        }else{
+        } else {
             $inputRecords = array_flip($inputRecords);
         }
 
         // if no filters passed
-        if(empty($filters)){
+        if (empty($filters)) {
             $total = $this->index->getAllRecordId();
-            if(!empty($inputRecords)){
+            if (!empty($inputRecords)) {
                 return array_keys(array_intersect_key(array_flip($total), $inputRecords));
             }
             return $total;
@@ -82,42 +83,43 @@ class Search
         /**
          * @var FilterInterface $filter
          */
-        foreach ($filters as $filter){
+        foreach ($filters as $filter) {
             $indexData = $this->index->getFieldData($filter->getFieldName());
-            if(empty($indexData)){
+            if (empty($indexData)) {
                 return [];
             }
             $result = $filter->filterResults($indexData, $result);
         }
 
-        if(empty($result)){
+        if (empty($result)) {
             $result = [];
         }
         return array_keys($result);
     }
+
     /**
      * Find acceptable filter values
      * @param array<FilterInterface> $filters
      * @param array<int> $inputRecords
      * @return array<string,array<int|string,int|string>>
      */
-    private function findFilters(array $filters = [], array $inputRecords = [], bool $countValues = false) : array
+    private function findFilters(array $filters = [], array $inputRecords = [], bool $countValues = false): array
     {
         $result = [];
         $facetsData = $this->index->getData();
         $indexedFilters = [];
         $filteredRecords = [];
 
-        if(!empty($filters)){
+        if (!empty($filters)) {
             // index filters by field
-            foreach ($filters as $filter){
+            foreach ($filters as $filter) {
                 /**
                  * @var FilterInterface $filter
                  */
                 $indexedFilters[$filter->getFieldName()] = $filter;
             }
             $filteredRecords = $this->find($indexedFilters, $inputRecords);
-            if(!empty($filteredRecords)){
+            if (!empty($filteredRecords)) {
                 $filteredRecords = array_flip($filteredRecords);
             }
         }
@@ -126,46 +128,46 @@ class Search
             /**
              * @var string $filterName
              */
-            if(empty($indexedFilters) && empty($inputRecords)){
+            if (empty($indexedFilters) && empty($inputRecords)) {
                 // need to count values
-                if($countValues){
-                    foreach ($filterValues as $key => $list){
+                if ($countValues) {
+                    foreach ($filterValues as $key => $list) {
                         $result[$filterName][$key] = count($list);
                     }
-                }else{
+                } else {
                     $result[$filterName] = array_keys($filterValues);
                 }
-            }else{
-                $filtersCopy = $indexedFilters;
-                // do not apply self filtering
-                if(isset($filtersCopy[$filterName])){
-                    unset($filtersCopy[$filterName]);
-                    $recordIds = $this->find($filtersCopy, $inputRecords);
-                    if(!empty($recordIds)){
-                        $recordIds = array_flip($recordIds);
-                    }
-                }else{
-                    $recordIds = $filteredRecords;
+                continue;
+            }
+            $filtersCopy = $indexedFilters;
+            // do not apply self filtering
+            if (isset($filtersCopy[$filterName])) {
+                unset($filtersCopy[$filterName]);
+                $recordIds = $this->find($filtersCopy, $inputRecords);
+                if (!empty($recordIds)) {
+                    $recordIds = array_flip($recordIds);
                 }
+            } else {
+                $recordIds = $filteredRecords;
+            }
 
-
-                foreach ($filterValues as $filterValue => $data) {
-                    // need to count values
-                    if($countValues){
-                        $intersect = array_intersect_key($data, $recordIds);
-                        if(!empty($intersect)){
-                            $result[$filterName][$filterValue] = count($intersect);
-                        }
-                    }else{
-                        if(!empty(array_intersect_key($data, $recordIds))) {
-                            $result[$filterName][] = $filterValue;
-                        }
+            foreach ($filterValues as $filterValue => $data) {
+                // need to count values
+                if ($countValues) {
+                    $intersect = array_intersect_key($data, $recordIds);
+                    if (!empty($intersect)) {
+                        $result[$filterName][$filterValue] = count($intersect);
+                    }
+                } else {
+                    if (!empty(array_intersect_key($data, $recordIds))) {
+                        $result[$filterName][] = $filterValue;
                     }
                 }
             }
         }
         return $result;
     }
+
     /**
      * Find acceptable filter values
      * @param array<FilterInterface> $filters
