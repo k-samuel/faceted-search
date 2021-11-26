@@ -29,7 +29,7 @@ $brands = [
     'Ray-Ban'
 ];
 
-$warehouses = [1, 10, 23, 345, 43, 5476, 34, 675, 34, 24, 789, 45, 65, 34, 54,511,512,520];
+$warehouses = [1, 10, 23, 345, 43, 5476, 34, 675, 34, 24, 789, 45, 65, 34, 54, 511, 512, 520];
 $type = ['normal', 'middle', 'good'];
 
 $dataSet = [];
@@ -41,6 +41,7 @@ for ($i = 1; $i <= $resultsCount; $i++) {
         $wh[] = $warehouses[rand(0, count($warehouses) - 1)];
     }
     $rec = [
+        'id' => $i,
         'color' => $colors[rand(0, 5)],
         'back_color' => $colors[rand(0, 5)],
         'size' => rand(34, 50),
@@ -52,10 +53,7 @@ for ($i = 1; $i <= $resultsCount; $i++) {
         'warehouse' => array_unique($wh),
         'type' => $type[rand(0, count($type) - 1)]
     ];
-    $dataSet[$i] = $rec;
+    file_put_contents('./data.json', json_encode($rec) . "\n", FILE_APPEND);
 }
-
-
-file_put_contents('./data.json', json_encode($dataSet));
 
 echo 'total time: ' . number_format(microtime(true) - $t, 3) . PHP_EOL;

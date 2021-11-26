@@ -4,13 +4,21 @@ require '../../vendor/autoload.php';
 
 $dataDir = './';
 $t = microtime(true);
-$indexData = json_decode(file_get_contents($dataDir . 'data.json'), true);
-
+$f = fopen($dataDir . 'data.json', "r");
+$indexData = [];
+while ($row = fgets($f)) {
+    if (!empty($row)) {
+        $indexData[] = json_decode($row, true);
+    }
+}
 $index = new \KSamuel\FacetedSearch\Index();
 $rangeIndexer = new \KSamuel\FacetedSearch\Indexer\Number\RangeIndexer(250);
 $index->addIndexer('price', $rangeIndexer);
 
-foreach ($indexData as $id => $rec) {
+foreach ($indexData as $rec) {
+    $id = $rec['id'];
+    unset($rec['id']);
+
     $index->addRecord($id, $rec);
 }
 

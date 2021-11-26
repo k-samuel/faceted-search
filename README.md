@@ -25,7 +25,7 @@ composer require k-samuel/faceted-search
 
 Tests on sets of products with 10 attributes, search with filters by 3 fields.
 
-Bench v1.3.0 PHP 7.4.25 (no xdebug extension)
+Bench v1.3.0 PHP 7.4.25 + opcache (no xdebug extension)
 
 | Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
@@ -35,6 +35,14 @@ Bench v1.3.0 PHP 7.4.25 (no xdebug extension)
 | 300,000         | ~242Mb   | ~0.021 s.        | ~0.167 s.                | ~0.009 s.    | 26891            |
 | 1,000,000       | ~812Mb   | ~0.107 s.        | ~0.687 s.                | ~0.036 s.    | 90520            |
 
+Bench v1.3.0 PHP 8.1.0 + opcache + JIT (no xdebug extension)
+| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
+| 10,000          | ~7Mb     | ~0.0007 s.       | ~0.003 s.                | ~0.0004 s.   | 907              |
+| 50,000          | ~49Mb    | ~0.003 s.        | ~0.018 s.                | ~0.0008 s.   | 4550             |
+| 100,000         | ~98Mb    | ~0.007 s.        | ~0.040 s.                | ~0.002 s.    | 8817             |
+| 300,000         | ~242Mb   | ~0.023 s.        | ~0.159 s.                | ~0.009 s.    | 26891            |
+| 1,000,000       | ~812Mb   | ~0.097 s.        | ~0.657 s.                | ~0.033 s.    | 90520            |
 
 * Items count - Products in index
 * Memory - RAM used for index
