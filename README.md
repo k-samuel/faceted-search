@@ -34,7 +34,7 @@ Bench v1.3.0 PHP 7.4.25 (no xdebug extension)
 | 100,000         | ~98Mb    | ~0.007 s.        | ~0.042 s.                | ~0.002 s.    | 8817             |
 | 300,000         | ~242Mb   | ~0.021 s.        | ~0.167 s.                | ~0.009 s.    | 26891            |
 | 1,000,000       | ~812Mb   | ~0.107 s.        | ~0.687 s.                | ~0.036 s.    | 90520            |
-
+| 5,000,000       | ~3792Mb  | ~0.496 s.        | ~3.607 s.                | ~0.234 s.    | 450625           |
 
 * Items count - Products in index
 * Memory - RAM used for index
@@ -43,6 +43,20 @@ Bench v1.3.0 PHP 7.4.25 (no xdebug extension)
 List of common properties and their values for found products (Aggregates)
 * Sort by field - time of sorting found results by field value
 * Results Found - count of found products (Find)
+
+Experimental golang port bench https://github.com/k-samuel/go-faceted-search
+
+Bench v0.2.0 golang 1.17.3 with parallel aggregates
+
+| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
+| 10,000          | ~5Mb     | ~0.002 s.        | ~0.007 s.                | ~0.0009 s.   | 907              |
+| 50,000          | ~15Mb    | ~0.011 s.        | ~0.038 s.                | ~0.002 s.    | 4550             |
+| 100,000         | ~30Mb    | ~0.018 s.        | ~0.061 s.                | ~0.004 s.    | 8817             |
+| 300,000         | ~128Mb   | ~0.083 s.        | ~0.268 s.                | ~0.015 s.    | 26891            |
+| 1,000,000       | ~284Mb   | ~0.344 s.        | ~1.020 s.                | ~0.055 s.    | 90520            |
+| 5,000,000       | ~2117Mb  | ~2.498 s.        | ~7.583 s.                | ~0.447 s.    | 450625           |
+
 
 ## Notes 
 
