@@ -43,7 +43,7 @@ List of common properties and their values for found products (Aggregates)
 * Sort by field - time of sorting found results by field value
 * Results Found - count of found products (Find)
 
-Experimental golang port bench https://github.com/k-samuel/go-faceted-search
+Experimental Golang port bench https://github.com/k-samuel/go-faceted-search
 Bench v0.2.0 golang 1.17.3 with parallel aggregates
 
 | Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
