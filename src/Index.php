@@ -120,6 +120,15 @@ class Index
      */
     public function getAllRecordId() : array
     {
+        return array_keys($this->getAllREcordIdMap());
+    }
+
+    /**
+     * Get all records from index as map [$id1=>true,...]
+     * @return array<int,bool>
+     */
+    public function getAllRecordIdMap(): array
+    {
         $result = [];
         foreach ($this->data as  $values){
             foreach ($values as $list){
@@ -128,9 +137,9 @@ class Index
             }
         }
         /**
-         * @var array<int>
+         * @var array<int,bool>
          */
-        return array_keys($result);
+        return $result;
     }
 
     /**

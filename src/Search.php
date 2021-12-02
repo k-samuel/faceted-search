@@ -53,7 +53,7 @@ class Search
     }
 
     /**
-     * Find records by filters
+     * Find records by filters as list of int
      * @param array<FilterInterface> $filters
      * @param array<int>|null $inputRecords - list of record id to search in. Use it for limit results
      * @return array<int>
@@ -61,16 +61,39 @@ class Search
     public function find(array $filters, ?array $inputRecords = null): array
     {
         if (empty($inputRecords)) {
-            $inputRecords = null;
+            $input = null;
         } else {
-            $inputRecords = array_flip($inputRecords);
+            $input = $this->mapInputArray($inputRecords);
         }
+        return array_keys($this->findRecordsMap($filters, $input));
+    }
 
+    /**
+     * @param array<int> $inputRecords
+     * @return array<int,bool>
+     */
+    private function mapInputArray(array $inputRecords): array
+    {
+        $input = [];
+        foreach ($inputRecords as $v) {
+            $input[$v] = true;
+        }
+        return $input;
+    }
+
+    /**
+     * Find records by filters as array map [$id1=>true, $id2=>true, ...]
+     * @param array<FilterInterface> $filters
+     * @param array<int,bool>|null $inputRecords
+     * @return array<int,bool>
+     */
+    private function findRecordsMap(array $filters, ?array $inputRecords = null): array
+    {
         // if no filters passed
         if (empty($filters)) {
-            $total = $this->index->getAllRecordId();
+            $total = $this->index->getAllRecordIdMap();
             if (!empty($inputRecords)) {
-                return array_keys(array_intersect_key(array_flip($total), $inputRecords));
+                return array_intersect_key($total, $inputRecords);
             }
             return $total;
         }
@@ -94,7 +117,7 @@ class Search
         if (empty($result)) {
             $result = [];
         }
-        return array_keys($result);
+        return $result;
     }
 
     /**
@@ -105,6 +128,12 @@ class Search
      */
     private function findFilters(array $filters = [], array $inputRecords = [], bool $countValues = false): array
     {
+        if (empty($inputRecords)) {
+            $input = null;
+        } else {
+            $input = $this->mapInputArray($inputRecords);
+        }
+
         $result = [];
         $facetsData = $this->index->getData();
         $indexedFilters = [];
@@ -118,17 +147,14 @@ class Search
                  */
                 $indexedFilters[$filter->getFieldName()] = $filter;
             }
-            $filteredRecords = $this->find($indexedFilters, $inputRecords);
-            if (!empty($filteredRecords)) {
-                $filteredRecords = array_flip($filteredRecords);
-            }
+            $filteredRecords = $this->findRecordsMap($indexedFilters, $input);
         }
 
         foreach ($facetsData as $filterName => $filterValues) {
             /**
              * @var string $filterName
              */
-            if (empty($indexedFilters) && empty($inputRecords)) {
+            if (empty($indexedFilters) && empty($input)) {
                 // need to count values
                 if ($countValues) {
                     foreach ($filterValues as $key => $list) {
@@ -143,10 +169,7 @@ class Search
             // do not apply self filtering
             if (isset($filtersCopy[$filterName])) {
                 unset($filtersCopy[$filterName]);
-                $recordIds = $this->find($filtersCopy, $inputRecords);
-                if (!empty($recordIds)) {
-                    $recordIds = array_flip($recordIds);
-                }
+                $recordIds = $this->findRecordsMap($filtersCopy, $input);
             } else {
                 $recordIds = $filteredRecords;
             }
