@@ -46,6 +46,10 @@ class Index
      * @var array<IndexerInterface>
      */
     protected $indexers = [];
+    /**
+     * @var null|array<int,bool>
+     */
+    private $idMapCache = null;
 
     /**
      * Add record to index
@@ -53,27 +57,27 @@ class Index
      * @param array<int|string,array<int,mixed>> $recordValues -  ['fieldName'=>'fieldValue','fieldName2'=>['val1','val2']]
      * @return bool
      */
-    public function addRecord(int $recordId, array $recordValues) : bool
+    public function addRecord(int $recordId, array $recordValues): bool
     {
-        foreach ($recordValues as $fieldName => $values)
-        {
-            if(!is_array($values)){
+        $this->resetLocalCache();
+        foreach ($recordValues as $fieldName => $values) {
+            if (!is_array($values)) {
                 $values = [$values];
             }
 
             $values = array_unique($values);
 
-            if(isset($this->indexers[$fieldName])){
-                if(!isset($this->data[$fieldName])){
+            if (isset($this->indexers[$fieldName])) {
+                if (!isset($this->data[$fieldName])) {
                     $this->data[$fieldName] = [];
                 }
-                if(!$this->indexers[$fieldName]->add($this->data[$fieldName], $recordId, $values)){
+                if (!$this->indexers[$fieldName]->add($this->data[$fieldName], $recordId, $values)) {
                     return false;
                 }
-            }else{
-                foreach ($values as $value){
-                    if(is_bool($value)){
-                        $value = (int) $value;
+            } else {
+                foreach ($values as $value) {
+                    if (is_bool($value)) {
+                        $value = (int)$value;
                     }
                     $this->data[$fieldName][$value][$recordId] = true;
                 }
@@ -82,11 +86,16 @@ class Index
         return true;
     }
 
+    private function resetLocalCache(): void
+    {
+        $this->idMapCache = null;
+    }
+
     /**
      * Get index data. Can be used for storing it to DB
      * @return array<int|string,array<int|string,array<int>>>
      */
-    public function getData() : array
+    public function getData(): array
     {
         return $this->data;
     }
@@ -95,8 +104,9 @@ class Index
      * Set index data. Can be used for restoring from DB
      * @param array<int|string,array<int|string,array<int>>> $data
      */
-    public function setData(array $data) : void
+    public function setData(array $data): void
     {
+        $this->resetLocalCache();
         $this->data = $data;
     }
 
@@ -105,9 +115,9 @@ class Index
      * @param string $fieldName
      * @return array<int|string,array<int>>
      */
-    public function getFieldData(string $fieldName) : array
+    public function getFieldData(string $fieldName): array
     {
-        if(isset($this->data[$fieldName])){
+        if (isset($this->data[$fieldName])) {
             return $this->data[$fieldName];
         }
 
@@ -118,19 +128,35 @@ class Index
      * Get all records from index
      * @return array<int>
      */
-    public function getAllRecordId() : array
+    public function getAllRecordId(): array
     {
+        return array_keys($this->getAllREcordIdMap());
+    }
+
+    /**
+     * Get all records from index as map [$id1=>true,...]
+     * @return array<int,bool>
+     */
+    public function getAllRecordIdMap(): array
+    {
+        if ($this->idMapCache !== null) {
+            return $this->idMapCache;
+        }
+
         $result = [];
-        foreach ($this->data as  $values){
-            foreach ($values as $list){
-                // fast array merge
-                $result+= $list;
+        foreach ($this->data as $values) {
+            foreach ($values as $list) {
+                foreach ($list as $k => $v) {
+                    $result[$k] = true;
+                }
             }
         }
         /**
-         * @var array<int>
+         * @var array<int,bool> $result
          */
-        return array_keys($result);
+
+        $this->idMapCache = $result;
+        return $result;
     }
 
     /**
@@ -138,7 +164,7 @@ class Index
      * @param string $fieldName
      * @param IndexerInterface $indexer
      */
-    public function addIndexer(string $fieldName, IndexerInterface $indexer) : void
+    public function addIndexer(string $fieldName, IndexerInterface $indexer): void
     {
         $this->indexers[$fieldName] = $indexer;
     }

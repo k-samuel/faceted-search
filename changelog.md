@@ -1,4 +1,28 @@
 # Changelog
+### v1.3.1 (3.12.2021)
+Performance update
+* Reduced memory allocation calls during filters aggregates.
+* RecordId cache added to index->getAllRecords()
+
+Bench v1.3.1 PHP 8.1.0 + JIT + opcache (no xdebug extension)
+
+| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
+| 10,000          | ~7Mb     | ~0.0007 s.       | ~0.003 s.                | ~0.0004 s.   | 907              |
+| 50,000          | ~49Mb    | ~0.004 s.        | ~0.016 s.                | ~0.0009 s.   | 4550             |
+| 100,000         | ~98Mb    | ~0.007 s.        | ~0.036 s.                | ~0.002 s.    | 8817             |
+| 300,000         | ~242Mb   | ~0.022 s.        | ~0.135 s.                | ~0.009 s.    | 26891            |
+| 1,000,000       | ~812Mb   | ~0.095 s.        | ~0.572 s.                | ~0.035 s.    | 90520            |
+
+Bench v1.3.0 PHP 8.1.0 + JIT + opcache (no xdebug extension)
+
+| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
+| 10,000          | ~7Mb     | ~0.0007 s.       | ~0.003 s.                | ~0.0004 s.   | 907              |
+| 50,000          | ~49Mb    | ~0.003 s.        | ~0.019 s.                | ~0.0009 s.   | 4550             |
+| 100,000         | ~98Mb    | ~0.007 s.        | ~0.040 s.                | ~0.002 s.    | 8817             |
+| 300,000         | ~242Mb   | ~0.022 s.        | ~0.166 s.                | ~0.009 s.    | 26891            |
+| 1,000,000       | ~812Mb   | ~0.107 s.        | ~0.660 s.                | ~0.035 s.    | 90520            |
 
 ### v1.3.0 (16.11.2021)
 Performance update
