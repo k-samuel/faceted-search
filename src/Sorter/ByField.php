@@ -69,6 +69,7 @@ class ByField
         int $direction = self::SORT_ASC,
         int $sortFlags = SORT_REGULAR
     ): array {
+
         $data = $this->index->getFieldData($field);
         if ($direction === self::SORT_ASC) {
             ksort($data, $sortFlags);

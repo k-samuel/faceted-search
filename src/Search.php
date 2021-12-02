@@ -60,9 +60,8 @@ class Search
      */
     public function find(array $filters, ?array $inputRecords = null): array
     {
-        if (empty($inputRecords)) {
-            $input = null;
-        } else {
+        $input = null;
+        if (!empty($inputRecords)) {
             $input = $this->mapInputArray($inputRecords);
         }
         return array_keys($this->findRecordsMap($filters, $input));
@@ -128,9 +127,8 @@ class Search
      */
     private function findFilters(array $filters = [], array $inputRecords = [], bool $countValues = false): array
     {
-        if (empty($inputRecords)) {
-            $input = null;
-        } else {
+        $input = null;
+        if (!empty($inputRecords)) {
             $input = $this->mapInputArray($inputRecords);
         }
 
@@ -155,8 +153,8 @@ class Search
              * @var string $filterName
              */
             if (empty($indexedFilters) && empty($input)) {
-                // need to count values
                 if ($countValues) {
+                    // need to count values
                     foreach ($filterValues as $key => $list) {
                         $result[$filterName][$key] = count($list);
                     }
@@ -165,6 +163,7 @@ class Search
                 }
                 continue;
             }
+
             $filtersCopy = $indexedFilters;
             // do not apply self filtering
             if (isset($filtersCopy[$filterName])) {
@@ -175,16 +174,19 @@ class Search
             }
 
             foreach ($filterValues as $filterValue => $data) {
-                // need to count values
+
+                $intersect = array_intersect_key($data, $recordIds);
+
+                if (empty($intersect)) {
+                    continue;
+                }
+
                 if ($countValues) {
-                    $intersect = array_intersect_key($data, $recordIds);
-                    if (!empty($intersect)) {
-                        $result[$filterName][$filterValue] = count($intersect);
-                    }
+                    // need to count values
+                    $result[$filterName][$filterValue] = count($intersect);
                 } else {
-                    if (!empty(array_intersect_key($data, $recordIds))) {
-                        $result[$filterName][] = $filterValue;
-                    }
+                    // results without count
+                    $result[$filterName][] = $filterValue;
                 }
             }
         }
