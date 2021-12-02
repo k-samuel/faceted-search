@@ -44,16 +44,16 @@ List of common properties and their values for found products (Aggregates)
 * Results Found - count of found products (Find)
 
 Experimental Golang port bench https://github.com/k-samuel/go-faceted-search
-Bench v0.2.0 golang 1.17.3 with parallel aggregates
+
+Bench v0.2.1 golang 1.17.3 with parallel aggregates
 
 | Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~5Mb     | ~0.002 s.        | ~0.007 s.                | ~0.0009 s.   | 907              |
-| 50,000          | ~15Mb    | ~0.011 s.        | ~0.038 s.                | ~0.002 s.    | 4550             |
-| 100,000         | ~30Mb    | ~0.018 s.        | ~0.061 s.                | ~0.004 s.    | 8817             |
-| 300,000         | ~128Mb   | ~0.083 s.        | ~0.268 s.                | ~0.015 s.    | 26891            |
-| 1,000,000       | ~284Mb   | ~0.344 s.        | ~1.020 s.                | ~0.055 s.    | 90520            |
-| 5,000,000       | ~2117Mb  | ~2.498 s.        | ~7.583 s.                | ~0.447 s.    | 450625           |
+| 10,000          | ~5Mb     | ~0.001 s.        | ~0.005 s.                | ~0.0004 s.   | 907              |
+| 50,000          | ~15Mb    | ~0.011 s.        | ~0.036 s.                | ~0.002 s.    | 4550             |
+| 100,000         | ~30Mb    | ~0.024 s.        | ~0.069 s.                | ~0.005 s.    | 8817             |
+| 300,000         | ~128Mb   | ~0.094 s.        | ~0.220 s.                | ~0.015 s.    | 26891            |
+| 1,000,000       | ~284Mb   | ~0.306 s.        | ~0.912 s.                | ~0.058 s.    | 90520            |
 
 
 ## Notes 
