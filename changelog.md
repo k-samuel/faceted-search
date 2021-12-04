@@ -1,6 +1,6 @@
 # Changelog
 
-### v1.3.1 (3.12.2021)
+### v1.3.2 (4.12.2021)
 Performance update
 
 Note. Search->find doesn't guarantee sorted result
