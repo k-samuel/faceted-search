@@ -48,45 +48,31 @@ class ValueFilter extends AbstractFilter
             $value = [$value];
         }
 
-        $filterResults = [];
+        $result = [];
+        $hasInput = !empty($inputIdKeys);
 
         // collect list for different values of one property
         foreach ($value as $item) {
-            if (isset($facetedData[$item])) {
-                if (empty($filterResults)) {
-                    $filterResults = $facetedData[$item];
-                } else {
-                    // array sum (faster than array_merge here)
-                    $filterResults += $facetedData[$item];
+
+            if (!isset($facetedData[$item])) {
+                continue;
+            }
+
+            foreach ($facetedData[$item] as $index => $val) {
+                /**
+                 * @var int $index
+                 */
+                if (!$hasInput) {
+                    $result[$index] = true;
+                    continue;
+                }
+
+                if (isset($inputIdKeys[$index])) {
+                    $result[$index] = true;
                 }
             }
         }
 
-        if (empty($filterResults)) {
-            return [];
-        }
-
-        if ($inputIdKeys === null) {
-            /**
-             * @var array<int,bool>$filterResults
-             */
-            return $filterResults;
-        }
-
-        // find intersect of start records and faceted results
-        if (count($inputIdKeys) < count($filterResults)) {
-            $start = &$inputIdKeys;
-            $compare = &$filterResults;
-        } else {
-            $start = &$filterResults;
-            $compare = &$inputIdKeys;
-        }
-        $result = [];
-        foreach ($start as $index => $exists) {
-            if (isset($compare[$index])) {
-                $result[$index] = true;
-            }
-        }
         return $result;
     }
 }

@@ -174,16 +174,18 @@ class Search
             }
 
             foreach ($filterValues as $filterValue => $data) {
+                /**
+                 * @var array<int,bool> $data
+                 */
+                $intersect = $this->getIntersectMapCount($data, $recordIds);
 
-                $intersect = array_intersect_key($data, $recordIds);
-
-                if (empty($intersect)) {
+                if ($intersect === 0) {
                     continue;
                 }
 
                 if ($countValues) {
                     // need to count values
-                    $result[$filterName][$filterValue] = count($intersect);
+                    $result[$filterName][$filterValue] = $intersect;
                 } else {
                     // results without count
                     $result[$filterName][] = $filterValue;
@@ -191,6 +193,30 @@ class Search
             }
         }
         return $result;
+    }
+
+    /**
+     * @param array<int,bool> $a
+     * @param array<int,bool> $b
+     * @return int
+     */
+    private function getIntersectMapCount(array $a, array $b) : int
+    {
+        $intersectLen = 0;
+        if (count($a) < count($b)) {
+            foreach ($a as $key => $val){
+                if(isset($b[$key])){
+                    $intersectLen++;
+                }
+            }
+        } else {
+            foreach ($b as $key => $val){
+                if(isset($a[$key])){
+                    $intersectLen++;
+                }
+            }
+        }
+        return $intersectLen;
     }
 
     /**

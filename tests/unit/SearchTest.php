@@ -67,7 +67,9 @@ class SearchTest extends TestCase
         $filter = new ValueFilter('vendor');
         $filter->setValue(['Samsung','Apple']);
         $result = $facets->find([$filter],[1,3]);
-        $this->assertEquals([1,3], $result);
+        $result = array_flip($result);
+        $this->assertArrayHasKey(1, $result);
+        $this->assertArrayHasKey(3, $result);
 
     }
 

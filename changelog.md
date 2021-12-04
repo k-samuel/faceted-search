@@ -1,4 +1,35 @@
 # Changelog
+
+### v1.3.1 (3.12.2021)
+Performance update
+
+Note. Search->find doesn't guarantee sorted result
+
+* Reduced memory allocation calls in ValueFilter.
+* Reduced memory allocation calls during filters aggregates.
+
+Bench v1.3.2 PHP 8.1.0 + JIT + opcache (no xdebug extension)
+
+| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
+| 10,000          | ~7Mb     | ~0.0007 s.       | ~0.003 s.                | ~0.0003 s.   | 907              |
+| 50,000          | ~49Mb    | ~0.002 s.        | ~0.014 s.                | ~0.0009 s.   | 4550             |
+| 100,000         | ~98Mb    | ~0.004 s.        | ~0.029 s.                | ~0.002 s.    | 8817             |
+| 300,000         | ~242Mb   | ~0.013 s.        | ~0.113 s.                | ~0.007 s.    | 26891            |
+| 1,000,000       | ~812Mb   | ~0.064 s.        | ~0.447 s.                | ~0.037 s.    | 90520            |
+
+Bench v1.3.1 PHP 8.1.0 + JIT + opcache (no xdebug extension)
+
+| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
+| 10,000          | ~7Mb     | ~0.0007 s.       | ~0.003 s.                | ~0.0004 s.   | 907              |
+| 50,000          | ~49Mb    | ~0.004 s.        | ~0.016 s.                | ~0.0009 s.   | 4550             |
+| 100,000         | ~98Mb    | ~0.007 s.        | ~0.036 s.                | ~0.002 s.    | 8817             |
+| 300,000         | ~242Mb   | ~0.022 s.        | ~0.135 s.                | ~0.009 s.    | 26891            |
+| 1,000,000       | ~812Mb   | ~0.095 s.        | ~0.572 s.                | ~0.035 s.    | 90520            |
+
+
+
 ### v1.3.1 (3.12.2021)
 Performance update
 * Reduced memory allocation calls during filters aggregates.
