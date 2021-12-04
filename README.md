@@ -21,28 +21,40 @@ The library is optimized for performance at the expense of RAM consumption.
 composer require k-samuel/faceted-search
 `
 
+
 ## Performance tests
 
 Tests on sets of products with 10 attributes, search with filters by 3 fields.
 
-Bench v1.3.1 PHP 8.1.0 + JIT + opcache (no xdebug extension)
+Bench v1.3.2 PHP 8.1.0 + JIT + opcache (no xdebug extension)
 
 | Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~7Mb     | ~0.0007 s.       | ~0.003 s.                | ~0.0004 s.   | 907              |
-| 50,000          | ~49Mb    | ~0.004 s.        | ~0.016 s.                | ~0.0009 s.   | 4550             |
-| 100,000         | ~98Mb    | ~0.007 s.        | ~0.036 s.                | ~0.002 s.    | 8817             |
-| 300,000         | ~242Mb   | ~0.022 s.        | ~0.135 s.                | ~0.009 s.    | 26891            |
-| 1,000,000       | ~812Mb   | ~0.095 s.        | ~0.572 s.                | ~0.035 s.    | 90520            |
+| 10,000          | ~7Mb     | ~0.0007 s.       | ~0.003 s.                | ~0.0003 s.   | 907              |
+| 50,000          | ~49Mb    | ~0.002 s.        | ~0.014 s.                | ~0.0009 s.   | 4550             |
+| 100,000         | ~98Mb    | ~0.004 s.        | ~0.029 s.                | ~0.002 s.    | 8817             |
+| 300,000         | ~242Mb   | ~0.013 s.        | ~0.113 s.                | ~0.007 s.    | 26891            |
+| 1,000,000       | ~812Mb   | ~0.064 s.        | ~0.447 s.                | ~0.037 s.    | 90520            |
 
 * Items count - Products in index
 * Memory - RAM used for index
 * Find - time of getting list of products filtered by 3 fields
-* Get Filters - find acceptable filter values for found products. 
-List of common properties and their values for found products (Aggregates)
+* Get Filters - find acceptable filter values for found products.
+  List of common properties and their values for found products (Aggregates)
 * Sort by field - time of sorting found results by field value
 * Results Found - count of found products (Find)
 
+Experimental Golang port bench https://github.com/k-samuel/go-faceted-search
+
+Bench v0.2.2 golang 1.17.3 with parallel aggregates
+
+| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
+| 10,000          | ~5Mb     | ~0.001 s.        | ~0.003 s.                | ~0.0004 s.   | 907              |
+| 50,000          | ~15Mb    | ~0.005 s.        | ~0.019 s.                | ~0.002 s.    | 4550             |
+| 100,000         | ~30Mb    | ~0.014 s.        | ~0.046 s.                | ~0.006 s.    | 8817             |
+| 300,000         | ~128Mb   | ~0.053 s.        | ~0.149 s.                | ~0.015 s.    | 26891            |
+| 1,000,000       | ~284Mb   | ~0.140 s.        | ~0.556 s.                | ~0.046 s.    | 90520            |
 ## Notes 
 
 _* Create index for each product category or type and index only required fields._
@@ -63,6 +75,7 @@ use KSamuel\FacetedSearch\Index;
 $searchIndex = new Index();
 /*
  * Getting products data from DB
+ * Sort data by $recordId before using Index->addRecord it can improve performance 
  */
 $data = [
     ['id'=>7, 'color'=>'black', 'price'=>100, 'sale'=>true, 'size'=>36],   
@@ -103,7 +116,7 @@ $filters = [
     // RangeFilter example for numeric property ranges (min - max)
     new RangeFilter('size', ['min'=>36, 'max'=>40])
 ];
-// find records using filters
+// Find records using filters. Note, it doesn't guarantee sorted result
 $records = $search->find($filters);
 // Now we have filtered list of record identifiers.
 // Find records in your storage and send results into client application.
