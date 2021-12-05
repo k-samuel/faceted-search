@@ -60,15 +60,15 @@ Bench v0.2.2 golang 1.17.3 with parallel aggregates
 The main advantage of the library is the quick and easy construction of aggregates.
 
 In simple words, what are aggregates.
-<p>
-<img align="left" width="200" vspace="4" hspace="4" src="https://github.com/k-samuel/faceted-search/blob/master/docs/filters.png">
+<div>
+<img align="left" width="180" vspace="4" hspace="4" src="https://github.com/k-samuel/faceted-search/blob/master/docs/filters.png">
 We have selected a list of filters and received as a result a list of products suitable for these filters.
 In the user interface, you need to display only the general types of filters for the selected products and the number 
 of products with a specific filter value (intersection).
 
 When you select each new parameter in the filters, you need to calculate the list of available options and their number
 for new results.
-</p>
+</div>
 
 
 
