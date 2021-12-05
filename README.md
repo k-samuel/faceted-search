@@ -60,7 +60,7 @@ Bench v0.2.2 golang 1.17.3 with parallel aggregates
 The main advantage of the library is the quick and easy construction of aggregates.
 
 Simply about aggregates.
-<div>
+
 <img align="left" width="100" vspace="4" hspace="4" src="https://github.com/k-samuel/faceted-search/blob/master/docs/filters.png">
 We have selected a list of filters and received as a result a list of products suitable for these filters.
 
@@ -69,8 +69,12 @@ of products with a specific filter value (intersection).
 
 When user select each new parameter in the filters, we need to calculate the list of available options and their number
 for new results.
-</div>
 
+This is easy enough. Even if the goods have a different structure of properties.
+```php
+<?php
+$filterData = $search->findAcceptableFiltersCount($filters);
+```
 
 
 ## Notes 
