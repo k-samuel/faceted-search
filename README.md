@@ -59,7 +59,7 @@ Bench v0.2.2 golang 1.17.3 with parallel aggregates
 ## Aggregates
 The main advantage of the library is the quick and easy construction of aggregates.
 
-In simple words, what are aggregates.
+Simply about aggregates.
 <div>
 <img align="left" width="100" vspace="4" hspace="4" src="https://github.com/k-samuel/faceted-search/blob/master/docs/filters.png">
 We have selected a list of filters and received as a result a list of products suitable for these filters.
