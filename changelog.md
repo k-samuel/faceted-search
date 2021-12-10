@@ -1,5 +1,32 @@
 # Changelog
 
+### v1.3.3 (10.12.2021)
+Performance update
+
+* Added search optimization for ValueFilter. Filters are sorted before searching to reduce memory allocation
+
+Unfortunately, the filter sequence in previous performance tests was already optimal.
+
+Bench v1.3.3 PHP 8.1.0 + JIT + opcache (no xdebug extension)
+
+| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
+| 10,000          | ~7Mb     | ~0.0007 s.       | ~0.004 s.                | ~0.0003 s.   | 907              |
+| 50,000          | ~49Mb    | ~0.002 s.        | ~0.014 s.                | ~0.0009 s.   | 4550             |
+| 100,000         | ~98Mb    | ~0.004 s.        | ~0.028 s.                | ~0.002 s.    | 8817             |
+| 300,000         | ~242Mb   | ~0.012 s.        | ~0.112 s.                | ~0.007 s.    | 26891            |
+| 1,000,000       | ~812Mb   | ~0.057 s.        | ~0.443 s.                | ~0.034 s.    | 90520            |
+
+Bench v1.3.2 PHP 8.1.0 + JIT + opcache (no xdebug extension)
+
+| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
+| 10,000          | ~7Mb     | ~0.0007 s.       | ~0.003 s.                | ~0.0003 s.   | 907              |
+| 50,000          | ~49Mb    | ~0.002 s.        | ~0.014 s.                | ~0.0009 s.   | 4550             |
+| 100,000         | ~98Mb    | ~0.004 s.        | ~0.029 s.                | ~0.002 s.    | 8817             |
+| 300,000         | ~242Mb   | ~0.013 s.        | ~0.113 s.                | ~0.007 s.    | 26891            |
+| 1,000,000       | ~812Mb   | ~0.064 s.        | ~0.447 s.                | ~0.037 s.    | 90520            |
+
 ### v1.3.2 (4.12.2021)
 Performance update
 

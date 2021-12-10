@@ -36,24 +36,33 @@ namespace KSamuel\FacetedSearch\Filter;
 class ValueFilter extends AbstractFilter
 {
     /**
-     * @inheritDoc
+     * Convert filter value into values array
+     * @return array<int,mixed>
      */
-    public function filterResults(array $facetedData, ?array $inputIdKeys = null): array
+    public function getValues(): array
     {
-        $value = $this->getValue();
+        $value = $this->value;
         if (!is_array($value)) {
             if (is_bool($value)) {
                 $value = (int)$value;
             }
             $value = [$value];
         }
+        return $value;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function filterResults(array $facetedData, ?array $inputIdKeys = null): array
+    {
+        $value = $this->getValues();
 
         $result = [];
         $hasInput = !empty($inputIdKeys);
 
         // collect list for different values of one property
         foreach ($value as $item) {
-
             if (!isset($facetedData[$item])) {
                 continue;
             }
