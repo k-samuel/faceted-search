@@ -20,9 +20,9 @@ class RangeListIndexerTest extends TestCase
 
         $this->assertEquals([
             'price' => [
-                0 => [2 => true],
-                100 => [3 => true ,4 => true],
-                500 => [5 =>true]
+                0 => [2],
+                100 => [3,4],
+                500 => [5]
             ]
         ], $index->getData());
     }

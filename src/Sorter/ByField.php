@@ -81,14 +81,31 @@ class ByField
 
         $sorted = [];
         foreach ($data as $records) {
-            $ids = array_intersect_key($records, $results);
+            $ids = $this->intersectIntMap($records, $results);
+
             if (empty($ids)) {
                 continue;
             }
-            foreach ($ids as $id => $flag) {
-                $sorted[] = $id;
+            foreach ($ids as $id) {
+                $sorted[$id] = true;
             }
         }
-        return array_unique($sorted);
+        return array_keys($sorted);
+    }
+
+    /**
+     * @param array<int,int> $a
+     * @param array<int,bool|int> $b
+     * @return array<int,int>
+     */
+    private function intersectIntMap(array $a, array $b): array
+    {
+        $result = [];
+        foreach ($a as $key) {
+            if (isset($b[$key])) {
+                $result[] = $key;
+            }
+        }
+        return $result;
     }
 }

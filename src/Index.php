@@ -29,7 +29,6 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch;
 
-use KSamuel\FacetedSearch\Filter\FilterInterface;
 use KSamuel\FacetedSearch\Indexer\IndexerInterface;
 
 /**
@@ -80,7 +79,7 @@ class Index
                     if (is_bool($value)) {
                         $value = (int)$value;
                     }
-                    $this->data[$fieldName][$value][$recordId] = true;
+                    $this->data[$fieldName][$value][] = $recordId;
                 }
             }
         }
@@ -118,11 +117,7 @@ class Index
      */
     public function getFieldData(string $fieldName): array
     {
-        if (isset($this->data[$fieldName])) {
-            return $this->data[$fieldName];
-        }
-
-        return [];
+        return $this->data[$fieldName] ?? [];
     }
 
     /**
@@ -147,8 +142,8 @@ class Index
         $result = [];
         foreach ($this->data as $values) {
             foreach ($values as $list) {
-                foreach ($list as $k => $v) {
-                    $result[$k] = true;
+                foreach ($list as $v) {
+                    $result[$v] = true;
                 }
             }
         }
