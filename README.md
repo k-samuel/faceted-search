@@ -236,5 +236,5 @@ Also, you can create your own indexers with range detection method
 - (-) Increased consumption of RAM 
 
 # Q&A
-[Is it possible somehow to implement a full-text filter?](https://github.com/k-samuel/faceted-search/issues/3)
-[Would that be possible to use a DB as an index instead of a json file?](https://github.com/k-samuel/faceted-search/issues/5)
+* [Is it possible somehow to implement a full-text filter?](https://github.com/k-samuel/faceted-search/issues/3)
+* [Would that be possible to use a DB as an index instead of a json file?](https://github.com/k-samuel/faceted-search/issues/5)
