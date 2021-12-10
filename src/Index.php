@@ -29,6 +29,7 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch;
 
+use KSamuel\FacetedSearch\Filter\FilterInterface;
 use KSamuel\FacetedSearch\Indexer\IndexerInterface;
 
 /**
@@ -167,5 +168,28 @@ class Index
     public function addIndexer(string $fieldName, IndexerInterface $indexer): void
     {
         $this->indexers[$fieldName] = $indexer;
+    }
+
+    /**
+     * @param string $field
+     * @param mixed $value
+     * @return int
+     */
+    public function getRecordsCount(string $field, $value) : int
+    {
+        if(!isset($this->data[$field][$value])){
+            return 0;
+        }
+        return count($this->data[$field][$value]);
+    }
+
+    /**
+     * Check if field exists
+     * @param string $fieldName
+     * @return bool
+     */
+    public function hasField(string $fieldName) : bool
+    {
+        return isset($this->data[$fieldName]);
     }
 }

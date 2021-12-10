@@ -30,6 +30,7 @@ declare(strict_types=1);
 namespace KSamuel\FacetedSearch;
 
 use KSamuel\FacetedSearch\Filter\FilterInterface;
+use KSamuel\FacetedSearch\Filter\ValueFilter;
 
 /**
  * Class Search
@@ -94,6 +95,9 @@ class Search
             if (!empty($inputRecords)) {
                 return array_intersect_key($total, $inputRecords);
             }
+            /**
+             * @var array<int,bool> $total
+             */
             return $total;
         }
 
@@ -101,6 +105,12 @@ class Search
          * @var array<int,int> $inputRecords
          */
         $result = $inputRecords;
+
+        // Aggregates optimisation for value filters.
+        // The fewer elements after the first filtering, the fewer data copies and memory allocations in iterations
+        if (empty($result) && count($filters) > 1) {
+            $filters = $this->sortFiltersByCount($filters);
+        }
 
         /**
          * @var FilterInterface $filter
@@ -200,18 +210,18 @@ class Search
      * @param array<int,bool> $b
      * @return int
      */
-    private function getIntersectMapCount(array $a, array $b) : int
+    private function getIntersectMapCount(array $a, array $b): int
     {
         $intersectLen = 0;
         if (count($a) < count($b)) {
-            foreach ($a as $key => $val){
-                if(isset($b[$key])){
+            foreach ($a as $key => $val) {
+                if (isset($b[$key])) {
                     $intersectLen++;
                 }
             }
         } else {
-            foreach ($b as $key => $val){
-                if(isset($a[$key])){
+            foreach ($b as $key => $val) {
+                if (isset($a[$key])) {
                     $intersectLen++;
                 }
             }
@@ -239,5 +249,51 @@ class Search
     public function findAcceptableFiltersCount(array $filters = [], array $inputRecords = []): array
     {
         return $this->findFilters($filters, $inputRecords, true);
+    }
+
+    /**
+     * Sort filters by minimum values count
+     * Used for aggregates optimisation (for ValueFilter)
+     * @param array<FilterInterface> $filters
+     * @return array<FilterInterface>
+     */
+    private function sortFiltersByCount(array $filters): array
+    {
+        $counts = [];
+        foreach ($filters as $index => $filter) {
+            if (!$filter instanceof ValueFilter) {
+                $counts[$index] = PHP_INT_MAX;
+                continue;
+            }
+            /**
+             * @var ValueFilter $filter
+             */
+            $fieldName = $filter->getFieldName();
+
+            if (!$this->index->hasField($fieldName)) {
+                $counts[$index] = 0;
+                continue;
+            }
+
+            $filterValues = $filter->getValues();
+
+            foreach ($filterValues as $value) {
+                $cnt = $this->index->getRecordsCount($fieldName, $value);
+                if (!isset($counts[$index])) {
+                    $counts[$index] = $cnt;
+                    continue;
+                }
+
+                if ($counts[$index] > $cnt) {
+                    $counts[$index] = $cnt;
+                }
+            }
+        }
+        asort($counts);
+        $result = [];
+        foreach ($counts as $index => $count) {
+            $result[] = $filters[$index];
+        }
+        return $result;
     }
 }
