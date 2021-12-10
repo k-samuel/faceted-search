@@ -102,7 +102,7 @@ class Search
         }
 
         /**
-         * @var array<int,int> $inputRecords
+         * @var array<int,bool> $inputRecords
          */
         $result = $inputRecords;
 
