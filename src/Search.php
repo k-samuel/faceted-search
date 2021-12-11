@@ -185,9 +185,9 @@ class Search
 
             foreach ($filterValues as $filterValue => $data) {
                 /**
-                 * @var array<int,bool> $data
+                 * @var array<int,int> $data
                  */
-                $intersect = $this->getIntersectMapCount($data, $recordIds);
+                $intersect = $this->getIntersectIntMapCount($data, $recordIds);
 
                 if ($intersect === 0) {
                     continue;
@@ -206,24 +206,16 @@ class Search
     }
 
     /**
-     * @param array<int,bool> $a
+     * @param array<int,int> $a
      * @param array<int,bool> $b
      * @return int
      */
-    private function getIntersectMapCount(array $a, array $b): int
+    private function getIntersectIntMapCount(array $a, array $b): int
     {
         $intersectLen = 0;
-        if (count($a) < count($b)) {
-            foreach ($a as $key => $val) {
-                if (isset($b[$key])) {
-                    $intersectLen++;
-                }
-            }
-        } else {
-            foreach ($b as $key => $val) {
-                if (isset($a[$key])) {
-                    $intersectLen++;
-                }
+        foreach ($a as $key) {
+            if (isset($b[$key])) {
+                $intersectLen++;
             }
         }
         return $intersectLen;

@@ -16,12 +16,12 @@ class IndexTest extends TestCase
         ;
         $this->assertEquals([
             'vendor' => [
-                'Tester' => [112=>true],
-                'Tester2' => [113=>true,114=>true]
+                'Tester' => [112],
+                'Tester2' => [113,114]
             ],
             'price' => [
-                100 =>  [112 => true],
-                101 => [113 =>true,114 =>true]
+                100 =>  [112],
+                101 => [113,114]
             ]
         ], $index->getData());
     }

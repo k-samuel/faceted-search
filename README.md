@@ -7,8 +7,8 @@
 
 Simple and fast faceted search without external servers like ElasticSearch and others.
 
-Easily handles 300,000 products with 10 properties. If you divide the indexes into product groups or categories, 
-then for a long time you will not need scaling and more serious tools. Especially in conjunction with 
+Easily handles 300,000 products with 10 properties. If you divide the indexes into product groups or categories,
+then for a long time you will not need scaling and more serious tools. Especially in conjunction with
 RoadRunner or Swoole.
 
 The library is optimized for performance at the expense of RAM consumption.
@@ -21,9 +21,50 @@ The library is optimized for performance at the expense of RAM consumption.
 composer require k-samuel/faceted-search
 `
 
+## Aggregates
+The main advantage of the library is the quick and easy construction of aggregates.
+
+Simply about aggregates.
+
+<img align="left" width="100" vspace="4" hspace="4" src="https://github.com/k-samuel/faceted-search/blob/master/docs/filters.png">
+We have selected a list of filters and received as a result a list of products suitable for these filters.
+
+In the user interface, we need to display only the general types of filters for the selected products and the number
+of products with a specific filter value (intersection).
+
+When user select each new parameter in the filters, we need to calculate the list of available options and their number
+for new results.
+
+This is easy enough. Even if the goods have a different structure of properties.
+```php
+<?php
+$filterData = $search->findAcceptableFiltersCount($filters);
+```
+
+
+## Notes
+
+_* Create index for each product category or type and index only required fields._
+
+
+Use database to keep frequently changing fields (price/quantity/etc) and facets for pre-filtering.
+
+You can decrease the number of processed records by setting records list to search in.
+For example: list of ProductId "in stock" to exclude not available products.
+
 ## Performance tests
 
 Tests on sets of products with 10 attributes, search with filters by 3 fields.
+
+Bench v2.0.0 PHP 8.1.0 + JIT + opcache (no xdebug extension)
+
+| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
+| 10,000          | ~6Mb     | ~0.0007 s.       | ~0.004 s.                | ~0.0005 s.   | 907              |
+| 50,000          | ~40Mb    | ~0.002 s.        | ~0.014 s.                | ~0.001 s.    | 4550             |
+| 100,000         | ~80Mb    | ~0.004 s.        | ~0.028 s.                | ~0.001 s.    | 8817             |
+| 300,000         | ~189Mb   | ~0.011 s.        | ~0.104 s.                | ~0.006 s.    | 26891            |
+| 1,000,000       | ~657Mb   | ~0.050 s.        | ~0.426 s.                | ~0.030 s.    | 90520            |
 
 Bench v1.3.3 PHP 8.1.0 + JIT + opcache (no xdebug extension)
 
@@ -54,38 +95,6 @@ Bench v0.2.2 golang 1.17.3 with parallel aggregates
 | 100,000         | ~30Mb    | ~0.014 s.        | ~0.046 s.                | ~0.006 s.    | 8817             |
 | 300,000         | ~128Mb   | ~0.053 s.        | ~0.149 s.                | ~0.015 s.    | 26891            |
 | 1,000,000       | ~284Mb   | ~0.140 s.        | ~0.556 s.                | ~0.046 s.    | 90520            |
-
-
-## Aggregates
-The main advantage of the library is the quick and easy construction of aggregates.
-
-Simply about aggregates.
-
-<img align="left" width="100" vspace="4" hspace="4" src="https://github.com/k-samuel/faceted-search/blob/master/docs/filters.png">
-We have selected a list of filters and received as a result a list of products suitable for these filters.
-
-In the user interface, we need to display only the general types of filters for the selected products and the number 
-of products with a specific filter value (intersection).
-
-When user select each new parameter in the filters, we need to calculate the list of available options and their number
-for new results.
-
-This is easy enough. Even if the goods have a different structure of properties.
-```php
-<?php
-$filterData = $search->findAcceptableFiltersCount($filters);
-```
-
-
-## Notes 
-
-_* Create index for each product category or type and index only required fields._
-
-
-Use database to keep frequently changing fields (price/quantity/etc) and facets for pre-filtering.
-
-You can decrease the number of processed records by setting records list to search in. 
-For example: list of ProductId "in stock" to exclude not available products.
 
 ## Examples
 
@@ -233,7 +242,7 @@ Also, you can create your own indexers with range detection method
 - (-) Very slow aggregates
 
 **Creating multiple indexes for different operations**
-- (-) Increased consumption of RAM 
+- (-) Increased consumption of RAM
 
 # Q&A
 * [Is it possible somehow to implement a full-text filter?](https://github.com/k-samuel/faceted-search/issues/3)

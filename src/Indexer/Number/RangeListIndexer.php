@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * MIT License
@@ -36,6 +37,7 @@ class RangeListIndexer implements IndexerInterface
      * @var array<int>
      */
     protected $ranges;
+
     /**
      * CustomRangeIndexer constructor.
      * @param array<int> $ranges
@@ -54,8 +56,8 @@ class RangeListIndexer implements IndexerInterface
      */
     public function add(&$indexContainer, int $recordId, array $values): bool
     {
-        foreach ($values as $value){
-            $indexContainer[$this->detectRangeKey($value)][$recordId] = true;
+        foreach ($values as $value) {
+            $indexContainer[$this->detectRangeKey($value)][] = $recordId;
         }
         return true;
     }
@@ -65,12 +67,11 @@ class RangeListIndexer implements IndexerInterface
      * @param int|float $value
      * @return int
      */
-    protected function detectRangeKey($value) : int
+    protected function detectRangeKey($value): int
     {
         $lastKey = 0;
-        foreach ($this->ranges as $key)
-        {
-            if($value >= $lastKey && $value < $key){
+        foreach ($this->ranges as $key) {
+            if ($value >= $lastKey && $value < $key) {
                 return $lastKey;
             }
             $lastKey = $key;

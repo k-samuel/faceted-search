@@ -53,7 +53,7 @@ class RangeFilter extends AbstractFilter
         }
 
         // collect list for different values of one property
-        $limitData = [];
+        $limit = [];
         foreach ($facetedData as $value => $records) {
             if ($min !== null && (float)$value < (float)$min) {
                 continue;
@@ -61,16 +61,23 @@ class RangeFilter extends AbstractFilter
             if ($max !== null && (float)$value > (float)$max) {
                 continue;
             }
-            if (empty($limitData)) {
-                $limitData = $records;
+            if (empty($limit)) {
+                $limit = $records;
             } else {
                 // array sum (faster than array_merge here)
-                $limitData+= $records;
+                foreach ($records as $item){
+                    $limit[] = $item;
+                }
             }
         }
 
-        if (empty($limitData)) {
+        if (empty($limit)) {
             return [];
+        }
+
+        $limitData = [];
+        foreach ($limit as $v){
+            $limitData[$v] = true;
         }
 
         if ($inputIdKeys === null) {

@@ -56,7 +56,7 @@ class RangeIndexer implements IndexerInterface
         foreach ($values as $value){
             $position = (int)((float) $value / $this->step);
             $position = ($position) * $this->step;
-            $indexContainer[$position][$recordId] = true;
+            $indexContainer[$position][] = $recordId;
         }
         return true;
     }

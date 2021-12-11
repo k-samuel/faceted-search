@@ -273,5 +273,4 @@ class SearchTest extends TestCase
             ]
         ];
     }
-
 }

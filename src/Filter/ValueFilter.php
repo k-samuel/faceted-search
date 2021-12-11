@@ -67,7 +67,7 @@ class ValueFilter extends AbstractFilter
                 continue;
             }
 
-            foreach ($facetedData[$item] as $index => $val) {
+            foreach ($facetedData[$item] as $index) {
                 /**
                  * @var int $index
                  */
