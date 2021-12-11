@@ -1,6 +1,6 @@
 # Changelog
 
-### v1.3.3 (10.12.2021)
+### v1.3.3 (11.12.2021)
 Performance update
 
 * Added search optimization for ValueFilter. Filters are sorted before searching to reduce memory allocation
