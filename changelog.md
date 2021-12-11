@@ -1,6 +1,6 @@
 # Changelog
 
-### v2.0.0 
+### v2.0.0-beta1 (11.12.2021)
 
 Reduced Index memory usage.
 Backward incompatibility, faceted index should be reindex before using new version of library.
