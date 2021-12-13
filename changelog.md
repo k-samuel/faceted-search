@@ -1,4 +1,8 @@
 # Changelog
+### v1.3.4 (13.12.2021)
+
+#bugfix findAcceptable filters returns empty results for empty filters and none empty id list in arguments
+
 
 ### v1.3.3 (10.12.2021)
 Performance update

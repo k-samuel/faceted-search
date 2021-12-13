@@ -176,6 +176,42 @@ class SearchTest extends TestCase
             $this->assertEquals($values, $acceptableFilters[$filter]);
         }
     }
+    public function testGetAcceptableFiltersCountLimit()
+    {
+        $records = [
+            ['id' => 1, 'color' => 'black', 'size' => 7, 'group' => 'A'],
+            ['id' => 2, 'color' => 'black', 'size' => 8, 'group' => 'A'],
+            ['id' => 3, 'color' => 'white', 'size' => 7, 'group' => 'B'],
+            ['id' => 4, 'color' => 'yellow', 'size' => 7, 'group' => 'C'],
+            ['id' => 5, 'color' => 'black', 'size' => 7, 'group' => 'C'],
+        ];
+        $index = new Index();
+        foreach ($records as  $item) {
+            $index->addRecord($item['id'], $item);
+        }
+        $facets = new Search($index);
+
+        $acceptableFilters = $facets->findAcceptableFiltersCount([], [1, 2]);
+
+        $expect = [
+            'color' => ['black' => 2],
+            'size' => [7 => 1, 8 => 1],
+            'group' => ['A' => 2],
+        ];
+        foreach ($expect as $field => &$values) {
+            asort($values);
+        }
+        unset($values);
+        foreach ($acceptableFilters as $field => &$values) {
+            asort($values);
+        }
+        unset($values);
+
+        foreach ($expect as $filter => $values) {
+            $this->assertArrayHasKey($filter, $acceptableFilters);
+            $this->assertEquals($values, $acceptableFilters[$filter]);
+        }
+    }
 
     public function testGetAcceptableFiltersCountMulty()
     {

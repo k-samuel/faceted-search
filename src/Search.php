@@ -156,6 +156,10 @@ class Search
                 $indexedFilters[$filter->getFieldName()] = $filter;
             }
             $filteredRecords = $this->findRecordsMap($indexedFilters, $input);
+        }else{
+            if(!empty($input)){
+                $filteredRecords = $this->findRecordsMap([], $input);
+            }
         }
 
         foreach ($facetsData as $filterName => $filterValues) {
