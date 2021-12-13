@@ -2,6 +2,7 @@
 ### v1.3.4 (13.12.2021)
 
 #bugfix findAcceptable filters returns empty results for empty filters and none empty id list in arguments
+Thanks to @chrisvidal for reporting.
 
 
 ### v1.3.3 (10.12.2021)
