@@ -1,6 +1,6 @@
 # Changelog
 
-### v2.0.0-beta1 (11.12.2021)
+### v2.0.0 (13.12.2021)
 
 Reduced Index memory usage.
 Backward incompatibility, faceted index should be reindex before using new version of library.
@@ -24,6 +24,12 @@ Bench v1.3.3 PHP 8.1.0 + JIT + opcache (no xdebug extension)
 | 100,000         | ~98Mb    | ~0.004 s.        | ~0.028 s.                | ~0.002 s.    | 8817             |
 | 300,000         | ~242Mb   | ~0.012 s.        | ~0.112 s.                | ~0.007 s.    | 26891            |
 | 1,000,000       | ~812Mb   | ~0.057 s.        | ~0.443 s.                | ~0.034 s.    | 90520            |
+
+
+### v1.3.4 (13.12.2021)
+
+* bugfix ```$search->findAcceptableFilters([],[1,2,3]);``` returns empty results for empty filters and none empty id list in arguments.
+Thanks to [@chrisvidal](https://github.com/chrisvidal) for reporting.
 
 ### v1.3.3 (11.12.2021)
 Performance update
@@ -146,7 +152,7 @@ Up to 50% acceleration of aggregates
 * Performance tests update
 * Readme.md updated with performance test results
 ### v1.2.6 (22.07.2021)
-* New examples and Demo using "mens-shoe-prices" DataSet
+* New examples and Demo using from "mens-shoe-prices" DataSet
 * Fixed findAcceptableFiltersCount logics for cases with empty filters
 * Readme updates
 
