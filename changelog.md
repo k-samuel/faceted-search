@@ -1,4 +1,9 @@
 # Changelog
+### v1.3.4 (13.12.2021)
+
+* bugfix ```$search->findAcceptableFilters([],[1,2,3]);``` returns empty results for empty filters and none empty id list in arguments.
+Thanks to [@chrisvidal](https://github.com/chrisvidal) for reporting.
+
 
 ### v2.0.0 (11.12.2021)
 
