@@ -79,6 +79,9 @@ class Index
                     if (is_bool($value)) {
                         $value = (int)$value;
                     }
+                    if(is_float($value)){
+                        $value = (string) $value;
+                    }
                     $this->data[$fieldName][$value][] = $recordId;
                 }
             }

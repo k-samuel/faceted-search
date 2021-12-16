@@ -259,6 +259,48 @@ class SearchTest extends TestCase
         }
     }
 
+    public function testFindFloat()
+    {
+        $records = [
+            ['id'=>1, 'color' => 'black', 'size' => 7.5, 'group' => 'A'],
+            ['id'=>2, 'color' => 'black', 'size' => 8.9, 'group' => 'A'],
+            ['id'=>3, 'color' => 'white', 'size' => 7.11, 'group' => 'B'],
+        ];
+        $index = new Index();
+        foreach ($records as $item) {
+            $id = $item['id'];
+            unset($item['id']);
+            $index->addRecord($id, $item);
+        }
+        $facets = new Search($index);
+        $filter = new ValueFilter('size', 7.11);
+        $result = $facets->find([$filter]);
+        $this->assertEquals(3,$result[0]);
+        $filter = new ValueFilter('size', '8.9');
+        $result = $facets->find([$filter]);
+        $this->assertEquals(2, $result[0]);
+        $acceptableFilters = $facets->findAcceptableFiltersCount([$filter]);
+
+        $expect = [
+            'color' => ['black' =>1],
+            'size' => ['8.9' => 1,'7.5'=>1,'7.11'=>1],
+            'group' => ['A' =>1]
+        ];
+        foreach ($expect as  &$values) {
+            asort($values);
+        }
+        unset($values);
+        foreach ($acceptableFilters as &$values) {
+            asort($values);
+        }
+        unset($values);
+
+        foreach ($expect as $filter => $values) {
+            $this->assertArrayHasKey($filter, $acceptableFilters);
+            $this->assertEquals($values, $acceptableFilters[$filter]);
+        }
+    }
+
     public function getTestData(): array
     {
         return [

@@ -63,6 +63,9 @@ class ValueFilter extends AbstractFilter
 
         // collect list for different values of one property
         foreach ($value as $item) {
+            if(is_float($item)){
+                $item = (string) $item;
+            }
             if (!isset($facetedData[$item])) {
                 continue;
             }
