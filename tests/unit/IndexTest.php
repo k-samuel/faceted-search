@@ -13,7 +13,6 @@ class IndexTest extends TestCase
         $this->assertTrue($index->addRecord(112, ['vendor'=>'Tester','price' => 100]));
         $this->assertTrue($index->addRecord(113, ['vendor'=>'Tester2','price' => 101]));
         $this->assertTrue($index->addRecord(114, ['vendor'=>'Tester2','price' => 101]));
-        ;
         $this->assertEquals([
             'vendor' => [
                 'Tester' => [112],
@@ -24,5 +23,6 @@ class IndexTest extends TestCase
                 101 => [113,114]
             ]
         ], $index->getData());
+        $this->assertTrue($index->addRecord(114, ['vendor'=>'Tester2','price' => 0.15]));
     }
 }
