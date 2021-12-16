@@ -1,6 +1,5 @@
 # Changelog
-### v2.0.1 (13.12.2021)
-
+### v2.0.1
 * fix for PHP 8.1 deprecation of indirect floating point conversion in array keys
 
 ### v2.0.0 (13.12.2021)
