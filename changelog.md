@@ -1,6 +1,9 @@
 # Changelog
-### v2.0.1 (13.12.2021)
 
+### v2.0.2 (13.12.2021)
+* fix default example of performance tests
+
+### v2.0.1 (13.12.2021)
 * fix for PHP 8.1 deprecation of indirect floating point conversion in array keys
 
 ### v2.0.0 (13.12.2021)
