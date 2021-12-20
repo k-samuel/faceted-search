@@ -2,7 +2,7 @@
 
 require '../../vendor/autoload.php';
 
-$dataDir = './50000/';
+$dataDir = './';
 $t = microtime(true);
 $f = fopen($dataDir . 'data.json', "r");
 $indexData = [];
@@ -22,6 +22,6 @@ foreach ($indexData as $rec) {
     $index->addRecord($id, $rec);
 }
 
-file_put_contents($dataDir . 'ifacet.json', json_encode($index->getData()));
+file_put_contents($dataDir . 'facet.json', json_encode($index->getData()));
 
 echo 'total time: ' . number_format(microtime(true) - $t, 3) . PHP_EOL;
