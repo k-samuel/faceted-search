@@ -1,6 +1,6 @@
 # Changelog
 
-### v2.0.3
+### v2.0.3  (30.12.2021)
 Performance update
 
 * Filter\ValueFilter optimizations
