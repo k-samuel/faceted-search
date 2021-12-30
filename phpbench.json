@@ -1,0 +1,12 @@
+{
+    "runner.bootstrap": "vendor/autoload.php",
+    "runner.path": "tests/benchmark/Bench",
+    "runner.retry_threshold": 3,
+    "report.outputs": {
+        "csv_file": {
+            "extends": "delimited",
+            "delimiter": ",",
+            "file": "benchmarks.csv"
+        }
+    }
+}

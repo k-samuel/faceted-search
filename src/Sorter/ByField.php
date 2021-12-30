@@ -87,10 +87,12 @@ class ByField
                 continue;
             }
             foreach ($ids as $id) {
-                $sorted[$id] = true;
+                $sorted[] = $id;
+                // already sorted
+                unset($results[$id]);
             }
         }
-        return array_keys($sorted);
+        return $sorted;
     }
 
     /**

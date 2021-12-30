@@ -56,15 +56,15 @@ For example: list of ProductId "in stock" to exclude not available products.
 
 Tests on sets of products with 10 attributes, search with filters by 3 fields.
 
-Bench v2.0.0 PHP 8.1.0 + JIT + opcache (no xdebug extension)
+PHPBench v2.0.3 PHP 8.1.0 + JIT + opcache (no xdebug extension)
 
 | Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~6Mb     | ~0.0007 s.       | ~0.004 s.                | ~0.0005 s.   | 907              |
-| 50,000          | ~40Mb    | ~0.002 s.        | ~0.014 s.                | ~0.001 s.    | 4550             |
-| 100,000         | ~80Mb    | ~0.004 s.        | ~0.028 s.                | ~0.001 s.    | 8817             |
-| 300,000         | ~189Mb   | ~0.011 s.        | ~0.104 s.                | ~0.006 s.    | 26891            |
-| 1,000,000       | ~657Mb   | ~0.050 s.        | ~0.426 s.                | ~0.030 s.    | 90520            |
+| 10,000          | ~6Mb     | ~0.0003 s.       | ~0.002 s.                | ~0.0001 s.   | 907              |
+| 50,000          | ~40Mb    | ~0.001 s.        | ~0.013 s.                | ~0.0006 s.   | 4550             |
+| 100,000         | ~80Mb    | ~0.003 s.        | ~0.029 s.                | ~0.001 s.    | 8817             |
+| 300,000         | ~189Mb   | ~0.011 s.        | ~0.108 s.                | ~0.005 s.    | 26891            |
+| 1,000,000       | ~657Mb   | ~0.052 s.        | ~0.419 s.                | ~0.018 s.    | 90520            |
 
 Bench v1.3.3 PHP 8.1.0 + JIT + opcache (no xdebug extension)
 
@@ -86,15 +86,15 @@ Bench v1.3.3 PHP 8.1.0 + JIT + opcache (no xdebug extension)
 
 Experimental Golang port bench https://github.com/k-samuel/go-faceted-search
 
-Bench v0.3.0 golang 1.17.3 with parallel aggregates
+Bench v0.3.1 golang 1.17.3 with parallel aggregates
 
 | Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
 | 10,000          | ~5Mb     | ~0.0004 s.       | ~0.001 s.                | ~0.0002 s.   | 907              |
-| 50,000          | ~15Mb    | ~0.003 s.        | ~0.012 s.                | ~0.001 s.    | 4550             |
-| 100,000         | ~21Mb    | ~0.006 s.        | ~0.028 s.                | ~0.003 s.    | 8817             |
-| 300,000         | ~47Mb    | ~0.018 s.        | ~0.091 s.                | ~0.010 s.    | 26891            |
-| 1,000,000       | ~150Mb   | ~0.094 s.        | ~0.408 s.                | ~0.040 s.    | 90520            |
+| 50,000          | ~15Mb    | ~0.002 s.        | ~0.010 s.                | ~0.001 s.    | 4550             |
+| 100,000         | ~21Mb    | ~0.006 s.        | ~0.028 s.                | ~0.002 s.    | 8817             |
+| 300,000         | ~47Mb    | ~0.020 s.        | ~0.091 s.                | ~0.010 s.    | 26891            |
+| 1,000,000       | ~150Mb   | ~0.089 s.        | ~0.412 s.                | ~0.034 s.    | 90520            |
 
 ## Examples
 
@@ -219,9 +219,10 @@ $index->addIndexer('price', $rangeIndexer);
 ```
 Also, you can create your own indexers with range detection method
 
-### More Examples 
-* [Demo](./examples)  
+### More Examples
+* [Demo](./examples)
 * [Performance test](./tests/performance/readme.md)
+* [Bench](./tests/benchmark/readme.md)
 
 
 ### Tested but discarded concepts
