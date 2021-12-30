@@ -36,19 +36,38 @@ namespace KSamuel\FacetedSearch\Filter;
 class ValueFilter extends AbstractFilter
 {
     /**
-     * Convert filter value into values array
-     * @return array<int,mixed>
+     * @var array<int,mixed>
      */
-    public function getValues(): array
+    protected $value;
+
+    /**
+     * Set filter value
+     * @param mixed $value
+     * @return void
+     */
+    public function setValue($value): void
     {
-        $value = $this->value;
         if (!is_array($value)) {
             if (is_bool($value)) {
                 $value = (int)$value;
             }
-            $value = [$value];
+            if (is_float($value)) {
+                $value = (string)$value;
+            }
+            $this->value = [$value];
+            return;
         }
-        return $value;
+
+        foreach ($value as &$item) {
+            if (is_bool($item)) {
+                $item = (int)$item;
+            }
+            if (is_float($item)) {
+                $item = (string)$item;
+            }
+        }unset($item);
+
+        $this->value = $value;
     }
 
     /**
@@ -56,35 +75,30 @@ class ValueFilter extends AbstractFilter
      */
     public function filterResults(array $facetedData, ?array $inputIdKeys = null): array
     {
-        $value = $this->getValues();
-
         $result = [];
         $hasInput = !empty($inputIdKeys);
 
         // collect list for different values of one property
-        foreach ($value as $item) {
-            if(is_float($item)){
-                $item = (string) $item;
-            }
+        foreach ($this->value as $item) {
+
             if (!isset($facetedData[$item])) {
                 continue;
             }
 
-            foreach ($facetedData[$item] as $index) {
+            foreach ($facetedData[$item] as $recId) {
                 /**
-                 * @var int $index
+                 * @var int $recId
                  */
                 if (!$hasInput) {
-                    $result[$index] = true;
+                    $result[$recId] = true;
                     continue;
                 }
 
-                if (isset($inputIdKeys[$index])) {
-                    $result[$index] = true;
+                if (isset($inputIdKeys[$recId])) {
+                    $result[$recId] = true;
                 }
             }
         }
-
         return $result;
     }
 }

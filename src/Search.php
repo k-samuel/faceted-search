@@ -61,7 +61,7 @@ class Search
      */
     public function find(array $filters, ?array $inputRecords = null): array
     {
-        $input = null;
+        $input = [];
         if (!empty($inputRecords)) {
             $input = $this->mapInputArray($inputRecords);
         }
@@ -84,10 +84,10 @@ class Search
     /**
      * Find records by filters as array map [$id1=>true, $id2=>true, ...]
      * @param array<FilterInterface> $filters
-     * @param array<int,bool>|null $inputRecords
+     * @param array<int,bool> $inputRecords
      * @return array<int,bool>
      */
-    private function findRecordsMap(array $filters, ?array $inputRecords = null): array
+    private function findRecordsMap(array $filters, array $inputRecords): array
     {
         // if no filters passed
         if (empty($filters)) {
@@ -101,14 +101,9 @@ class Search
             return $total;
         }
 
-        /**
-         * @var array<int,bool> $inputRecords
-         */
-        $result = $inputRecords;
-
         // Aggregates optimisation for value filters.
         // The fewer elements after the first filtering, the fewer data copies and memory allocations in iterations
-        if (empty($result) && count($filters) > 1) {
+        if (empty($inputRecords) && count($filters) > 1) {
             $filters = $this->sortFiltersByCount($filters);
         }
 
@@ -120,13 +115,14 @@ class Search
             if (empty($indexData)) {
                 return [];
             }
-            $result = $filter->filterResults($indexData, $result);
+            $inputRecords = $filter->filterResults($indexData, $inputRecords);
         }
 
-        if (empty($result)) {
-            $result = [];
+        if (empty($inputRecords)) {
+            return [];
         }
-        return $result;
+
+        return $inputRecords;
     }
 
     /**
@@ -137,7 +133,7 @@ class Search
      */
     private function findFilters(array $filters = [], array $inputRecords = [], bool $countValues = false): array
     {
-        $input = null;
+        $input = [];
         if (!empty($inputRecords)) {
             $input = $this->mapInputArray($inputRecords);
         }
@@ -271,7 +267,10 @@ class Search
                 continue;
             }
 
-            $filterValues = $filter->getValues();
+            /**
+             * @var array<int,mixed> $filterValues
+             */
+            $filterValues = $filter->getValue();
 
             foreach ($filterValues as $value) {
                 $cnt = $this->index->getRecordsCount($fieldName, $value);

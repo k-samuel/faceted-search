@@ -222,6 +222,7 @@ Also, you can create your own indexers with range detection method
 ### More Examples
 * [Demo](./examples)
 * [Performance test](./tests/performance/readme.md)
+* [Bench](./tests/benchmark/readme.md)
 
 
 ### Tested but discarded concepts

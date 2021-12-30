@@ -1,5 +1,24 @@
 # Changelog
 
+### v2.0.3
+Performance update
+
+* Filter\ValueFilter optimizations
+* Sorter\ByField optimizations
+* Search->findRecordsMap optimizations
+* PHPBench tests added
+
+PHPBench v2.0.3 PHP 8.1.0 + JIT + opcache (no xdebug extension)
+
+| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
+| 10,000          | ~6Mb     | ~0.0003 s.       | ~0.002 s.                | ~0.0001 s.   | 907              |
+| 50,000          | ~40Mb    | ~0.001 s.        | ~0.013 s.                | ~0.0006 s.   | 4550             |
+| 100,000         | ~80Mb    | ~0.003 s.        | ~0.030 s.                | ~0.001 s.    | 8817             |
+| 300,000         | ~189Mb   | ~0.011 s.        | ~0.104 s.                | ~0.005 s.    | 26891            |
+| 1,000,000       | ~657Mb   | ~0.053 s.        | ~0.423 s.                | ~0.018 s.    | 90520            |
+
+
 ### v2.0.2 (13.12.2021)
 * fix default example of performance tests
 
