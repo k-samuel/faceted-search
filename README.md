@@ -284,4 +284,4 @@ file_put_contents('./first-index.json', json_encode($indexData));
 # Q&A
 * [Is it possible somehow to implement a full-text filter?](https://github.com/k-samuel/faceted-search/issues/3)
 * [Would that be possible to use a DB as an index instead of a json file?](https://github.com/k-samuel/faceted-search/issues/5)
-* [Article about project history and base concepts of (in Russian)](https://habr.com/ru/post/595765/)
+* [Article about project history and base concepts (in Russian)](https://habr.com/ru/post/595765/)
