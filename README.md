@@ -225,8 +225,11 @@ Also, you can create your own indexers with range detection method
 FixedArrayIndex is much slower but requires significant less memory.
 Working with an FixedArrayIndex is slightly different from ArrayIndex
 
+The stored index data is compatible, you can transfer it from ArrayIndex to FixedArrayIndex
+
 ```php
 <?php
+use KSamuel\FacetedSearch\Index\ArrayIndex;
 use KSamuel\FacetedSearch\Index\FixedArrayIndex;
 
 $searchIndex = new FixedArrayIndex();
@@ -253,6 +256,12 @@ $searchIndex->commitChanges();
 $indexData = $searchIndex->getData();
 // We will use file for example
 file_put_contents('./first-index.json', json_encode($indexData));
+
+// Index data is fully compatible. You can create both indexes from the same data 
+$arrayIndex = new ArrayIndex();
+$arrayIndex->setData($indexData);
+
+
 ```
 
 
