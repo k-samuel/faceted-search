@@ -31,6 +31,7 @@ namespace KSamuel\FacetedSearch;
 
 use KSamuel\FacetedSearch\Filter\FilterInterface;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
+use KSamuel\FacetedSearch\Index\IndexInterface;
 
 /**
  * Class Search
@@ -40,15 +41,15 @@ use KSamuel\FacetedSearch\Filter\ValueFilter;
 class Search
 {
     /**
-     * @var Index
+     * @var IndexInterface
      */
     protected $index;
 
     /**
      * Search constructor.
-     * @param Index $index
+     * @param IndexInterface $index
      */
-    public function __construct(Index $index)
+    public function __construct(IndexInterface $index)
     {
         $this->index = $index;
     }
@@ -206,11 +207,11 @@ class Search
     }
 
     /**
-     * @param array<int,int> $a
+     * @param array<int,int>|\SplFixedArray<int> $a
      * @param array<int,bool> $b
      * @return int
      */
-    private function getIntersectIntMapCount(array $a, array $b): int
+    private function getIntersectIntMapCount($a, array $b): int
     {
         $intersectLen = 0;
         foreach ($a as $key) {

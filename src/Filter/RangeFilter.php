@@ -62,7 +62,14 @@ class RangeFilter extends AbstractFilter
                 continue;
             }
             if (empty($limit)) {
-                $limit = $records;
+                /**
+                 * @var array<int>|\SplFixedArray<int> $records
+                 */
+                if($records instanceof \SplFixedArray){
+                    $limit = $records->toArray();
+                }else{
+                    $limit = $records;
+                }
             } else {
                 // array sum (faster than array_merge here)
                 foreach ($records as $item){
@@ -97,6 +104,9 @@ class RangeFilter extends AbstractFilter
 
         $result = [];
         foreach ($start as $index => $exists) {
+            /**
+             * @var int $index
+             */
             if (isset($compare[$index])) {
                 $result[$index] = true;
             }

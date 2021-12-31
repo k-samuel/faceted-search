@@ -1,4 +1,34 @@
 # Changelog
+### v2.1.0
+
+FixedArrayIndex
+
+FixedArrayIndex is much slower but requires significant less memory
+
+* FixedArrayIndex added
+* KSamuel\FacetedSearch\Index is deprecated use KSamuel\FacetedSearch\Index\ArrayIndex instead
+* Unit and performance tests for FixedArrayIndex
+* Documentation updated
+
+PHPBench v2.1.0 ArrayIndex PHP 8.1.0 + JIT + opcache (no xdebug extension)
+
+| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
+| 10,000          | ~6Mb     | ~0.0003 s.       | ~0.002 s.                | ~0.0001 s.   | 907              |
+| 50,000          | ~40Mb    | ~0.001 s.        | ~0.013 s.                | ~0.0006 s.   | 4550             |
+| 100,000         | ~80Mb    | ~0.003 s.        | ~0.029 s.                | ~0.001 s.    | 8817             |
+| 300,000         | ~189Mb   | ~0.011 s.        | ~0.108 s.                | ~0.005 s.    | 26891            |
+| 1,000,000       | ~657Mb   | ~0.052 s.        | ~0.419 s.                | ~0.018 s.    | 90520            |
+
+PHPBench v2.1.0 FixedArrayIndex PHP 8.1.0 + JIT + opcache (no xdebug extension)
+
+| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
+| 10,000          | ~2Mb     | ~0.0007 s.       | ~0.006 s.                | ~0.0002 s.   | 907              |
+| 50,000          | ~12Mb    | ~0.003 s.        | ~0.029 s.                | ~0.001 s.    | 4550             |
+| 100,000         | ~23Mb    | ~0.007 s.        | ~0.058 s.                | ~0.002 s.    | 8817             |
+| 300,000         | ~70Mb    | ~0.021 s.        | ~0.191 s.                | ~0.008 s.    | 26891            |
+| 1,000,000       | ~233Mb   | ~0.081 s.        | ~0.702 s.                | ~0.033 s.    | 90520            |
 
 ### v2.0.3  (30.12.2021)
 Performance update

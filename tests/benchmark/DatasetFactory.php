@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace KSamuel\FacetedSearch\Tests\Benchmark;
 
 use KSamuel\FacetedSearch\Index;
+use KSamuel\FacetedSearch\Indexer\IndexerInterface;
 
 class DatasetFactory
 {
@@ -23,17 +24,34 @@ class DatasetFactory
 
     /**
      * @param int $size
-     * @return Index
      */
-    public function getFacetedIndex(int $size): Index
+    public function getFacetedIndex(int $size): Index\ArrayIndex
     {
         $dataFile = $this->dataDir . $size . '/data.json';
         if (!file_exists($dataFile)) {
             $this->createDataset($size, $dataFile);
         }
-
-        return $this->loadData($dataFile);
+        $index = new Index\ArrayIndex();
+         $this->loadData($index, $dataFile);
+         return $index;
     }
+
+    /**
+     * @param int $size
+     */
+    public function getFixedFacetedIndex(int $size): Index\FixedArrayIndex
+    {
+        $dataFile = $this->dataDir . $size . '/data.json';
+        if (!file_exists($dataFile)) {
+            $this->createDataset($size, $dataFile);
+        }
+        $index = new Index\FixedArrayIndex();
+        $index->writeMode();
+        $this->loadData($index, $dataFile);
+        $index->commitChanges();
+        return $index;
+    }
+
 
     /**
      * @param int $size
@@ -107,9 +125,8 @@ class DatasetFactory
         fclose($f);
     }
 
-    private function loadData(string $file): Index
+    private function loadData(Index\IndexInterface $index, string $file) : void
     {
-        $index = new Index();
         $f = fopen($file, 'r');
         if (empty($f)) {
             throw new \RuntimeException('Cannot open file ' . $file);
@@ -118,11 +135,10 @@ class DatasetFactory
             if (empty($line)) {
                 continue;
             }
-            $row = json_decode($line, true);
+            $row = \json_decode($line, true);
             $id = $row['id'];
             unset($row['id']);
-            $index->addRecord($id, $row);
+            $index->addRecord((int)$id, $row);
         }
-        return $index;
     }
 }
