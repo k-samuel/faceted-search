@@ -280,8 +280,14 @@ class Search
              */
             $filterValues = $filter->getValue();
 
+            $filterValuesCount = [];
+            $valuesInFilter = count($filterValues);
             foreach ($filterValues as $value) {
                 $cnt = $this->index->getRecordsCount($fieldName, $value);
+                if($valuesInFilter > 1){
+                    $filterValuesCount[$value] = $cnt;
+                }
+
                 if (!isset($counts[$index])) {
                     $counts[$index] = $cnt;
                     continue;
@@ -290,6 +296,13 @@ class Search
                 if ($counts[$index] > $cnt) {
                     $counts[$index] = $cnt;
                 }
+            }
+
+            if($valuesInFilter > 1){
+                // sort filter values by records count
+                asort($filterValuesCount);
+                // update filers with new values order
+                $filter->setValue(array_keys($filterValuesCount));
             }
         }
         asort($counts);
