@@ -66,6 +66,13 @@ class Search
         if (!empty($inputRecords)) {
             $input = $this->mapInputArray($inputRecords);
         }
+
+        // Aggregates optimisation for value filters.
+        // The fewer elements after the first filtering, the fewer data copies and memory allocations in iterations
+        if (empty($inputRecords) && count($filters) > 1) {
+            $filters = $this->sortFiltersByCount($filters);
+        }
+
         return array_keys($this->findRecordsMap($filters, $input));
     }
 
@@ -102,12 +109,6 @@ class Search
             return $total;
         }
 
-        // Aggregates optimisation for value filters.
-        // The fewer elements after the first filtering, the fewer data copies and memory allocations in iterations
-        if (empty($inputRecords) && count($filters) > 1) {
-            $filters = $this->sortFiltersByCount($filters);
-        }
-
         /**
          * @var FilterInterface $filter
          */
@@ -137,6 +138,12 @@ class Search
         $input = [];
         if (!empty($inputRecords)) {
             $input = $this->mapInputArray($inputRecords);
+        }
+
+        // Aggregates optimisation for value filters.
+        // The fewer elements after the first filtering, the fewer data copies and memory allocations in iterations
+        if (empty($inputRecords) && count($filters) > 1) {
+            $filters = $this->sortFiltersByCount($filters);
         }
 
         $result = [];
