@@ -31,6 +31,7 @@ namespace KSamuel\FacetedSearch;
 
 use KSamuel\FacetedSearch\Filter\FilterInterface;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
+use KSamuel\FacetedSearch\Index\IndexInterface;
 
 /**
  * Class Search
@@ -40,15 +41,15 @@ use KSamuel\FacetedSearch\Filter\ValueFilter;
 class Search
 {
     /**
-     * @var Index
+     * @var IndexInterface
      */
     protected $index;
 
     /**
      * Search constructor.
-     * @param Index $index
+     * @param IndexInterface $index
      */
-    public function __construct(Index $index)
+    public function __construct(IndexInterface $index)
     {
         $this->index = $index;
     }
@@ -65,6 +66,13 @@ class Search
         if (!empty($inputRecords)) {
             $input = $this->mapInputArray($inputRecords);
         }
+
+        // Aggregates optimisation for value filters.
+        // The fewer elements after the first filtering, the fewer data copies and memory allocations in iterations
+        if (empty($inputRecords) && count($filters) > 1) {
+            $filters = $this->sortFiltersByCount($filters);
+        }
+
         return array_keys($this->findRecordsMap($filters, $input));
     }
 
@@ -101,12 +109,6 @@ class Search
             return $total;
         }
 
-        // Aggregates optimisation for value filters.
-        // The fewer elements after the first filtering, the fewer data copies and memory allocations in iterations
-        if (empty($inputRecords) && count($filters) > 1) {
-            $filters = $this->sortFiltersByCount($filters);
-        }
-
         /**
          * @var FilterInterface $filter
          */
@@ -136,6 +138,12 @@ class Search
         $input = [];
         if (!empty($inputRecords)) {
             $input = $this->mapInputArray($inputRecords);
+        }
+
+        // Aggregates optimisation for value filters.
+        // The fewer elements after the first filtering, the fewer data copies and memory allocations in iterations
+        if (empty($inputRecords) && count($filters) > 1) {
+            $filters = $this->sortFiltersByCount($filters);
         }
 
         $result = [];
@@ -206,11 +214,11 @@ class Search
     }
 
     /**
-     * @param array<int,int> $a
+     * @param array<int,int>|\SplFixedArray<int> $a
      * @param array<int,bool> $b
      * @return int
      */
-    private function getIntersectIntMapCount(array $a, array $b): int
+    private function getIntersectIntMapCount($a, array $b): int
     {
         $intersectLen = 0;
         foreach ($a as $key) {
@@ -272,8 +280,14 @@ class Search
              */
             $filterValues = $filter->getValue();
 
+            $filterValuesCount = [];
+            $valuesInFilter = count($filterValues);
             foreach ($filterValues as $value) {
                 $cnt = $this->index->getRecordsCount($fieldName, $value);
+                if($valuesInFilter > 1){
+                    $filterValuesCount[$value] = $cnt;
+                }
+
                 if (!isset($counts[$index])) {
                     $counts[$index] = $cnt;
                     continue;
@@ -282,6 +296,13 @@ class Search
                 if ($counts[$index] > $cnt) {
                     $counts[$index] = $cnt;
                 }
+            }
+
+            if($valuesInFilter > 1){
+                // sort filter values by records count
+                asort($filterValuesCount);
+                // update filers with new values order
+                $filter->setValue(array_keys($filterValuesCount));
             }
         }
         asort($counts);

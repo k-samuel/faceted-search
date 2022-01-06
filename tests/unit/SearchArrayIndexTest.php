@@ -6,7 +6,7 @@ use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Filter\RangeFilter;
 use KSamuel\FacetedSearch\Index;
 
-class SearchTest extends TestCase
+class SearchArrayIndexTest extends TestCase
 {
 
     public function testFind()

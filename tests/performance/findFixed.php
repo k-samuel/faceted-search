@@ -7,15 +7,23 @@ use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Index;
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Sorter\ByField;
-
+$index = new Index\FixedArrayIndex();
 $t = microtime(true);
 $m = memory_get_usage();
+
 $indexData = json_decode(file_get_contents('./facet.json'), true);
+$index->setData($indexData);
 $time = (microtime(true) - $t);
+unset($indexData);
+gc_collect_cycles();
 $memUse = (int)((memory_get_usage() - $m) / 1024 / 1024);
 
-$index = new Index\ArrayIndex();
-$index->setData($indexData);
+
+
+$time = (microtime(true) - $t);
+gc_collect_cycles();
+$memUse = (int)((memory_get_usage() - $m) / 1024 / 1024);
+
 $resultData[] = ['Index memory usage', (string) $memUse. "Mb",''];
 $resultData[] = ['Loading time', number_format($time,6) . 's', ''];
 

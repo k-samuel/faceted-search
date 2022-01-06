@@ -56,25 +56,25 @@ For example: list of ProductId "in stock" to exclude not available products.
 
 Tests on sets of products with 10 attributes, search with filters by 3 fields.
 
-PHPBench v2.0.3 PHP 8.1.0 + JIT + opcache (no xdebug extension)
+PHPBench v2.1.0 ArrayIndex PHP 8.1.0 + JIT + opcache (no xdebug extension)
 
 | Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
 | 10,000          | ~6Mb     | ~0.0003 s.       | ~0.002 s.                | ~0.0001 s.   | 907              |
-| 50,000          | ~40Mb    | ~0.001 s.        | ~0.013 s.                | ~0.0006 s.   | 4550             |
-| 100,000         | ~80Mb    | ~0.003 s.        | ~0.029 s.                | ~0.001 s.    | 8817             |
-| 300,000         | ~189Mb   | ~0.011 s.        | ~0.108 s.                | ~0.005 s.    | 26891            |
-| 1,000,000       | ~657Mb   | ~0.052 s.        | ~0.419 s.                | ~0.018 s.    | 90520            |
+| 50,000          | ~40Mb    | ~0.001 s.        | ~0.013 s.                | ~0.0005 s.   | 4550             |
+| 100,000         | ~80Mb    | ~0.003 s.        | ~0.030 s.                | ~0.001 s.    | 8817             |
+| 300,000         | ~189Mb   | ~0.011 s.        | ~0.101 s.                | ~0.005 s.    | 26891            |
+| 1,000,000       | ~657Mb   | ~0.049 s.        | ~0.396 s.                | ~0.017 s.    | 90520            |
 
-Bench v1.3.3 PHP 8.1.0 + JIT + opcache (no xdebug extension)
+PHPBench v2.1.0 FixedArrayIndex PHP 8.1.0 + JIT + opcache (no xdebug extension)
 
 | Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~7Mb     | ~0.0007 s.       | ~0.004 s.                | ~0.0003 s.   | 907              |
-| 50,000          | ~49Mb    | ~0.002 s.        | ~0.014 s.                | ~0.0009 s.   | 4550             |
-| 100,000         | ~98Mb    | ~0.004 s.        | ~0.028 s.                | ~0.002 s.    | 8817             |
-| 300,000         | ~242Mb   | ~0.012 s.        | ~0.112 s.                | ~0.007 s.    | 26891            |
-| 1,000,000       | ~812Mb   | ~0.057 s.        | ~0.443 s.                | ~0.034 s.    | 90520            |
+| 10,000          | ~2Mb     | ~0.0007 s.       | ~0.006 s.                | ~0.0002 s.   | 907              |
+| 50,000          | ~12Mb    | ~0.003 s.        | ~0.027 s.                | ~0.001 s.    | 4550             |
+| 100,000         | ~23Mb    | ~0.006 s.        | ~0.057 s.                | ~0.002 s.    | 8817             |
+| 300,000         | ~70Mb    | ~0.021 s.        | ~0.188 s.                | ~0.007 s.    | 26891            |
+| 1,000,000       | ~233Mb   | ~0.080 s.        | ~0.674 s.                | ~0.032 s.    | 90520            |
 
 * Items count - Products in index
 * Memory - RAM used for index
@@ -86,24 +86,24 @@ Bench v1.3.3 PHP 8.1.0 + JIT + opcache (no xdebug extension)
 
 Experimental Golang port bench https://github.com/k-samuel/go-faceted-search
 
-Bench v0.3.1 golang 1.17.3 with parallel aggregates
+Bench v0.3.2 golang 1.17.3 with parallel aggregates
 
 | Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
 | 10,000          | ~5Mb     | ~0.0004 s.       | ~0.001 s.                | ~0.0002 s.   | 907              |
 | 50,000          | ~15Mb    | ~0.002 s.        | ~0.010 s.                | ~0.001 s.    | 4550             |
-| 100,000         | ~21Mb    | ~0.006 s.        | ~0.028 s.                | ~0.002 s.    | 8817             |
-| 300,000         | ~47Mb    | ~0.020 s.        | ~0.091 s.                | ~0.010 s.    | 26891            |
-| 1,000,000       | ~150Mb   | ~0.089 s.        | ~0.412 s.                | ~0.034 s.    | 90520            |
+| 100,000         | ~21Mb    | ~0.007 s.        | ~0.030 s.                | ~0.003 s.    | 8817             |
+| 300,000         | ~47Mb    | ~0.021 s.        | ~0.081 s.                | ~0.007 s.    | 26891            |
+| 1,000,000       | ~150Mb   | ~0.090 s.        | ~0.372 s.                | ~0.036 s.    | 90520            |
 
 ## Examples
 
 Create index using console/crontab etc.
 ```php
 <?php
-use KSamuel\FacetedSearch\Index;
+use KSamuel\FacetedSearch\Index\ArrayIndex;
 
-$searchIndex = new Index();
+$searchIndex = new ArrayIndex();
 /*
  * Getting products data from DB
  * Sort data by $recordId before using Index->addRecord it can improve performance 
@@ -115,7 +115,7 @@ $data = [
 ];
 foreach($data as $item){ 
    $recordId = $item['id'];
-   // no ned to add faceted index by id
+   // no need to add faceted index by id
    unset($item['id']);
    $searchIndex->addRecord($recordId, $item);
 }
@@ -129,7 +129,7 @@ Using in application
 
 ```php
 <?php
-use KSamuel\FacetedSearch\Index;
+use KSamuel\FacetedSearch\Index\ArrayIndex;
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Filter\RangeFilter;
@@ -137,7 +137,7 @@ use KSamuel\FacetedSearch\Sorter\ByField;
 
 // load index by product category (use request params)
 $indexData = json_decode(file_get_contents('./first-index.json'), true);
-$searchIndex = new Index();
+$searchIndex = new ArrayIndex();
 $searchIndex->setData($indexData);
 // create search instance
 $search = new Search($searchIndex);
@@ -183,12 +183,12 @@ Note that RangeFilter is slow solution, it is better to avoid facets for highly 
 
 ```php
 <?php
-use KSamuel\FacetedSearch\Index;
+use KSamuel\FacetedSearch\Index\ArrayIndex;
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Indexer\Number\RangeIndexer;
 use KSamuel\FacetedSearch\Filter\RangeFilter;
 
-$index = new Index();
+$index = new ArrayIndex();
 $rangeIndexer = new RangeIndexer(100);
 $index->addIndexer('price', $rangeIndexer);
 
@@ -210,20 +210,65 @@ $search->find($filters);
 RangeListIndexer allows you to use custom ranges list
 ```php
 <?php
-use KSamuel\FacetedSearch\Index;
+use KSamuel\FacetedSearch\ArrayIndex;
 use KSamuel\FacetedSearch\Indexer\Number\RangeListIndexer;
 
-$index = new Index();
+$index = new ArrayIndex();
 $rangeIndexer = new RangeListIndexer([100,500,1000]); // (0-99)[0],(100-499)[100],(500-999)[500],(1000 & >)[1000] 
 $index->addIndexer('price', $rangeIndexer);
 ```
 Also, you can create your own indexers with range detection method
 
+
+### FixedArrayIndex
+
+FixedArrayIndex is much slower but requires significant less memory.
+Working with an FixedArrayIndex is slightly different from ArrayIndex
+
+The stored index data is compatible, you can transfer it from ArrayIndex to FixedArrayIndex
+
+```php
+<?php
+use KSamuel\FacetedSearch\Index\ArrayIndex;
+use KSamuel\FacetedSearch\Index\FixedArrayIndex;
+
+$searchIndex = new FixedArrayIndex();
+// Switch index into write mode
+$searchIndex->writeMode();
+/*
+ * Getting products data from DB
+ * Sort data by $recordId before using Index->addRecord it can improve performance 
+ */
+$data = [
+    ['id'=>7, 'color'=>'black', 'price'=>100, 'sale'=>true, 'size'=>36],   
+    ['id'=>9, 'color'=>'green', 'price'=>100, 'sale'=>true, 'size'=>40], 
+    // ....
+];
+foreach($data as $item){ 
+   $recordId = $item['id'];
+   // no need to add faceted index by id
+   unset($item['id']);
+   $searchIndex->addRecord($recordId, $item);
+}
+// After the data is added, you need to commit the changes 
+$searchIndex->commitChanges();
+// save index data to some storage 
+$indexData = $searchIndex->getData();
+// We will use file for example
+file_put_contents('./first-index.json', json_encode($indexData));
+
+// Index data is fully compatible. You can create both indexes from the same data 
+$arrayIndex = new ArrayIndex();
+$arrayIndex->setData($indexData);
+
+
+```
+
+
 ### More Examples
 * [Demo](./examples)
 * [Performance test](./tests/performance/readme.md)
 * [Bench](./tests/benchmark/readme.md)
-
 
 ### Tested but discarded concepts
 
@@ -248,3 +293,4 @@ Also, you can create your own indexers with range detection method
 # Q&A
 * [Is it possible somehow to implement a full-text filter?](https://github.com/k-samuel/faceted-search/issues/3)
 * [Would that be possible to use a DB as an index instead of a json file?](https://github.com/k-samuel/faceted-search/issues/5)
+* [Article about project history and base concepts (in Russian)](https://habr.com/ru/post/595765/)

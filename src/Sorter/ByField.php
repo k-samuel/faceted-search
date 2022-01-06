@@ -37,11 +37,11 @@ class ByField
     public const SORT_DESC = 1;
 
     /**
-     * @var Index
+     * @var Index\IndexInterface
      */
     private $index;
 
-    public function __construct(Index $index)
+    public function __construct(Index\IndexInterface $index)
     {
         $this->index = $index;
     }
@@ -96,14 +96,17 @@ class ByField
     }
 
     /**
-     * @param array<int,int> $a
+     * @param array<int,int>|\SplFixedArray<int> $a
      * @param array<int,bool|int> $b
      * @return array<int,int>
      */
-    private function intersectIntMap(array $a, array $b): array
+    private function intersectIntMap($a, array $b): array
     {
         $result = [];
         foreach ($a as $key) {
+            /**
+             * @var int $key
+             */
             if (isset($b[$key])) {
                 $result[] = $key;
             }
