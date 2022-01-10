@@ -29,7 +29,7 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Index;
 
-
+use KSamuel\FacetedSearch\Filter\FilterInterface;
 use KSamuel\FacetedSearch\Indexer\IndexerInterface;
 
 /**
@@ -93,4 +93,20 @@ interface IndexInterface
      * @return array<int|string,array<int|string,array<int>|\SplFixedArray<int>>>
      */
     public function getData(): array;
+
+    /**
+     * Find acceptable filter values
+     * @param array<FilterInterface> $filters
+     * @param array<int> $inputRecords
+     * @return array<string,array<int|string,int|string>>
+     */
+    public function aggregate(array $filters = [], array $inputRecords = [], bool $countValues = false): array;
+
+    /**
+     * Find records by filters as list of int
+     * @param array<FilterInterface> $filters
+     * @param array<int>|null $inputRecords - list of record id to search in. Use it for limit results
+     * @return array<int>
+     */
+    public function find(array $filters, ?array $inputRecords = null): array;
 }

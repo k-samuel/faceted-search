@@ -69,7 +69,6 @@ class ByField
         int $direction = self::SORT_ASC,
         int $sortFlags = SORT_REGULAR
     ): array {
-
         $data = $this->index->getFieldData($field);
         if ($direction === self::SORT_ASC) {
             ksort($data, $sortFlags);
@@ -103,12 +102,29 @@ class ByField
     private function intersectIntMap($a, array $b): array
     {
         $result = [];
-        foreach ($a as $key) {
-            /**
-             * @var int $key
-             */
-            if (isset($b[$key])) {
-                $result[] = $key;
+
+
+        if (is_array($a)) {
+            foreach ($a as $key) {
+                /**
+                 * @var int $key
+                 */
+                if (isset($b[$key])) {
+                    $result[] = $key;
+                }
+            }
+
+        } else {
+            // Performance patch SplFixedArray index access is faster than iteration
+            $count = count($a);
+            for ($i = 0; $i < $count; $i++) {
+                /**
+                 * @var int $key
+                 */
+                $key = $a[$i];
+                if (isset($b[$key])) {
+                    $result[] = $key;
+                }
             }
         }
         return $result;

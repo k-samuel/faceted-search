@@ -1,4 +1,32 @@
 # Changelog
+### v2.1.1 (06.01.2022)
+
+### Performance update
+
+* Index Refactoring. Some methods moved from Search into Index
+* FixedArrayIndex performance patches. Index access is faster than iteration
+
+PHPBench v2.1.1 ArrayIndex PHP 8.1.0 + JIT + opcache (no xdebug extension)
+
+| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
+| 10,000          | ~6Mb     | ~0.0003 s.       | ~0.002 s.                | ~0.0001 s.   | 907              |
+| 50,000          | ~40Mb    | ~0.001 s.        | ~0.013 s.                | ~0.0005 s.   | 4550             |
+| 100,000         | ~80Mb    | ~0.003 s.        | ~0.028 s.                | ~0.001 s.    | 8817             |
+| 300,000         | ~189Mb   | ~0.011 s.        | ~0.100 s.                | ~0.004 s.    | 26891            |
+| 1,000,000       | ~657Mb   | ~0.047 s.        | ~0.387 s.                | ~0.018 s.    | 90520            |
+
+PHPBench v2.1.1 FixedArrayIndex PHP 8.1.0 + JIT + opcache (no xdebug extension)
+
+| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
+| 10,000          | ~2Mb     | ~0.0007 s.       | ~0.004 s.                | ~0.0001 s.   | 907              |
+| 50,000          | ~12Mb    | ~0.003 s.        | ~0.024 s.                | ~0.0009 s.   | 4550             |
+| 100,000         | ~23Mb    | ~0.006 s.        | ~0.049 s.                | ~0.001 s.    | 8817             |
+| 300,000         | ~70Mb    | ~0.019 s.        | ~0.151 s.                | ~0.006 s.    | 26891            |
+| 1,000,000       | ~233Mb   | ~0.078 s.        | ~0.565 s.                | ~0.024 s.    | 90520            |
+
+
 ### v2.1.0 (06.01.2022)
 
 ### Performance update and FixedArrayIndex
