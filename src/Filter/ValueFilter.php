@@ -65,7 +65,8 @@ class ValueFilter extends AbstractFilter
             if (is_float($item)) {
                 $item = (string)$item;
             }
-        }unset($item);
+        }
+        unset($item);
 
         $this->value = $value;
     }
@@ -80,22 +81,41 @@ class ValueFilter extends AbstractFilter
 
         // collect list for different values of one property
         foreach ($this->value as $item) {
-
             if (!isset($facetedData[$item])) {
                 continue;
             }
 
-            foreach ($facetedData[$item] as $recId) {
-                /**
-                 * @var int $recId
-                 */
-                if (!$hasInput) {
-                    $result[$recId] = true;
-                    continue;
+            if (is_array($facetedData[$item])) {
+                foreach ($facetedData[$item] as $recId) {
+                    /**
+                     * @var int $recId
+                     */
+                    if (!$hasInput) {
+                        $result[$recId] = true;
+                        continue;
+                    }
+
+                    if (isset($inputIdKeys[$recId])) {
+                        $result[$recId] = true;
+                    }
                 }
 
-                if (isset($inputIdKeys[$recId])) {
-                    $result[$recId] = true;
+            } else {
+                // Performance patch SplFixedArray index access is faster than iteration
+                $count = count($facetedData[$item]);
+                for ($i = 0; $i < $count; $i++) {
+                    $recId = $facetedData[$item][$i];
+                    /**
+                     * @var int $recId
+                     */
+                    if (!$hasInput) {
+                        $result[$recId] = true;
+                        continue;
+                    }
+
+                    if (isset($inputIdKeys[$recId])) {
+                        $result[$recId] = true;
+                    }
                 }
             }
         }

@@ -29,6 +29,8 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Index;
 
+use KSamuel\FacetedSearch\Filter\FilterInterface;
+use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Indexer\IndexerInterface;
 
 /**
@@ -39,7 +41,7 @@ class ArrayIndex implements IndexInterface
 {
     /**
      * Index data
-     * @var array<int|string,array<int|string,array<int>>>
+     * @var array<int|string,array<int|string,array<int>|\SplFixedArray<int>>>
      */
     protected $data = [];
     /**
@@ -89,14 +91,14 @@ class ArrayIndex implements IndexInterface
         return true;
     }
 
-    private function resetLocalCache(): void
+    protected function resetLocalCache(): void
     {
         $this->idMapCache = null;
     }
 
     /**
      * Get facet data.
-     * @return array<int|string,array<int|string,array<int>>>
+     * @return array<int|string,array<int|string,array<int>|\SplFixedArray<int>>>
      */
     public function getData(): array
     {
@@ -116,7 +118,7 @@ class ArrayIndex implements IndexInterface
     /**
      * Get field data section from index
      * @param string $fieldName
-     * @return array<int|string,array<int>>
+     * @return array<int|string,array<int>|\SplFixedArray<int>>
      */
     public function getFieldData(string $fieldName): array
     {
@@ -189,5 +191,241 @@ class ArrayIndex implements IndexInterface
     public function hasField(string $fieldName) : bool
     {
         return isset($this->data[$fieldName]);
+    }
+
+    /**
+     * Find records by filters as list of int
+     * @param array<FilterInterface> $filters
+     * @param array<int>|null $inputRecords - list of record id to search in. Use it for limit results
+     * @return array<int>
+     */
+    public function find(array $filters, ?array $inputRecords = null): array
+    {
+        $input = [];
+        if (!empty($inputRecords)) {
+            $input = $this->mapInputArray($inputRecords);
+        }
+
+        // Aggregates optimisation for value filters.
+        // The fewer elements after the first filtering, the fewer data copies and memory allocations in iterations
+        if (empty($inputRecords) && count($filters) > 1) {
+            $filters = $this->sortFiltersByCount($filters);
+        }
+
+        return array_keys($this->findRecordsMap($filters, $input));
+    }
+
+    /**
+     * Find acceptable filter values
+     * @param array<FilterInterface> $filters
+     * @param array<int> $inputRecords
+     * @return array<string,array<int|string,int|string>>
+     */
+    public function aggregate(array $filters = [], array $inputRecords = [], bool $countValues = false): array
+    {
+        $input = [];
+        if (!empty($inputRecords)) {
+            $input = $this->mapInputArray($inputRecords);
+        }
+
+        // Aggregates optimisation for value filters.
+        // The fewer elements after the first filtering, the fewer data copies and memory allocations in iterations
+        if (empty($inputRecords) && count($filters) > 1) {
+            $filters = $this->sortFiltersByCount($filters);
+        }
+
+        $result = [];
+        $indexedFilters = [];
+        $filteredRecords = [];
+
+        if (!empty($filters)) {
+            // index filters by field
+            foreach ($filters as $filter) {
+                /**
+                 * @var FilterInterface $filter
+                 */
+                $indexedFilters[$filter->getFieldName()] = $filter;
+            }
+            $filteredRecords = $this->findRecordsMap($indexedFilters, $input);
+        } elseif(!empty($inputRecords)) {
+            $filteredRecords = $this->findRecordsMap([], $input);
+        }
+
+        foreach ($this->data as $filterName => $filterValues) {
+            /**
+             * @var string $filterName
+             */
+            if (empty($indexedFilters) && empty($input)) {
+                if ($countValues) {
+                    // need to count values
+                    foreach ($filterValues as $key => $list) {
+                        $result[$filterName][$key] = count($list);
+                    }
+                } else {
+                    $result[$filterName] = array_keys($filterValues);
+                }
+                continue;
+            }
+
+            $filtersCopy = $indexedFilters;
+            // do not apply self filtering
+            if (isset($filtersCopy[$filterName])) {
+                unset($filtersCopy[$filterName]);
+                $recordIds = $this->findRecordsMap($filtersCopy, $input);
+            } else {
+                $recordIds = $filteredRecords;
+            }
+
+            foreach ($filterValues as $filterValue => $data) {
+                /**
+                 * @var array<int,int> $data
+                 */
+                $intersect = $this->getIntersectMapCount($data, $recordIds);
+
+                if ($intersect === 0) {
+                    continue;
+                }
+
+                if ($countValues) {
+                    // need to count values
+                    $result[$filterName][$filterValue] = $intersect;
+                } else {
+                    // results without count
+                    $result[$filterName][] = $filterValue;
+                }
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Find records by filters as array map [$id1=>true, $id2=>true, ...]
+     * @param array<FilterInterface> $filters
+     * @param array<int,bool> $inputRecords
+     * @return array<int,bool>
+     */
+    private function findRecordsMap(array $filters, array $inputRecords): array
+    {
+        // if no filters passed
+        if (empty($filters)) {
+            $total = $this->getAllRecordIdMap();
+            if (!empty($inputRecords)) {
+                return array_intersect_key($total, $inputRecords);
+            }
+            /**
+             * @var array<int,bool> $total
+             */
+            return $total;
+        }
+
+        /**
+         * @var FilterInterface $filter
+         */
+        foreach ($filters as $filter) {
+            $indexData = $this->data[$filter->getFieldName()] ?? [];
+            if (empty($indexData)) {
+                return [];
+            }
+            $inputRecords = $filter->filterResults($indexData, $inputRecords);
+        }
+
+        if (empty($inputRecords)) {
+            return [];
+        }
+
+        return $inputRecords;
+    }
+
+    /**
+     * @param array<int,int>|\SplFixedArray<int> $a
+     * @param array<int,bool> $b
+     * @return int
+     */
+    protected function getIntersectMapCount($a, array $b): int
+    {
+        $intersectLen = 0;
+
+        foreach ($a as $key) {
+            if (isset($b[$key])) {
+                $intersectLen++;
+            }
+        }
+
+        return $intersectLen;
+    }
+
+    /**
+     * @param array<int> $inputRecords
+     * @return array<int,bool>
+     */
+    private function mapInputArray(array $inputRecords): array
+    {
+        $input = [];
+        foreach ($inputRecords as $v) {
+            $input[$v] = true;
+        }
+        return $input;
+    }
+
+    /**
+     * Sort filters by minimum values count
+     * Used for aggregates optimisation (for ValueFilter)
+     * @param array<FilterInterface> $filters
+     * @return array<FilterInterface>
+     */
+    private function sortFiltersByCount(array $filters): array
+    {
+        $counts = [];
+        foreach ($filters as $index => $filter) {
+            if (!$filter instanceof ValueFilter) {
+                $counts[$index] = PHP_INT_MAX;
+                continue;
+            }
+            /**
+             * @var ValueFilter $filter
+             */
+            $fieldName = $filter->getFieldName();
+
+            if (!isset($this->data[$fieldName])) {
+                $counts[$index] = 0;
+                continue;
+            }
+
+            /**
+             * @var array<int,mixed> $filterValues
+             */
+            $filterValues = $filter->getValue();
+
+            $filterValuesCount = [];
+            $valuesInFilter = count($filterValues);
+            foreach ($filterValues as $value) {
+                $cnt = $this->getRecordsCount($fieldName, $value);
+                if ($valuesInFilter > 1) {
+                    $filterValuesCount[$value] = $cnt;
+                }
+
+                if (!isset($counts[$index])) {
+                    $counts[$index] = $cnt;
+                    continue;
+                }
+
+                if ($counts[$index] > $cnt) {
+                    $counts[$index] = $cnt;
+                }
+            }
+
+            if ($valuesInFilter > 1) {
+                // sort filter values by records count
+                asort($filterValuesCount);
+                // update filers with new values order
+                $filter->setValue(array_keys($filterValuesCount));
+            }
+        }
+        asort($counts);
+        $result = [];
+        foreach ($counts as $index => $count) {
+            $result[] = $filters[$index];
+        }
+        return $result;
     }
 }
