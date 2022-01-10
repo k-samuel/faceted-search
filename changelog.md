@@ -1,10 +1,10 @@
 # Changelog
-### v2.1.1 (in development)
+### v2.1.1 (11.01.2022)
 
 ### Performance update
 
 * Index Refactoring. Some methods moved from Search into Index
-* FixedArrayIndex performance patches. Index access is faster than iteration
+* FixedArrayIndex performance patches. Index access is faster than "foreach" iteration
 
 PHPBench v2.1.1 ArrayIndex PHP 8.1.0 + JIT + opcache (no xdebug extension)
 
