@@ -96,6 +96,18 @@ Bench v0.3.3 golang 1.17.3 with parallel aggregates
 | 300,000         | ~44Mb    | ~0.012 s.        | ~0.086 s.                | ~0.007 s.    | 26891            |
 | 1,000,000       | ~142Mb   | ~0.046 s.        | ~0.297 s.                | ~0.027 s.    | 90520            |
 
+
+*Since version 0.3.3, the index structures in PHP and Golang have diverged due to the peculiarities of the 
+implementation of hasMap in languages. In Go, hashMap had to be abandoned in favor of a more efficient storage 
+structure in slices, this allowed us to catch up with the performance of PHP.*
+
+*In PHP array (hashMap) is more CPU efficient by using doubleLinkedList and hashMap key packing.*
+
+*There are more efficient ways in Go to reduce the size of a slice without making a copy (used for list deduplication). 
+It allows make intersection using iteration through sorted slices.*
+
+*Further comparison does not make sense in view of the difference in algorithms.*
+
 ## Examples
 
 Create index using console/crontab etc.
