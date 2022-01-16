@@ -86,15 +86,27 @@ PHPBench v2.1.1 FixedArrayIndex PHP 8.1.0 + JIT + opcache (no xdebug extension)
 
 Experimental Golang port bench https://github.com/k-samuel/go-faceted-search
 
-Bench v0.3.2 golang 1.17.3 with parallel aggregates
+Bench v0.3.3 golang 1.17.3 with parallel aggregates
 
 | Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~5Mb     | ~0.0004 s.       | ~0.001 s.                | ~0.0002 s.   | 907              |
-| 50,000          | ~15Mb    | ~0.002 s.        | ~0.010 s.                | ~0.001 s.    | 4550             |
-| 100,000         | ~21Mb    | ~0.007 s.        | ~0.030 s.                | ~0.003 s.    | 8817             |
-| 300,000         | ~47Mb    | ~0.021 s.        | ~0.081 s.                | ~0.007 s.    | 26891            |
-| 1,000,000       | ~150Mb   | ~0.090 s.        | ~0.372 s.                | ~0.036 s.    | 90520            |
+| 10,000          | ~7Mb     | ~0.0003 s.       | ~0.002 s.                | ~0.0002 s.   | 907              |
+| 50,000          | ~14Mb    | ~0.002 s.        | ~0.015 s.                | ~0.001 s.    | 4550             |
+| 100,000         | ~20Mb    | ~0.004 s.        | ~0.030 s.                | ~0.002 s.    | 8817             |
+| 300,000         | ~44Mb    | ~0.012 s.        | ~0.086 s.                | ~0.007 s.    | 26891            |
+| 1,000,000       | ~142Mb   | ~0.046 s.        | ~0.297 s.                | ~0.027 s.    | 90520            |
+
+
+*Since version 0.3.3, the index structures in PHP and Golang have diverged due to the peculiarities of the 
+implementation of hasMap in languages. In Go, hashMap had to be abandoned in favor of a more efficient storage 
+structure in slices, this allowed us to catch up with the performance of PHP.*
+
+*In PHP array (hashMap) is more CPU efficient by using doubleLinkedList and hashMap key packing.*
+
+*There are more efficient ways in Go to reduce the size of a slice without making a copy (used for list deduplication). 
+It allows make intersection using iteration through sorted slices.*
+
+*Further comparison does not make sense in view of the difference in algorithms.*
 
 ## Examples
 
