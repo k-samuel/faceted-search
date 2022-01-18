@@ -265,7 +265,7 @@ foreach($data as $item){
 // After the data is added, you need to commit the changes 
 $searchIndex->commitChanges();
 // save index data to some storage 
-$indexData = $searchIndex->getData();
+$indexData = $searchIndex->export();
 // We will use file for example
 file_put_contents('./first-index.json', json_encode($indexData));
 
