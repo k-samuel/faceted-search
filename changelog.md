@@ -1,4 +1,11 @@
 # Changelog
+
+### v2.1.2 (20.01.2022)
+### Bug Fix
+* [issue#6](https://github.com/k-samuel/faceted-search/issues/6) Broken RangeFilter from [mavmedved](https://github.com/mavmedved)
+
+
+
 ### v2.1.1 (11.01.2022)
 
 ### Performance update

@@ -217,7 +217,7 @@ $filters = [
 $search = new Search($index);
 $search->find($filters);
 
-// will return [2,3]
+// will return [2,3,4]
 ```
 RangeListIndexer allows you to use custom ranges list
 ```php
