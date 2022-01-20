@@ -87,7 +87,7 @@ class RangeFilter extends AbstractFilter
             $limitData[$v] = true;
         }
 
-        if ($inputIdKeys === null) {
+        if (empty($inputIdKeys)) {
             /**
              * @var array<int,bool>$limitData
              */
