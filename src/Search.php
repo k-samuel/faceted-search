@@ -30,7 +30,6 @@ declare(strict_types=1);
 namespace KSamuel\FacetedSearch;
 
 use KSamuel\FacetedSearch\Filter\FilterInterface;
-use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Index\IndexInterface;
 
 /**

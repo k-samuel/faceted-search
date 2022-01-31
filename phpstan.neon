@@ -1,9 +1,7 @@
-includes:
-	- phar://phpstan.phar/conf/config.levelmax.neon
 parameters:
+	level: max
+	paths:
+		- src
+		- tests/unit
 	bootstrapFiles:
 	    -  %currentWorkingDirectory%/tests/phpstan/bootstrap.php
-	scanDirectories:
-	    -  %currentWorkingDirectory%/src
-	    -  %currentWorkingDirectory%/tests/unit
-
