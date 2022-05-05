@@ -81,8 +81,8 @@ class ArrayIndex implements IndexInterface
                     if (is_bool($value)) {
                         $value = (int)$value;
                     }
-                    if(is_float($value)){
-                        $value = (string) $value;
+                    if (is_float($value)) {
+                        $value = (string)$value;
                     }
                     $this->data[$fieldName][$value][] = $recordId;
                 }
@@ -175,9 +175,9 @@ class ArrayIndex implements IndexInterface
      * @param mixed $value
      * @return int
      */
-    public function getRecordsCount(string $field, $value) : int
+    public function getRecordsCount(string $field, $value): int
     {
-        if(!isset($this->data[$field][$value])){
+        if (!isset($this->data[$field][$value])) {
             return 0;
         }
         return count($this->data[$field][$value]);
@@ -188,7 +188,7 @@ class ArrayIndex implements IndexInterface
      * @param string $fieldName
      * @return bool
      */
-    public function hasField(string $fieldName) : bool
+    public function hasField(string $fieldName): bool
     {
         return isset($this->data[$fieldName]);
     }
@@ -247,7 +247,7 @@ class ArrayIndex implements IndexInterface
                 $indexedFilters[$filter->getFieldName()] = $filter;
             }
             $filteredRecords = $this->findRecordsMap($indexedFilters, $input);
-        } elseif(!empty($inputRecords)) {
+        } elseif (!empty($inputRecords)) {
             $filteredRecords = $this->findRecordsMap([], $input);
         }
 
@@ -327,10 +327,9 @@ class ArrayIndex implements IndexInterface
                 return [];
             }
             $inputRecords = $filter->filterResults($indexData, $inputRecords);
-        }
-
-        if (empty($inputRecords)) {
-            return [];
+            if (empty($inputRecords)) {
+                return [];
+            }
         }
 
         return $inputRecords;

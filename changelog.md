@@ -1,5 +1,10 @@
 # Changelog
 
+### v2.1.3 (04.05.2022)
+### Bug Fix
+* [issue#8](https://github.com/k-samuel/faceted-search/issues/8) Unexpected results. Filters that do not return results are ignored for searching with multiple filters. [satanicman](https://github.com/satanicman)
+
+
 ### v2.1.2 (20.01.2022)
 ### Bug Fix
 * [issue#6](https://github.com/k-samuel/faceted-search/issues/6) Broken RangeFilter from [mavmedved](https://github.com/mavmedved)
