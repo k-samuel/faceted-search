@@ -219,6 +219,7 @@ class ArrayIndex implements IndexInterface
      * Find acceptable filter values
      * @param array<FilterInterface> $filters
      * @param array<int> $inputRecords
+     * @param bool $countValues
      * @return array<string,array<int|string,int|string>>
      */
     public function aggregate(array $filters = [], array $inputRecords = [], bool $countValues = false): array
@@ -277,20 +278,20 @@ class ArrayIndex implements IndexInterface
             }
 
             foreach ($filterValues as $filterValue => $data) {
-                /**
-                 * @var array<int,int> $data
-                 */
-                $intersect = $this->getIntersectMapCount($data, $recordIds);
-
-                if ($intersect === 0) {
-                    continue;
-                }
-
                 if ($countValues) {
                     // need to count values
+                    /**
+                     * @var array<int,int> $data
+                     */
+                    $intersect = $this->getIntersectMapCount($data, $recordIds);
+
+                    if ($intersect === 0) {
+                        continue;
+                    }
+
                     $result[$filterName][$filterValue] = $intersect;
-                } else {
                     // results without count
+                } elseif ($this->hasIntersectIntMap($data, $recordIds)) {
                     $result[$filterName][] = $filterValue;
                 }
             }
@@ -326,7 +327,9 @@ class ArrayIndex implements IndexInterface
             if (empty($indexData)) {
                 return [];
             }
+
             $inputRecords = $filter->filterResults($indexData, $inputRecords);
+
             if (empty($inputRecords)) {
                 return [];
             }
@@ -351,6 +354,21 @@ class ArrayIndex implements IndexInterface
         }
 
         return $intersectLen;
+    }
+
+    /**
+     * @param array<int,int>|\SplFixedArray<int> $a
+     * @param array<int,bool> $b
+     * @return bool
+     */
+    protected function hasIntersectIntMap($a, array $b): bool
+    {
+        foreach ($a as $key) {
+            if (isset($b[$key])) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -425,6 +443,7 @@ class ArrayIndex implements IndexInterface
         foreach ($counts as $index => $count) {
             $result[] = $filters[$index];
         }
+
         return $result;
     }
 }

@@ -68,6 +68,11 @@ class ArrayIndexBench
 
     public function benchAggregations(): void
     {
+        $result = $this->search->findAcceptableFilters($this->filters);
+    }
+
+    public function benchAggregationsAndCount(): void
+    {
         $result = $this->search->findAcceptableFiltersCount($this->filters);
     }
 

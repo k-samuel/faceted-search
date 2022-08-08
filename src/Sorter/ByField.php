@@ -80,53 +80,39 @@ class ByField
 
         $sorted = [];
         foreach ($data as $records) {
-            $ids = $this->intersectIntMap($records, $results);
-
-            if (empty($ids)) {
-                continue;
-            }
-            foreach ($ids as $id) {
-                $sorted[] = $id;
-                // already sorted
-                unset($results[$id]);
+            // inline intersection - intersectIntMap
+            $a = &$records;
+            $b = &$results;
+            /**
+             * @var array<int>|\SplFixedArray<int> $a
+             */
+            if (is_array($a)) {
+                foreach ($a as $key) {
+                    /**
+                     * @var int $key
+                     */
+                    if (isset($b[$key])) {
+                        $sorted[] = $key;
+                        // already sorted
+                        unset($results[$key]);
+                    }
+                }
+            } else {
+                // Performance patch SplFixedArray index access is faster than iteration
+                $count = count($a);
+                for ($i = 0; $i < $count; $i++) {
+                    /**
+                     * @var int $key
+                     */
+                    $key = $a[$i];
+                    if (isset($b[$key])) {
+                        $sorted[] = $key;
+                        // already sorted
+                        unset($results[$key]);
+                    }
+                }
             }
         }
         return $sorted;
-    }
-
-    /**
-     * @param array<int,int>|\SplFixedArray<int> $a
-     * @param array<int,bool|int> $b
-     * @return array<int,int>
-     */
-    private function intersectIntMap($a, array $b): array
-    {
-        $result = [];
-
-
-        if (is_array($a)) {
-            foreach ($a as $key) {
-                /**
-                 * @var int $key
-                 */
-                if (isset($b[$key])) {
-                    $result[] = $key;
-                }
-            }
-
-        } else {
-            // Performance patch SplFixedArray index access is faster than iteration
-            $count = count($a);
-            for ($i = 0; $i < $count; $i++) {
-                /**
-                 * @var int $key
-                 */
-                $key = $a[$i];
-                if (isset($b[$key])) {
-                    $result[] = $key;
-                }
-            }
-        }
-        return $result;
     }
 }
