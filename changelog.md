@@ -7,7 +7,7 @@
 
 PHPBench v2.1.4 ArrayIndex PHP 8.1.9 + JIT + opcache (no xdebug extension)
 
-| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters (aggregate & count)| Sort by field| Results Found    |
+| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
 | 10,000          | ~6Mb     | ~0.0004 s.       | ~0.001 s.                | ~0.002 s.                      | ~0.0001 s.   | 907              |
 | 50,000          | ~40Mb    | ~0.001 s.        | ~0.007 s.                | ~0.013 s.                      | ~0.0005 s.   | 4550             |
@@ -17,7 +17,7 @@ PHPBench v2.1.4 ArrayIndex PHP 8.1.9 + JIT + opcache (no xdebug extension)
 
 PHPBench v2.1.4 ArrayIndex PHP 8.1.9 + JIT + opcache (no xdebug extension)
 
-| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters (aggregate & count)| Sort by field| Results Found    |
+| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
 | 10,000          | ~6Mb     | ~0.0007 s.       | ~0.002 s.                | ~0.005 s.                      | ~0.0002 s.   | 907              |
 | 50,000          | ~40Mb    | ~0.003 s.        | ~0.012 s.                | ~0.024 s.                      | ~0.0009 s.   | 4550             |
