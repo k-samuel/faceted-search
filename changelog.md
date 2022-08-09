@@ -1,5 +1,5 @@
 # Changelog
-### v2.1.4 (xx.08.2022)
+### v2.1.4 (09.08.2022)
 
 ### Performance updates
 * aggregate method 2x faster for cases without values count $countValues = false
