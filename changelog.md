@@ -1,9 +1,12 @@
 # Changelog
-### v2.1.4 (xx.08.2022)
+### v2.1.4 (09.08.2022)
 
 ### Performance updates
-* aggregate method 2x faster for cases without values count $countValues = false
-* small optimisations for sort method
+* aggregate method 2x faster for cases without values count
+```php
+ $search->findAcceptableFilters()
+```
+* some optimisations of sorting method
 
 PHPBench v2.1.4 ArrayIndex PHP 8.1.9 + JIT + opcache (no xdebug extension)
 
