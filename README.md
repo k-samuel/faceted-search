@@ -66,7 +66,7 @@ PHPBench v2.1.4 ArrayIndex PHP 8.1.9 + JIT + opcache (no xdebug extension)
 | 300,000         | ~189Mb   | ~0.012 s.        | ~0.057 s.                | ~0.097 s                       | ~0.004 s.    | 26891            |
 | 1,000,000       | ~657Mb   | ~0.047 s.        | ~0.233 s.                | ~0.385 s.                      | ~0.017 s.    | 90520            |
 
-PHPBench v2.1.4 ArrayIndex PHP 8.1.9 + JIT + opcache (no xdebug extension)
+PHPBench v2.1.4 FixedArrayIndex PHP 8.1.9 + JIT + opcache (no xdebug extension)
 
 | Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
