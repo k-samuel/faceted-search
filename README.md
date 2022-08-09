@@ -56,8 +56,6 @@ For example: list of ProductId "in stock" to exclude not available products.
 
 Tests on sets of products with 10 attributes, search with filters by 3 fields.
 
-PHPBench v2.1.1 ArrayIndex PHP 8.1.0 + JIT + opcache (no xdebug extension)
-
 PHPBench v2.1.4 ArrayIndex PHP 8.1.9 + JIT + opcache (no xdebug extension)
 
 | Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
