@@ -1,5 +1,5 @@
 # Changelog
-### v2.1.4 (23.09.2022)
+### v2.1.5 (23.09.2022)
 
 ### Performance update
 Aggregate method now up to 33 % faster.
