@@ -2,7 +2,7 @@
 ### v2.1.4 (23.09.2022)
 
 ### Performance update
-Aggregate methods now up to 33 % faster.
+Aggregate method now up to 33 % faster.
 
 PHPBench v2.1.5 ArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension)
 
