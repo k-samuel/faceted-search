@@ -35,7 +35,7 @@ class RangeIndexer implements IndexerInterface
     /**
      * @var int
      */
-    protected $step;
+    protected int $step;
 
     public function __construct(int $step)
     {

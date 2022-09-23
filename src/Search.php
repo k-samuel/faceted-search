@@ -42,7 +42,7 @@ class Search
     /**
      * @var IndexInterface
      */
-    protected $index;
+    protected IndexInterface $index;
 
     /**
      * Search constructor.

@@ -76,7 +76,7 @@ class SearchArrayIndexTest extends TestCase
     public function testGetAcceptableFilters()
     {
         $records = $this->getTestData();
-        $index = new Index();
+        $index = new Index\ArrayIndex();
         foreach ($records as $id => $item) {
             $index->addRecord($id, $item);
         }

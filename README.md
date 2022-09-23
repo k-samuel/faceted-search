@@ -56,25 +56,25 @@ For example: list of ProductId "in stock" to exclude not available products.
 
 Tests on sets of products with 10 attributes, search with filters by 3 fields.
 
-PHPBench v2.1.4 ArrayIndex PHP 8.1.9 + JIT + opcache (no xdebug extension)
+PHPBench v2.1.5 ArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension)
 
 | Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
 | 10,000          | ~6Mb     | ~0.0004 s.       | ~0.001 s.                | ~0.002 s.                      | ~0.0001 s.   | 907              |
-| 50,000          | ~40Mb    | ~0.001 s.        | ~0.007 s.                | ~0.013 s.                      | ~0.0005 s.   | 4550             |
-| 100,000         | ~80Mb    | ~0.003 s.        | ~0.015 s.                | ~0.028 s.                      | ~0.001 s.    | 8817             |
-| 300,000         | ~189Mb   | ~0.012 s.        | ~0.057 s.                | ~0.097 s                       | ~0.004 s.    | 26891            |
-| 1,000,000       | ~657Mb   | ~0.047 s.        | ~0.233 s.                | ~0.385 s.                      | ~0.017 s.    | 90520            |
+| 50,000          | ~40Mb    | ~0.001 s.        | ~0.005 s.                | ~0.010 s.                      | ~0.0005 s.   | 4550             |
+| 100,000         | ~80Mb    | ~0.003 s.        | ~0.016 s.                | ~0.029 s.                      | ~0.001 s.    | 8817             |
+| 300,000         | ~189Mb   | ~0.011 s.        | ~0.044 s.                | ~0.091 s                       | ~0.004 s.    | 26891            |
+| 1,000,000       | ~657Mb   | ~0.047 s.        | ~0.169 s.                | ~0.333 s.                      | ~0.018 s.    | 90520            |
 
-PHPBench v2.1.4 FixedArrayIndex PHP 8.1.9 + JIT + opcache (no xdebug extension)
+PHPBench v2.1.5 FixedArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension)
 
 | Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
-| 10,000          | ~2Mb     | ~0.0007 s.       | ~0.002 s.                | ~0.005 s.                      | ~0.0002 s.   | 907              |
-| 50,000          | ~12Mb    | ~0.003 s.        | ~0.012 s.                | ~0.024 s.                      | ~0.0009 s.   | 4550             |
-| 100,000         | ~23Mb    | ~0.006 s.        | ~0.025 s.                | ~0.047 s.                      | ~0.002 s.    | 8817             |
-| 300,000         | ~70Mb    | ~0.019 s.        | ~0.083 s.                | ~0.149 s.                      | ~0.006 s.    | 26891            |
-| 1,000,000       | ~233Mb   | ~0.077 s.        | ~0.306 s.                | ~0.550 s.                      | ~0.025 s.    | 90520            |
+| 10,000          | ~2Mb     | ~0.0007 s.       | ~0.001 s.                | ~0.003 s.                      | ~0.0002 s.   | 907              |
+| 50,000          | ~12Mb    | ~0.003 s.        | ~0.007 s.                | ~0.018 s.                      | ~0.0009 s.   | 4550             |
+| 100,000         | ~23Mb    | ~0.006 s.        | ~0.017 s.                | ~0.040 s.                      | ~0.002 s.    | 8817             |
+| 300,000         | ~70Mb    | ~0.020 s.        | ~0.059 s.                | ~0.118 s.                      | ~0.006 s.    | 26891            |
+| 1,000,000       | ~233Mb   | ~0.079 s.        | ~0.206 s.                | ~0.448 s.                      | ~0.026 s.    | 90520            |
 
 
 * Items count - Products in index

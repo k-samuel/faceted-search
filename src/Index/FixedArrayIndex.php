@@ -38,7 +38,7 @@ class FixedArrayIndex extends ArrayIndex
     /**
      * @var bool
      */
-    protected $isCompact = false;
+    protected bool $isCompact = false;
 
     /**
      * Get index data. Can be used for storing it to DB

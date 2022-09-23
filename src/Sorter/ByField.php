@@ -39,7 +39,7 @@ class ByField
     /**
      * @var Index\IndexInterface
      */
-    private $index;
+    private Index\IndexInterface $index;
 
     public function __construct(Index\IndexInterface $index)
     {

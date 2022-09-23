@@ -35,7 +35,7 @@ abstract class AbstractFilter implements FilterInterface
     /**
      * @var string
      */
-    protected $fieldName;
+    protected string $fieldName;
     /**
      * @var mixed
      */

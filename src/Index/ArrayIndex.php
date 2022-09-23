@@ -43,15 +43,15 @@ class ArrayIndex implements IndexInterface
      * Index data
      * @var array<int|string,array<int|string,array<int>|\SplFixedArray<int>>>
      */
-    protected $data = [];
+    protected array $data = [];
     /**
      * @var array<IndexerInterface>
      */
-    protected $indexers = [];
+    protected array $indexers = [];
     /**
-     * @var null|array<int,bool>
+     * @var array<int,bool>
      */
-    private $idMapCache = null;
+    private array $idMapCache = [];
 
     /**
      * Add record to index
@@ -93,7 +93,7 @@ class ArrayIndex implements IndexInterface
 
     protected function resetLocalCache(): void
     {
-        $this->idMapCache = null;
+        $this->idMapCache = [];
     }
 
     /**
@@ -140,7 +140,7 @@ class ArrayIndex implements IndexInterface
      */
     public function getAllRecordIdMap(): array
     {
-        if ($this->idMapCache !== null) {
+        if (!empty($this->idMapCache)) {
             return $this->idMapCache;
         }
 
@@ -239,6 +239,8 @@ class ArrayIndex implements IndexInterface
         $indexedFilters = [];
         $filteredRecords = [];
 
+        $resultCache = [];
+
         if (!empty($filters)) {
             // index filters by field
             foreach ($filters as $filter) {
@@ -246,8 +248,9 @@ class ArrayIndex implements IndexInterface
                  * @var FilterInterface $filter
                  */
                 $indexedFilters[$filter->getFieldName()] = $filter;
+                $resultCache[$filter->getFieldName()] = $this->findRecordsMap([$filter], $input);
             }
-            $filteredRecords = $this->findRecordsMap($indexedFilters, $input);
+            $filteredRecords = $this->mergeFilters($resultCache);
         } elseif (!empty($inputRecords)) {
             $filteredRecords = $this->findRecordsMap([], $input);
         }
@@ -268,11 +271,14 @@ class ArrayIndex implements IndexInterface
                 continue;
             }
 
-            $filtersCopy = $indexedFilters;
             // do not apply self filtering
-            if (isset($filtersCopy[$filterName])) {
-                unset($filtersCopy[$filterName]);
-                $recordIds = $this->findRecordsMap($filtersCopy, $input);
+            if (isset($resultCache[$filterName])) {
+                if(count($resultCache) > 1){
+                    $recordIds = $this->mergeFilters($resultCache, $filterName);
+                }else{
+                    $recordIds = $this->findRecordsMap([], $input);
+                }
+
             } else {
                 $recordIds = $filteredRecords;
             }
@@ -293,6 +299,34 @@ class ArrayIndex implements IndexInterface
                     // results without count
                 } elseif ($this->hasIntersectIntMap($data, $recordIds)) {
                     $result[$filterName][] = $filterValue;
+                }
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * @param array<mixed,array<int,bool>> $maps
+     * @param string|null $skipKey
+     * @return array<int,bool>
+     */
+    private function mergeFilters(array $maps, ?string $skipKey = null): array
+    {
+        $result = [];
+        $start = true;
+        foreach ($maps as $key => $map) {
+            if ($skipKey !== null && $key === $skipKey) {
+                continue;
+            }
+
+            if ($start) {
+                $result = $map;
+                $start = false;
+                continue;
+            }
+            foreach ($result as $k => $v) {
+                if (!isset($map[$k])) {
+                    unset($result[$k]);
                 }
             }
         }

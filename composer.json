@@ -1,6 +1,6 @@
 {
     "name": "k-samuel/faceted-search",
-    "version": "2.1.4",
+    "version": "2.1.5",
     "type": "library",
     "description": "PHP Faceted search",
     "keywords": ["php","faceted search"],
@@ -20,7 +20,7 @@
         "preferred-install": "dist"
     },
     "require": {
-        "php":">=7.3.0"
+        "php":">=7.4.0"
     },
     "autoload": {
       "psr-4": {

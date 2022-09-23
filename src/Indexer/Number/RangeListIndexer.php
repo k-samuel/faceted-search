@@ -36,7 +36,7 @@ class RangeListIndexer implements IndexerInterface
     /**
      * @var array<int>
      */
-    protected $ranges;
+    protected array $ranges;
 
     /**
      * CustomRangeIndexer constructor.
