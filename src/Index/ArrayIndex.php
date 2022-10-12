@@ -307,10 +307,10 @@ class ArrayIndex implements IndexInterface
 
     /**
      * @param array<mixed,array<int,bool>> $maps
-     * @param string|null $skipKey
+     * @param string|int|null $skipKey user defined filter name
      * @return array<int,bool>
      */
-    private function mergeFilters(array $maps, ?string $skipKey = null): array
+    private function mergeFilters(array $maps, $skipKey = null): array
     {
         $result = [];
         $start = true;
