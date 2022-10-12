@@ -1,6 +1,6 @@
 {
     "name": "k-samuel/faceted-search",
-    "version": "2.1.5",
+    "version": "2.1.6",
     "type": "library",
     "description": "PHP Faceted search",
     "keywords": ["php","faceted search"],

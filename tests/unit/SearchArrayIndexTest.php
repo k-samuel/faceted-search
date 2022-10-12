@@ -259,6 +259,51 @@ class SearchArrayIndexTest extends TestCase
         }
     }
 
+    public function testIntFilterNames()
+    {
+        $index = new KSamuel\FacetedSearch\Index\ArrayIndex();
+        $records = [
+            ['id'=>1, 1 => 'black', 2 => 7.5, 'group' => 'A'],
+            ['id'=>2, 1 => 'black', 2 => 8.9, 'group' => 'A'],
+            ['id'=>3, 1 => 'white', 2 => 7.11, 'group' => 'B'],
+        ];
+        foreach ($records as $item) {
+            $id = $item['id'];
+            unset($item['id']);
+            $index->addRecord($id, $item);
+        }
+        $facets = new Search($index);
+        $filter = new ValueFilter(2, 7.11);
+        $result = $facets->find([$filter]);
+        $this->assertEquals(3,$result[0]);
+        $filter = new ValueFilter(1, 'black');
+        $filter2 = new ValueFilter('group', 'A');
+        $result = $facets->find([$filter, $filter2]);
+        $this->assertEquals(1, $result[0]);
+        $this->assertEquals(2, $result[1]);
+
+        $acceptableFilters = $facets->findAcceptableFiltersCount([$filter,$filter2]);
+
+        $expect = [
+            1 => ['black' =>2],
+            2 => ['8.9' => 1,'7.5'=>1],
+            'group' => ['A' =>2]
+        ];
+        foreach ($expect as  &$values) {
+            asort($values);
+        }
+        unset($values);
+        foreach ($acceptableFilters as &$values) {
+            asort($values);
+        }
+        unset($values);
+
+        foreach ($expect as $filter => $values) {
+            $this->assertArrayHasKey($filter, $acceptableFilters);
+            $this->assertEquals($values, $acceptableFilters[$filter]);
+        }
+    }
+
     public function testFindFloat()
     {
         $records = [

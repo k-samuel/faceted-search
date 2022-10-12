@@ -1,4 +1,9 @@
 # Changelog
+### v2.1.6 (23.09.2022)
+### Bug Fix
+* [issue#8](https://github.com/k-samuel/faceted-search/issues/9) Version 2.1.5 does not allow integer names for data fields. Reported by [pixobit](https://github.com/pixobit).
+
+# Changelog
 ### v2.1.5 (23.09.2022)
 
 ### Performance update
