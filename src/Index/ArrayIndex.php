@@ -55,11 +55,11 @@ class ArrayIndex implements IndexInterface
 
     /**
      * Add record to index
-     * @param int $recordId
+     * @param int|string $recordId
      * @param array<int|string,array<int,mixed>> $recordValues -  ['fieldName'=>'fieldValue','fieldName2'=>['val1','val2']]
      * @return bool
      */
-    public function addRecord(int $recordId, array $recordValues): bool
+    public function addRecord(int|string $recordId, array $recordValues): bool
     {
         $this->resetLocalCache();
         foreach ($recordValues as $fieldName => $values) {
