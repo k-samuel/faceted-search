@@ -8,13 +8,13 @@ PHPBench v2.1.7 ArrayIndex PHP 8.1.13 + JIT + opcache (no xdebug extension) (OS:
 
 | Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
-| 10,000          | ~6Mb     | ~0.0004 s.       | ~0.001 s.                | ~0.002 s.                      | ~0.0001 s.   | 907              |
+| 10,000          | ~6Mb     | ~0.0008 s.       | ~0.001 s.                | ~0.002 s.                      | ~0.0003 s.   | 907              |
 | 50,000          | ~40Mb    | ~0.001 s.        | ~0.005 s.                | ~0.011 s.                      | ~0.0005 s.   | 4550             |
 | 100,000         | ~80Mb    | ~0.003 s.        | ~0.016 s.                | ~0.029 s.                      | ~0.001 s.    | 8817             |
 | 300,000         | ~189Mb   | ~0.011 s.        | ~0.046 s.                | ~0.094 s                       | ~0.004 s.    | 26891            |
 | 1,000,000       | ~657Mb   | ~0.048 s.        | ~0.182 s.                | ~0.338 s.                      | ~0.018 s.    | 90520            |
 
-PHPBench v2.1.7 FixedArrayIndex PHP 8.1.13 + JIT + opcache (no xdebug extension) (OS:Ventura)
+v2.1.7 Bench FixedArrayIndex PHP 8.1.13 + JIT + opcache (no xdebug extension) (OS:Ventura)
 
 | Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
@@ -25,15 +25,15 @@ PHPBench v2.1.7 FixedArrayIndex PHP 8.1.13 + JIT + opcache (no xdebug extension)
 | 1,000,000       | ~233Mb   | ~0.082 s.        | ~0.190 s.                | ~0.449 s.                      | ~0.033 s.    | 90520            |
 
 
-PHPBench v2.1.6 ArrayIndex PHP 8.1.13 + JIT + opcache (no xdebug extension) (OS:Ventura)
+v2.1.6 Bench ArrayIndex PHP 8.1.13 + JIT + opcache (no xdebug extension) (OS:Ventura)
 
 | Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
-| 10,000          | ~6Mb     | ~0.0004 s.       | ~0.001 s.                | ~0.002 s.                      | ~0.0001 s.   | 907              |
-| 50,000          | ~40Mb    | ~0.001 s.        | ~0.005 s.                | ~0.011 s.                      | ~0.0005 s.   | 4550             |
-| 100,000         | ~80Mb    | ~0.003 s.        | ~0.016 s.                | ~0.029 s.                      | ~0.001 s.    | 8817             |
-| 300,000         | ~189Mb   | ~0.011 s.        | ~0.047 s.                | ~0.095 s                       | ~0.004 s.    | 26891            |
-| 1,000,000       | ~657Mb   | ~0.048 s.        | ~0.178 s.                | ~0.339 s.                      | ~0.018 s.    | 90520            |
+| 10,000          | ~6Mb     | ~0.0008 s.       | ~0.001 s.                | ~0.002 s.                      | ~0.0003 s.   | 907              |
+| 50,000          | ~40Mb    | ~0.002 s.        | ~0.006 s.                | ~0.012 s.                      | ~0.0009 s.   | 4550             |
+| 100,000         | ~80Mb    | ~0.004 s.        | ~0.013 s.                | ~0.025 s.                      | ~0.001 s.    | 8817             |
+| 300,000         | ~189Mb   | ~0.012 s.        | ~0.042 s.                | ~0.101 s                       | ~0.006 s.    | 26891            |
+| 1,000,000       | ~657Mb   | ~0.051 s.        | ~0.177 s.                | ~0.341 s.                      | ~0.017 s.    | 90520            |
 
 
 
