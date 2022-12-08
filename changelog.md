@@ -1,5 +1,43 @@
 # Changelog
-### v2.1.6 (12.10.2022)
+### v2.1.7 (03.12.2022)
+
+### Performance update
+Optimizations of filters memmory allocation
+
+PHPBench v2.1.7 ArrayIndex PHP 8.1.13 + JIT + opcache (no xdebug extension) (OS:Ventura)
+
+| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
+| 10,000          | ~6Mb     | ~0.0004 s.       | ~0.001 s.                | ~0.002 s.                      | ~0.0001 s.   | 907              |
+| 50,000          | ~40Mb    | ~0.001 s.        | ~0.005 s.                | ~0.011 s.                      | ~0.0005 s.   | 4550             |
+| 100,000         | ~80Mb    | ~0.003 s.        | ~0.016 s.                | ~0.029 s.                      | ~0.001 s.    | 8817             |
+| 300,000         | ~189Mb   | ~0.011 s.        | ~0.046 s.                | ~0.094 s                       | ~0.004 s.    | 26891            |
+| 1,000,000       | ~657Mb   | ~0.048 s.        | ~0.182 s.                | ~0.338 s.                      | ~0.018 s.    | 90520            |
+
+PHPBench v2.1.7 FixedArrayIndex PHP 8.1.13 + JIT + opcache (no xdebug extension) (OS:Ventura)
+
+| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
+| 10,000          | ~2Mb     | ~0.001 s.        | ~0.001 s.                | ~0.003 s.                      | ~0.0004 s.   | 907              |
+| 50,000          | ~12Mb    | ~0.004 s.        | ~0.008 s.                | ~0.019 s.                      | ~0.001 s.    | 4550             |
+| 100,000         | ~23Mb    | ~0.007 s.        | ~0.016 s.                | ~0.040 s.                      | ~0.002 s.    | 8817             |
+| 300,000         | ~70Mb    | ~0.030 s.        | ~0.052 s.                | ~0.123 s.                      | ~0.008 s.    | 26891            |
+| 1,000,000       | ~233Mb   | ~0.082 s.        | ~0.190 s.                | ~0.449 s.                      | ~0.033 s.    | 90520            |
+
+
+PHPBench v2.1.6 ArrayIndex PHP 8.1.13 + JIT + opcache (no xdebug extension) (OS:Ventura)
+
+| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
+| 10,000          | ~6Mb     | ~0.0004 s.       | ~0.001 s.                | ~0.002 s.                      | ~0.0001 s.   | 907              |
+| 50,000          | ~40Mb    | ~0.001 s.        | ~0.005 s.                | ~0.011 s.                      | ~0.0005 s.   | 4550             |
+| 100,000         | ~80Mb    | ~0.003 s.        | ~0.016 s.                | ~0.029 s.                      | ~0.001 s.    | 8817             |
+| 300,000         | ~189Mb   | ~0.011 s.        | ~0.047 s.                | ~0.095 s                       | ~0.004 s.    | 26891            |
+| 1,000,000       | ~657Mb   | ~0.048 s.        | ~0.178 s.                | ~0.339 s.                      | ~0.018 s.    | 90520            |
+
+
+
+
 ### Bug Fix
 * [issue#8](https://github.com/k-samuel/faceted-search/issues/9) Version 2.1.5 does not allow integer names for data fields. Reported by [pixobit](https://github.com/pixobit).
 

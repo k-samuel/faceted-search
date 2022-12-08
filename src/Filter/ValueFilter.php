@@ -33,7 +33,7 @@ namespace KSamuel\FacetedSearch\Filter;
  * Simple filter for faceted index. Filter item by value
  * @package KSamuel\FacetedSearch\Filter
  */
-class ValueFilter extends AbstractFilter
+class ValueFilter extends AbstractFilter implements InputFilterInterface
 {
     /**
      * @var array<int,mixed>
@@ -116,6 +116,94 @@ class ValueFilter extends AbstractFilter
                     if (isset($inputIdKeys[$recId])) {
                         $result[$recId] = true;
                     }
+                }
+            }
+        }
+        return $result;
+    }
+
+     /**
+     * @inheritDoc
+     */
+    public function filterInput(array $facetedData,  array & $inputIdKeys) : void
+    {
+        if(empty($inputIdKeys)){
+            $inputIdKeys = $this->filterData($facetedData);
+            return;
+        }
+
+         // collect list for different values of one property
+         foreach ($this->value as $item) {
+            if (!isset($facetedData[$item])) {
+                continue;
+            }
+
+            if (is_array($facetedData[$item])) {
+                foreach ($facetedData[$item] as $recId) {
+                    /**
+                     * @var int $recId
+                     */
+                    if (isset($inputIdKeys[$recId])) {
+                        $inputIdKeys[$recId] = 2;
+                    }
+                }
+
+            } else {
+                // Performance patch SplFixedArray index access is faster than iteration
+                $count = count($facetedData[$item]);
+                for ($i = 0; $i < $count; $i++) {
+                    $recId = $facetedData[$item][$i];
+                    /**
+                     * @var int $recId
+                     */
+                    if (isset($inputIdKeys[$recId])) {
+                        $inputIdKeys[$recId] = 2;
+                    }
+                }
+            }
+        }
+
+        foreach ($inputIdKeys as $index => &$value){
+            if($value === 2){
+                $value = true;
+                continue;
+            }
+            unset($inputIdKeys[$index]);
+        }
+    }
+
+    /** 
+     * Filter faceted data
+     * @param array<int|string,array<int>|\SplFixedArray<int>> $facetedData
+     * @return array<int,bool> - results in keys
+     */
+    private function filterData(array $facetedData) : array
+    {
+        $result = [];
+      
+        // collect list for different values of one property
+        foreach ($this->value as $item) {
+            if (!isset($facetedData[$item])) {
+                continue;
+            }
+
+            if (is_array($facetedData[$item])) {
+                foreach ($facetedData[$item] as $recId) {
+                    /**
+                     * @var int $recId
+                     */
+                    $result[$recId] = true;
+                    continue;
+                }
+            } else {
+                // Performance patch SplFixedArray index access is faster than iteration
+                $count = count($facetedData[$item]);
+                for ($i = 0; $i < $count; $i++) {
+                    $recId = $facetedData[$item][$i];
+                    /**
+                     * @var int $recId
+                     */
+                    $result[$recId] = true;
                 }
             }
         }

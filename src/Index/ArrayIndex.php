@@ -30,8 +30,10 @@ declare(strict_types=1);
 namespace KSamuel\FacetedSearch\Index;
 
 use KSamuel\FacetedSearch\Filter\FilterInterface;
+use KSamuel\FacetedSearch\Filter\InputFilterInterface;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Indexer\IndexerInterface;
+
 
 /**
  * Simple faceted index
@@ -273,7 +275,9 @@ class ArrayIndex implements IndexInterface
 
             // do not apply self filtering
             if (isset($resultCache[$filterName])) {
+                // count of cached filters must be > 1 (1 filter will be skiped by field name)
                 if(count($resultCache) > 1){
+                    // optimization with cache of findRecordsMap
                     $recordIds = $this->mergeFilters($resultCache, $filterName);
                 }else{
                     $recordIds = $this->findRecordsMap([], $input);
@@ -314,6 +318,7 @@ class ArrayIndex implements IndexInterface
     {
         $result = [];
         $start = true;
+ 
         foreach ($maps as $key => $map) {
             if ($skipKey !== null && $key === $skipKey) {
                 continue;
@@ -324,6 +329,7 @@ class ArrayIndex implements IndexInterface
                 $start = false;
                 continue;
             }
+
             foreach ($result as $k => $v) {
                 if (!isset($map[$k])) {
                     unset($result[$k]);
@@ -341,6 +347,7 @@ class ArrayIndex implements IndexInterface
      */
     private function findRecordsMap(array $filters, array $inputRecords): array
     {
+
         // if no filters passed
         if (empty($filters)) {
             $total = $this->getAllRecordIdMap();
@@ -362,8 +369,12 @@ class ArrayIndex implements IndexInterface
                 return [];
             }
 
-            $inputRecords = $filter->filterResults($indexData, $inputRecords);
-
+           if($filter instanceof InputFilterInterface){
+                $filter->filterInput($indexData, $inputRecords);
+            }else{
+                $inputRecords = $filter->filterResults($indexData, $inputRecords);
+            }
+          
             if (empty($inputRecords)) {
                 return [];
             }
@@ -380,7 +391,7 @@ class ArrayIndex implements IndexInterface
     protected function getIntersectMapCount($a, array $b): int
     {
         $intersectLen = 0;
-
+     
         foreach ($a as $key) {
             if (isset($b[$key])) {
                 $intersectLen++;
