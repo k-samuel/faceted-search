@@ -81,17 +81,15 @@ class ByField
         $sorted = [];
         foreach ($data as $records) {
             // inline intersection - intersectIntMap
-            $a = &$records;
-            $b = &$results;
             /**
-             * @var array<int>|\SplFixedArray<int> $a
+             * @var array<int>|\SplFixedArray<int> $records
              */
-            if (is_array($a)) {
-                foreach ($a as $key) {
+            if (is_array($records)) {
+                foreach ($records as $key) {
                     /**
                      * @var int $key
                      */
-                    if (isset($b[$key])) {
+                    if (isset($results[$key])) {
                         $sorted[] = $key;
                         // already sorted
                         unset($results[$key]);
@@ -99,13 +97,13 @@ class ByField
                 }
             } else {
                 // Performance patch SplFixedArray index access is faster than iteration
-                $count = count($a);
+                $count = count($records);
                 for ($i = 0; $i < $count; $i++) {
                     /**
                      * @var int $key
                      */
-                    $key = $a[$i];
-                    if (isset($b[$key])) {
+                    $key = $records[$i];
+                    if (isset($results[$key])) {
                         $sorted[] = $key;
                         // already sorted
                         unset($results[$key]);

@@ -98,6 +98,7 @@ interface IndexInterface
      * Find acceptable filter values
      * @param array<FilterInterface> $filters
      * @param array<int> $inputRecords
+     * @param bool $countValues
      * @return array<string,array<int|string,int|string>>
      */
     public function aggregate(array $filters = [], array $inputRecords = [], bool $countValues = false): array;

@@ -34,7 +34,7 @@ use KSamuel\FacetedSearch\Index\IndexInterface;
 
 /**
  * Class Search
- * Search in faceted index. Easily handles 100,000 products with 10 properties.
+ * Search in faceted index. Easily handles 300,000 products with 10 properties.
  * @package KSamuel\FacetedSearch
  */
 class Search
