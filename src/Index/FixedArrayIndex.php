@@ -123,4 +123,20 @@ class FixedArrayIndex extends ArrayIndex
         }
         return $intersectLen;
     }
+
+    /**
+     * @inheritDoc
+     * Performance patch SplFixedArray index access is faster than iteration
+     */
+    protected function hasIntersectIntMap($a, array $b): bool
+    {
+        $intersectLen = 0;
+        $count = count($a);
+        for ($i = 0; $i < $count; $i++) {
+            if (isset($b[$a[$i]])) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

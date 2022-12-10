@@ -122,6 +122,7 @@ class ValueFilter extends AbstractFilter implements InputFilterInterface
         return $result;
     }
 
+
      /**
      * @inheritDoc
      */

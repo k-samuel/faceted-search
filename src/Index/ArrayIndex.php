@@ -369,7 +369,7 @@ class ArrayIndex implements IndexInterface
                 return [];
             }
 
-           if($filter instanceof InputFilterInterface){
+            if($filter instanceof InputFilterInterface){
                 $filter->filterInput($indexData, $inputRecords);
             }else{
                 $inputRecords = $filter->filterResults($indexData, $inputRecords);
