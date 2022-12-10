@@ -56,7 +56,30 @@ For example: list of ProductId "in stock" to exclude not available products.
 
 Tests on sets of products with 10 attributes, search with filters by 3 fields.
 
-PHPBench v2.1.5 ArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension)
+### PHP 8.2
+v2.1.5 Bench ArrayIndex  PHP 8.2 + JIT + opcache (no xdebug extension) macOS Ventura
+
+| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
+| 10,000          | ~6Mb     | ~0.0004 s.       | ~0.001 s.                | ~0.002 s.                      | ~0.0001 s.   | 907              |
+| 50,000          | ~40Mb    | ~0.001 s.        | ~0.006 s.                | ~0.011 s.                      | ~0.0005 s.   | 4550             |
+| 100,000         | ~80Mb    | ~0.003 s.        | ~0.014 s.                | ~0.024 s.                      | ~0.001 s.    | 8817             |
+| 300,000         | ~189Mb   | ~0.010 s.        | ~0.042 s.                | ~0.082 s                       | ~0.003 s.    | 26891            |
+| 1,000,000       | ~657Mb   | ~0.046 s.        | ~0.164 s.                | ~0.306 s.                      | ~0.015 s.    | 90520            |
+
+v2.1.5 Bench FixedArrayIndex PHP 8.2 + JIT + opcache (no xdebug extension) macOS Ventura
+
+| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
+| 10,000          | ~2Mb     | ~0.0006 s.       | ~0.001 s.                | ~0.003 s.                      | ~0.0002 s.   | 907              |
+| 50,000          | ~12Mb    | ~0.003 s.        | ~0.007 s.                | ~0.017 s.                      | ~0.0009 s.   | 4550             |
+| 100,000         | ~23Mb    | ~0.006 s.        | ~0.017 s.                | ~0.040 s.                      | ~0.001 s.    | 8817             |
+| 300,000         | ~70Mb    | ~0.019 s.        | ~0.056 s.                | ~0.120 s.                      | ~0.006 s.    | 26891            |
+| 1,000,000       | ~233Mb   | ~0.077 s.        | ~0.202 s.                | ~0.455 s.                      | ~0.023 s.    | 90520            |
+
+
+### PHP 8.1.10
+v2.1.5 Bench ArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension) macOS Monterey
 
 | Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
@@ -66,7 +89,7 @@ PHPBench v2.1.5 ArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension)
 | 300,000         | ~189Mb   | ~0.011 s.        | ~0.044 s.                | ~0.091 s                       | ~0.004 s.    | 26891            |
 | 1,000,000       | ~657Mb   | ~0.047 s.        | ~0.169 s.                | ~0.333 s.                      | ~0.018 s.    | 90520            |
 
-PHPBench v2.1.5 FixedArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension)
+v2.1.5 Bench FixedArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension) macOS Monterey
 
 | Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
@@ -89,15 +112,15 @@ PHPBench v2.1.5 FixedArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension)
 
 Experimental Golang port bench https://github.com/k-samuel/go-faceted-search
 
-Bench v0.3.3 golang 1.17.3 with parallel aggregates
+Bench v0.3.3 golang 1.19.4 with parallel aggregates
 
-| Items count     | Memory   | Find             | Get Filters & Count (aggregate) | Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|--------------------------------:|-------------:|-----------------:|
-| 10,000          | ~7Mb     | ~0.0003 s.       | ~0.002 s.                       | ~0.0002 s.   | 907              |
-| 50,000          | ~14Mb    | ~0.002 s.        | ~0.015 s.                       | ~0.001 s.    | 4550             |
-| 100,000         | ~20Mb    | ~0.004 s.        | ~0.030 s.                       | ~0.002 s.    | 8817             |
-| 300,000         | ~44Mb    | ~0.012 s.        | ~0.086 s.                       | ~0.007 s.    | 26891            |
-| 1,000,000       | ~142Mb   | ~0.046 s.        | ~0.297 s.                       | ~0.027 s.    | 90520            |
+| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
+| 10,000          | ~7Mb     | ~0.0003 s.       | ~0.002 s.                | ~0.0002 s.   | 907              |
+| 50,000          | ~14Mb    | ~0.001 s.        | ~0.012 s.                | ~0.001 s.    | 4550             |
+| 100,000         | ~21Mb    | ~0.003 s.        | ~0.025 s.                | ~0.002 s.    | 8817             |
+| 300,000         | ~47Mb    | ~0.010 s.        | ~0.082 s.                | ~0.006 s.    | 26891            |
+| 1,000,000       | ~140Mb   | ~0.037 s.        | ~0.285 s.                | ~0.026 s.    | 90520            |
 
 
 *Since version 0.3.3, the index structures in PHP and Golang have diverged due to the peculiarities of the 
