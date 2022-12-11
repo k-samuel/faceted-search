@@ -39,7 +39,7 @@ class AggregationQuery
      */
     protected array $filters = [];
 
-    protected bool $countValues = false;
+    protected bool $needCount = false;
     /**
      * @var array<int> $records
      */
@@ -64,15 +64,15 @@ class AggregationQuery
         return $this;
     }
 
-    public function countValues(bool $count = true): self
+    public function countItems(bool $count = true): self
     {
-        $this->countValues = $count;
+        $this->needCount = $count;
         return $this;
     }
 
-    public function getCountValues(): bool
+    public function getCountItems(): bool
     {
-        return $this->countValues;
+        return $this->needCount;
     }
 
     /**

@@ -2,9 +2,11 @@
 
 include '../vendor/autoload.php';
 
-use KSamuel\FacetedSearch\Index;
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
+use KSamuel\FacetedSearch\Index\ArrayIndex;
+use KSamuel\FacetedSearch\Query\AggregationQuery;
+use KSamuel\FacetedSearch\Query\SearchQuery;
 
 /**
  * Find acceptable filters
@@ -14,7 +16,9 @@ use KSamuel\FacetedSearch\Filter\ValueFilter;
  */
 function findFilters(Search $search, array $filters): array
 {
-    $data = $search->findAcceptableFiltersCount($filters);
+    $query = (new AggregationQuery())->filters($filters)->countItems();
+    $data =  $search->aggregate($query);
+
     foreach ($data as &$filterValues) {
         ksort($filterValues);
     }
@@ -33,7 +37,7 @@ function findFilters(Search $search, array $filters): array
 function findProducts(Search $search, array $filters, string $index, int $pageLimit): array
 {
     // find product id
-    $data = $search->find($filters);
+    $data = $search->query((new SearchQuery())->filters($filters));
     $resultItems = [];
     $count = count($data);
     if (!empty($data)) {
@@ -70,7 +74,7 @@ if (isset($_POST['filters'])) {
 // Load index by product category
 // Use database to store index at your production
 $indexData = json_decode(file_get_contents('./data/' . $index . '-index.json'), true);
-$searchIndex = new Index();
+$searchIndex = new ArrayIndex();
 $searchIndex->setData($indexData);
 // create search instance
 $search = new Search($searchIndex);

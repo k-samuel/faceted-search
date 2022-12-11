@@ -129,7 +129,7 @@ class QueryArrayIndexTest extends TestCase
         }
         $facets = new Search($index);
 
-        $acceptableFilters = $facets->aggregate((new AggregationQuery())->countValues());
+        $acceptableFilters = $facets->aggregate((new AggregationQuery())->countItems());
 
         $expect = [
             'color' => ['black' => 3, 'white' => 1, 'yellow' => 1],
@@ -166,7 +166,7 @@ class QueryArrayIndexTest extends TestCase
         }
         $facets = new Search($index);
 
-        $acceptableFilters = $facets->aggregate((new AggregationQuery())->inRecords([1, 2])->countValues());
+        $acceptableFilters = $facets->aggregate((new AggregationQuery())->inRecords([1, 2])->countItems());
 
         $expect = [
             'color' => ['black' => 2],
@@ -198,7 +198,7 @@ class QueryArrayIndexTest extends TestCase
         $facets = new Search($index);
         $filter = new ValueFilter('color', 'black');
 
-        $acceptableFilters = $facets->aggregate((new AggregationQuery())->filter($filter)->countValues());
+        $acceptableFilters = $facets->aggregate((new AggregationQuery())->filter($filter)->countItems());
 
 
         $expect = [
@@ -243,7 +243,7 @@ class QueryArrayIndexTest extends TestCase
         $filter = new ValueFilter('color', 'black');
         $filter2 = new ValueFilter('size', 7);
 
-        $acceptableFilters =  $facets->aggregate((new AggregationQuery())->filters([$filter, $filter2])->countValues());
+        $acceptableFilters =  $facets->aggregate((new AggregationQuery())->filters([$filter, $filter2])->countItems());
 
         $expect = [
             'color' => ['black' => 2, 'white' => 1, 'yellow' => 1],
@@ -289,7 +289,7 @@ class QueryArrayIndexTest extends TestCase
         $this->assertEquals(1, $result[0]);
         $this->assertEquals(2, $result[1]);
 
-        $acceptableFilters =  $facets->aggregate((new AggregationQuery())->filters([$filter, $filter2])->countValues());
+        $acceptableFilters =  $facets->aggregate((new AggregationQuery())->filters([$filter, $filter2])->countItems());
 
         $expect = [
             1 => ['black' => 2],
@@ -335,7 +335,7 @@ class QueryArrayIndexTest extends TestCase
         $this->assertEquals(2, $result[0]);
 
 
-        $acceptableFilters =  $facets->aggregate((new AggregationQuery())->filters([$filter])->countValues());
+        $acceptableFilters =  $facets->aggregate((new AggregationQuery())->filters([$filter])->countItems());
 
         $expect = [
             'color' => ['black' => 1],

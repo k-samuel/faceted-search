@@ -132,7 +132,7 @@ class QueryFixedArrayIndexTest extends TestCase
         $index = $this->loadIndex($records);
         $facets = new Search($index);
 
-        $acceptableFilters = $facets->aggregate((new AggregationQuery())->countValues());
+        $acceptableFilters = $facets->aggregate((new AggregationQuery())->countItems());
 
         $expect = [
             'color' => ['black' => 3, 'white' => 1, 'yellow' => 1],
@@ -195,7 +195,7 @@ class QueryFixedArrayIndexTest extends TestCase
         $facets = new Search($index);
         $filter = new ValueFilter('color', 'black');
 
-        $acceptableFilters = $facets->aggregate((new AggregationQuery())->filter($filter)->countValues());
+        $acceptableFilters = $facets->aggregate((new AggregationQuery())->filter($filter)->countItems());
 
         $expect = [
             'vendor' => ['Apple' => 1, 'Samsung' => 2, 'Xiaomi' => 1],
@@ -236,7 +236,7 @@ class QueryFixedArrayIndexTest extends TestCase
         $filter = new ValueFilter('color', 'black');
         $filter2 = new ValueFilter('size', 7);
 
-        $acceptableFilters = $facets->aggregate((new AggregationQuery())->filters([$filter, $filter2])->countValues());
+        $acceptableFilters = $facets->aggregate((new AggregationQuery())->filters([$filter, $filter2])->countItems());
 
 
         $expect = [
@@ -275,7 +275,7 @@ class QueryFixedArrayIndexTest extends TestCase
         $filter = new ValueFilter('size', '8.9');
         $result = $facets->find([$filter]);
         $this->assertEquals(2, $result[0]);
-        $acceptableFilters =  $facets->aggregate((new AggregationQuery())->filter($filter)->countValues());
+        $acceptableFilters =  $facets->aggregate((new AggregationQuery())->filter($filter)->countItems());
 
 
         $expect = [

@@ -1,5 +1,78 @@
 # Changelog
 
+### v2.2.0 (xx.xx.2022)
+New Query API
+```PHP
+<?php
+use KSamuel\FacetedSearch\Index\ArrayIndex;
+use KSamuel\FacetedSearch\Search;
+use KSamuel\FacetedSearch\Query\SearchQuery;
+use KSamuel\FacetedSearch\Query\AggregationQuery;
+use KSamuel\FacetedSearch\Query\Order;
+use KSamuel\FacetedSearch\Filter\ValueFilter;
+
+// load index
+$searchIndex = new ArrayIndex();
+$searchIndex->setData($someIndexData);
+// create search instance
+$search = new Search($searchIndex);
+
+// Find results
+$query = (new SearchQuery())
+    ->filters([
+        new ValueFilter('color', ['black','white']),
+        new ValueFilter('size', [41,42])
+    ])
+    // It is possible to set List of record id to search in. 
+    // For example list of records id that found by external FullText search.
+    ->inRecords([1,2,3,19,17,21/*..some input record ids..*/])
+   // Now results can be sorted by field value.
+   // Note! If result item has not such field then item will be excluded from results
+    ->order('price', Order::SORT_DESC);
+
+$results = $search->query(query);   
+
+// Find Acceptable filters for user selected input
+$query = (new AggregationQuery())
+          ->filters([
+                new ValueFilter('color', ['black','white']),
+                new ValueFilter('size', [41,42])
+          ])
+          // Count items for each acceptable filter value (slower)
+          ->countItems();
+
+$results = $search->aggregate(query);            
+```
+New aggregation API has changed result format for ```$search->aggregate()```
+With countItems:
+```PHP
+ [
+    'field1' => [
+        'value1' => 10,
+        'value1' => 20
+    ]
+ ]
+```
+Without countItems:
+```PHP
+ [
+    'field1' => [
+        'value1' => true,
+        'value1' => true
+    ]
+ ]
+```
+The change was necessary to unify the results structure.
+Old API produces results as before in slightly different formats for: 
+
+```PHP
+$search->findAcceptableFilters()
+$search->findAcceptableFiltersCount()
+```
+
+The version is fully backward compatible. 
+The old API format is available but marked as deprecated.
+
 ### v2.1.6 (12.10.2022)
 ### Bug Fix
 * [issue#8](https://github.com/k-samuel/faceted-search/issues/9) Version 2.1.5 does not allow integer names for data fields. Reported by [pixobit](https://github.com/pixobit).

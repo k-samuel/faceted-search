@@ -64,7 +64,7 @@ $resultData[] = ['Filters', number_format($time, 6) . "s", count($filters)];
 //test aggregate with count
 $query = (new AggregationQuery())
     ->filters($filters)
-    ->countValues(true);
+    ->countItems(true);
 
 $t = microtime(true);
 $filtersData = $search->aggregate($query);

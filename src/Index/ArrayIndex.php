@@ -354,7 +354,7 @@ class ArrayIndex implements IndexInterface
     {
         $input = $query->getInRecords();
         $filters = $query->getFilters();
-        $countValues = $query->getCountValues();
+        $countValues = $query->getCountItems();
 
         if (!empty($input)) {
             $input = $this->mapInputArray($input);

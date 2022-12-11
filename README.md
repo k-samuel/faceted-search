@@ -58,7 +58,7 @@ For example: list of ProductId "in stock" to exclude not available products.
 Tests on sets of products with 10 attributes, search with filters by 3 fields.
 
 ### PHP 8.2
-v2.1.5 Bench ArrayIndex  PHP 8.2 + JIT + opcache (no xdebug extension) macOS Ventura
+v2.1.5 Bench ArrayIndex  PHP 8.2 + JIT + opcache (no xdebug extension)
 
 | Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
@@ -68,7 +68,7 @@ v2.1.5 Bench ArrayIndex  PHP 8.2 + JIT + opcache (no xdebug extension) macOS Ven
 | 300,000         | ~95Mb    | ~0.010 s.        | ~0.042 s.                | ~0.082 s                       | ~0.003 s.    | 26891            |
 | 1,000,000       | ~329Mb   | ~0.046 s.        | ~0.164 s.                | ~0.306 s.                      | ~0.015 s.    | 90520            |
 
-v2.1.5 Bench FixedArrayIndex PHP 8.2 + JIT + opcache (no xdebug extension) macOS Ventura
+v2.1.5 Bench FixedArrayIndex PHP 8.2 + JIT + opcache (no xdebug extension) 
 
 | Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
@@ -80,7 +80,7 @@ v2.1.5 Bench FixedArrayIndex PHP 8.2 + JIT + opcache (no xdebug extension) macOS
 
 
 ### PHP 8.1.10
-v2.1.5 Bench ArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension) macOS Monterey
+v2.1.5 Bench ArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension) 
 
 | Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
@@ -203,13 +203,13 @@ $filterData = $search->aggregate($query);
 // If you want to get acceptable filters values with items count use findAcceptableFiltersCount
 // note that filters is not applied for itself for counting
 // values count of a particular field depends only on filters imposed on other fields 
-$query = (new AggregationQuery())->filters($filters)->countValues();
+$query = (new AggregationQuery())->filters($filters)->countItems();
 $filterData = $search->aggregate($query);
 
 
 // If $filters is an empty array [] or not passed into AggregationQuery, all acceptable values will be returned
 $query = (new AggregationQuery());
-$filterData = $search->findAcceptableFilters($query);
+$filterData = $search->aggregate($query);
 
 // Also you can sort results by field using FacetedIndex
 $query = (new SearchQuery())->filters($filters)->sort('price', Order::SORT_DESC);
