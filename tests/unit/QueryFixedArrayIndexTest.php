@@ -5,6 +5,8 @@ use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Filter\RangeFilter;
 use KSamuel\FacetedSearch\Index;
+use KSamuel\FacetedSearch\Query\SearchQuery;
+use KSamuel\FacetedSearch\Query\AggregationQuery;
 
 class QueryFixedArrayIndexTest extends TestCase
 {
@@ -48,7 +50,9 @@ class QueryFixedArrayIndexTest extends TestCase
             $filter3,
             $filter4
         ];
-        $result = $facets->find($filters);
+
+        $result = $facets->query((new SearchQuery())->filters($filters));
+
         sort($result);
         $this->assertEquals([3, 4], $result);
 
@@ -76,7 +80,7 @@ class QueryFixedArrayIndexTest extends TestCase
         $facets = new Search($index);
         $filter = new ValueFilter('vendor');
         $filter->setValue(['Samsung', 'Apple']);
-        $result = $facets->find([$filter], [1, 3]);
+        $result = $facets->query((new SearchQuery())->filters([$filter])->inRecords([1, 3]));
         $result = array_flip($result);
         $this->assertArrayHasKey(1, $result);
         $this->assertArrayHasKey(3, $result);
@@ -90,16 +94,16 @@ class QueryFixedArrayIndexTest extends TestCase
         $facets = new Search($index);
         $filter = new ValueFilter('color', 'black');
 
-        $acceptableFilters = $facets->findAcceptableFilters([$filter]);
+        $acceptableFilters = $facets->aggregate((new AggregationQuery())->filter($filter));
 
         $expect = [
-            'vendor' => ['Apple', 'Samsung', 'Xiaomi'],
-            'model' => ['Iphone X Pro Max', 'Galaxy S20', 'Galaxy A5', 'MI 9'],
-            'price' => [80999, 70599, 15000, 26000],
-            'color' => ['black', 'white', 'yellow'],
-            'has_phones' => [1],
-            'cam_mp' => [40, 105, 12, 48],
-            'sale' => [1, 0]
+            'vendor' => ['Apple' => true, 'Samsung' => true, 'Xiaomi' => true],
+            'model' => ['Iphone X Pro Max' => true, 'Galaxy S20' => true, 'Galaxy A5' => true, 'MI 9' => true],
+            'price' => [80999 => true, 70599 => true, 15000 => true, 26000 => true],
+            'color' => ['black' => true, 'white' => true, 'yellow' => true],
+            'has_phones' => [1 => true],
+            'cam_mp' => [40 => true, 105 => true, 12 => true, 48 => true],
+            'sale' => [1 => true, 0 => true]
         ];
         foreach ($expect as $field => &$values) {
             sort($values);
@@ -128,7 +132,7 @@ class QueryFixedArrayIndexTest extends TestCase
         $index = $this->loadIndex($records);
         $facets = new Search($index);
 
-        $acceptableFilters = $facets->findAcceptableFiltersCount();
+        $acceptableFilters = $facets->aggregate((new AggregationQuery())->countValues());
 
         $expect = [
             'color' => ['black' => 3, 'white' => 1, 'yellow' => 1],
@@ -191,7 +195,7 @@ class QueryFixedArrayIndexTest extends TestCase
         $facets = new Search($index);
         $filter = new ValueFilter('color', 'black');
 
-        $acceptableFilters = $facets->findAcceptableFiltersCount([$filter]);
+        $acceptableFilters = $facets->aggregate((new AggregationQuery())->filter($filter)->countValues());
 
         $expect = [
             'vendor' => ['Apple' => 1, 'Samsung' => 2, 'Xiaomi' => 1],
@@ -218,7 +222,7 @@ class QueryFixedArrayIndexTest extends TestCase
         }
     }
 
-    public function testGetAcceptableFiltersCountMulty()
+    public function testGetAcceptableFiltersCountMulti()
     {
         $records = [
             ['color' => 'black', 'size' => 7, 'group' => 'A'],
@@ -232,7 +236,8 @@ class QueryFixedArrayIndexTest extends TestCase
         $filter = new ValueFilter('color', 'black');
         $filter2 = new ValueFilter('size', 7);
 
-        $acceptableFilters = $facets->findAcceptableFiltersCount([$filter, $filter2]);
+        $acceptableFilters = $facets->aggregate((new AggregationQuery())->filters([$filter, $filter2])->countValues());
+
 
         $expect = [
             'color' => ['black' => 2, 'white' => 1, 'yellow' => 1],
@@ -270,7 +275,8 @@ class QueryFixedArrayIndexTest extends TestCase
         $filter = new ValueFilter('size', '8.9');
         $result = $facets->find([$filter]);
         $this->assertEquals(2, $result[0]);
-        $acceptableFilters = $facets->findAcceptableFiltersCount([$filter]);
+        $acceptableFilters =  $facets->aggregate((new AggregationQuery())->filter($filter)->countValues());
+
 
         $expect = [
             'color' => ['black' => 1],

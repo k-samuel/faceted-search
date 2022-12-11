@@ -7,6 +7,7 @@ use KSamuel\FacetedSearch\Filter\RangeFilter;
 use KSamuel\FacetedSearch\Index;
 use KSamuel\FacetedSearch\Index\ArrayIndex;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
+use KSamuel\FacetedSearch\Query\Order;
 use KSamuel\FacetedSearch\Query\SearchQuery;
 
 class QueryArrayIndexTest extends TestCase
@@ -56,7 +57,7 @@ class QueryArrayIndexTest extends TestCase
         $index->setData($index->getData());
         $filter = new ValueFilter('vendor_field');
         $filter->setValue(['Google']);
-        $result = $facets->query((new SearchQuery())->filters($filters)->inRecords([3, 4]));
+        $result = $facets->query((new SearchQuery())->filter($filter)->inRecords([3, 4]));
         $this->assertEquals([], $result);
     }
 
@@ -225,7 +226,7 @@ class QueryArrayIndexTest extends TestCase
         }
     }
 
-    public function testGetAcceptableFiltersCountMulty(): void
+    public function testGetAcceptableFiltersCountMulti(): void
     {
         $records = [
             ['color' => 'black', 'size' => 7, 'group' => 'A'],
@@ -317,7 +318,7 @@ class QueryArrayIndexTest extends TestCase
             ['id' => 2, 'color' => 'black', 'size' => 8.9, 'group' => 'A'],
             ['id' => 3, 'color' => 'white', 'size' => 7.11, 'group' => 'B'],
         ];
-        $index = new Index();
+        $index = new ArrayIndex();
         foreach ($records as $item) {
             $id = $item['id'];
             unset($item['id']);
@@ -354,6 +355,36 @@ class QueryArrayIndexTest extends TestCase
             $this->assertArrayHasKey($filter, $acceptableFilters);
             $this->assertEquals($values, $acceptableFilters[$filter]);
         }
+    }
+
+    public function testOrderedSearch(): void
+    {
+        $records = [
+            ['id' => 1, 'color' => 'black', 'size' => 7.5, 'group' => 'A'],
+            ['id' => 2, 'color' => 'black', 'size' => 8.9, 'group' => 'A'],
+            ['id' => 3, 'color' => 'white', 'size' => 7.11, 'group' => 'B'],
+            ['id' => 4, 'color' => 'white', 'size' => 9, 'group' => 'C'],
+            ['id' => 5, 'color' => 'white', 'size' => 3, 'group' => 'C'],
+        ];
+        $index = new ArrayIndex();
+        foreach ($records as $item) {
+            $id = $item['id'];
+            unset($item['id']);
+            $index->addRecord($id, $item);
+        }
+        $facets = new Search($index);
+        $query = (new SearchQuery())->order('size', Order::SORT_DESC);
+        $results = $facets->query($query);
+
+        $this->assertEquals([4, 2, 1, 3, 5], $results);
+
+        $facets = new Search($index);
+        $query = (new SearchQuery())
+            ->filter(new ValueFilter('group', 'C'))
+            ->order('size', Order::SORT_ASC);
+        $results = $facets->query($query);
+
+        $this->assertEquals([5, 4], $results);
     }
 
     public function getTestData(): array

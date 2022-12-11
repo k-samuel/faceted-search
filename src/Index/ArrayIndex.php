@@ -399,7 +399,9 @@ class ArrayIndex implements IndexInterface
                         $result[$filterName][$key] = count($list);
                     }
                 } else {
-                    $result[$filterName] = array_keys($filterValues);
+                    foreach ($filterValues as $key => $info) {
+                        $result[$filterName][$key] = true;
+                    }
                 }
                 continue;
             }
@@ -639,17 +641,15 @@ class ArrayIndex implements IndexInterface
         $field = $order->getField();
 
         if (!isset($this->data[$field]) || empty($this->data[$field])) {
-            $resultMap = [];
-            return $resultMap;
+            return [];
         }
 
         $values = array_keys($this->data[$field]);
 
-
         if ($order->getDirection() === Order::SORT_ASC) {
-            ksort($values, $order->getSortFlags());
+            sort($values, $order->getSortFlags());
         } else {
-            krsort($values, $order->getSortFlags());
+            rsort($values, $order->getSortFlags());
         }
 
         $sorted = [];

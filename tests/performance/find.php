@@ -10,9 +10,13 @@ use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Query\SearchQuery;
 use KSamuel\FacetedSearch\Sorter\ByField;
 
+
+$dataFile = './facet.json';
+
+gc_collect_cycles();
 $t = microtime(true);
 $m = memory_get_usage();
-$indexData = json_decode(file_get_contents('../data/50000/facet.json'), true);
+$indexData = json_decode(file_get_contents($dataFile), true);
 $time = (microtime(true) - $t);
 //$index = new Index\ArrayIndex();
 
@@ -21,6 +25,7 @@ $index = new Index\ArrayIndex();
 $index->setData($indexData);
 unset($indexData);
 //$index->commitChanges();
+gc_collect_cycles();
 $memUse = (int)((memory_get_usage() - $m) / 1024 / 1024);
 $resultData[] = ['Index memory usage', (string) $memUse . "Mb", ''];
 $resultData[] = ['Loading time', number_format($time, 6) . 's', ''];
@@ -47,19 +52,7 @@ $results = $search->query((new SearchQuery())->filters($filters));
 $time = microtime(true) - $t;
 $resultData[] = ['Find Results', number_format($time, 6) . "s", count($results)];
 
-/// test find with Range
-$t = microtime(true);
-$results2 = $search->query((new SearchQuery())->filters($filters2));
-$time = microtime(true) - $t;
-$resultData[] = ['Find Results (ranges)', number_format($time, 6) . "s", count($results2)];
 
-// test sort
-$sorter = new ByField($index);
-$sortField = 'quantity';
-$t = microtime(true);
-$results = $sorter->sort($results, $sortField, ByField::SORT_DESC);
-$time = microtime(true) - $t;
-$resultData[] = ['Sort by quantity DESC', number_format($time, 6) . "s", count($results)];
 
 //test acceptable
 $t = microtime(true);
@@ -80,6 +73,8 @@ $resultData[] = ['Filters with count', number_format($time, 6) . "s", count($fil
 
 
 // find and sorter
+$sorter = new ByField($index);
+$sortField = 'quantity';
 $t = microtime(true);
 $results = $search->find($filters);
 $results = $sorter->sort($results, $sortField, ByField::SORT_DESC);
@@ -97,6 +92,22 @@ $t = microtime(true);
 $results = $search->query($query);
 $time = microtime(true) - $t;
 $resultData[] = ['Query + Sort', number_format($time, 6) . "s", count($filters)];
+
+/// test find with Range
+$t = microtime(true);
+$results2 = $search->query((new SearchQuery())->filters($filters2));
+$time = microtime(true) - $t;
+$resultData[] = ['Find Results (ranges)', number_format($time, 6) . "s", count($results2)];
+
+
+// test sort
+$sorter = new ByField($index);
+$sortField = 'quantity';
+$results = $search->query((new SearchQuery())->filters($filters));
+$t = microtime(true);
+$results = $sorter->sort($results, $sortField, ByField::SORT_DESC);
+$time = microtime(true) - $t;
+$resultData[] = ['Sort by quantity DESC', number_format($time, 6) . "s", count($results)];
 
 
 $colLen = [25, 14, 10];
