@@ -82,7 +82,7 @@ class Search
      * Aggregation. Find acceptable filter values using AggregationQuery
      *
      * @param AggregationQuery $query
-     * @return array<string,array<int|string,int|string>>
+     * @return array<string,array<int|string,int|true>>
      * [
      *   'field1' => [
      *          'value1' => int count | true,  (Depending on AggregationQuery settings)

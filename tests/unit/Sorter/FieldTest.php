@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 class FieldTest extends TestCase
 {
 
-    public function testSortDesc()
+    public function testSortDesc(): void
     {
         $data = [
             1 => ['size' => 12, 'tag' => 1],
@@ -22,7 +22,13 @@ class FieldTest extends TestCase
         $index2 = new Index\FixedArrayIndex();
         $index2->writeMode();
         foreach ($data as $id => $values) {
+            /**
+             * @phpstan-ignore-next-line
+             */
             $index1->addRecord($id, $values);
+            /**
+             * @phpstan-ignore-next-line
+             */
             $index2->addRecord($id, $values);
         }
         $index2->commitChanges();
@@ -40,7 +46,7 @@ class FieldTest extends TestCase
         $this->assertEquals([3, 1, 4, 2], $sorted);
     }
 
-    public function testSortAsc()
+    public function testSortAsc(): void
     {
         $data = [
             1 => ['size' => 12, 'tag' => 1],
