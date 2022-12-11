@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * MIT License
@@ -24,6 +25,7 @@
  * SOFTWARE.
  *
  */
+
 declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Filter;
@@ -34,12 +36,19 @@ interface FilterInterface
      * Get field name
      * @return string
      */
-    public function getFieldName() : string;
+    public function getFieldName(): string;
     /**
      * Filter faceted data
      * @param array<int|string,array<int>|\SplFixedArray<int>> $facetedData
      * @param array<int,bool|int>|null $inputIdKeys - RecordId passed into keys of an array (performance issue)
      * @return array<int,bool> - results in keys
      */
-    public function filterResults(array $facetedData, ?array $inputIdKeys = null) : array;
+    public function filterResults(array $facetedData, ?array $inputIdKeys = null): array;
+    /**
+     * Filter faceted data
+     * @param array<int|string,array<int>|\SplFixedArray<int>> $facetedData
+     * @param array<int,bool|int> & $inputIdKeys - RecordId passed into keys of an array (performance issue)
+     * @return void
+     */
+    public function filterInput(array $facetedData,  array &$inputIdKeys): void;
 }

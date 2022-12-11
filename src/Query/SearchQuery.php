@@ -25,33 +25,51 @@
  * SOFTWARE.
  *
  */
+
 declare(strict_types=1);
 
-namespace KSamuel\FacetedSearch\Sorter;
+namespace KSamuel\FacetedSearch\Query;
 
-use KSamuel\FacetedSearch\Index;
+use KSamuel\FacetedSearch\Filter\FilterInterface;
+use KSamuel\FacetedSearch\Query\Order;
 
-class ByField
+class SearchQuery
 {
-    public const SORT_ASC = 0;
-    public const SORT_DESC = 1;
+    /**
+     * @var array<FilterInterface> $filters
+     */
+    protected array $filters = [];
+    protected ?Order $order = null;
+    protected ?int $limit = null;
+    /**
+     * @var ?array<int> $records
+     */
+    protected ?array $records = null;
+
+    public function filter(FilterInterface $filter): self
+    {
+        $this->filters[] = $filter;
+        return $this;
+    }
 
     /**
-     * @var Index\IndexInterface
+     *
+     * @param array<FilterInterface> $filters
+     * @return self
      */
-    private Index\IndexInterface $index;
-
-    public function __construct(Index\IndexInterface $index)
+    public function filters(array $filters): self
     {
-        $this->index = $index;
+        foreach ($filters as $item) {
+            $this->filters[] = $item;
+        }
+        return $this;
     }
 
     /**
      * Note. Result will contains only records with defined field data.
      * If your data structure is not normalized, records without sorting field will be ignored
-     * @param int[] $results
-     * @param string $field
-     * @param int $direction
+     * @param string $fieldName
+     * @param int $direction Query\OrderBy::SORT_ASC | Query\OrderBy::SORT_DESC
      * @param int $sortFlags
      *  Sorting type flags:
      *     SORT_REGULAR - compare items normally; the details are described in the comparison operators section
@@ -61,56 +79,49 @@ class ByField
      *     SORT_NATURAL - compare items as strings using "natural ordering" like natsort()
      *     SORT_FLAG_CASE - can be combined (bitwise OR) with SORT_STRING or SORT_NATURAL to sort strings case-insensitively
      *
-     * @return int[]
+     * @return self
      */
-    public function sort(
-        array $results,
-        string $field,
-        int $direction = self::SORT_ASC,
-        int $sortFlags = SORT_REGULAR
-    ): array {
-        $data = $this->index->getFieldData($field);
-        if ($direction === self::SORT_ASC) {
-            ksort($data, $sortFlags);
-        } else {
-            krsort($data, $sortFlags);
-        }
+    public function order(string $fieldName, int $direction = Order::SORT_ASC, int $sortFlags = SORT_REGULAR): self
+    {
+        $this->order = new Order($fieldName, $direction, $sortFlags);
+        return $this;
+    }
+    /**
+     * List of record id to search in. For example list of records id that found by external FullText search.
+     * @param array<int> $records
+     * @return self
+     */
+    public function inRecords(array $records): self
+    {
+        $this->records = $records;
+        return $this;
+    }
 
-        $results = array_flip($results);
+    /**
+     * Records getter
+     * @return ?array<int>
+     */
+    public function getInRecords(): ?array
+    {
+        return $this->records;
+    }
 
-        $sorted = [];
-        foreach ($data as $records) {
-            // inline intersection - intersectIntMap
-            /**
-             * @var array<int>|\SplFixedArray<int> $records
-             */
-            if (is_array($records)) {
-                foreach ($records as $key) {
-                    /**
-                     * @var int $key
-                     */
-                    if (isset($results[$key])) {
-                        $sorted[] = $key;
-                        // already sorted
-                        unset($results[$key]);
-                    }
-                }
-            } else {
-                // Performance patch SplFixedArray index access is faster than iteration
-                $count = count($records);
-                for ($i = 0; $i < $count; $i++) {
-                    /**
-                     * @var int $key
-                     */
-                    $key = $records[$i];
-                    if (isset($results[$key])) {
-                        $sorted[] = $key;
-                        // already sorted
-                        unset($results[$key]);
-                    }
-                }
-            }
-        }
-        return $sorted;
+    /**
+     * Order getter
+     *
+     * @return ?Order
+     */
+    public function getOrder(): ?Order
+    {
+        return $this->order;
+    }
+
+    /**
+     * Filters getter
+     * @return array<FilterInterface>
+     */
+    public function getFilters(): array
+    {
+        return $this->filters;
     }
 }

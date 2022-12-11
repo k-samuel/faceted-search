@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * MIT License
@@ -31,6 +32,8 @@ namespace KSamuel\FacetedSearch\Index;
 
 use KSamuel\FacetedSearch\Filter\FilterInterface;
 use KSamuel\FacetedSearch\Indexer\IndexerInterface;
+use KSamuel\FacetedSearch\Query\AggregationQuery;
+use KSamuel\FacetedSearch\Query\SearchQuery;
 
 /**
  * Simple faceted index
@@ -53,7 +56,6 @@ interface IndexInterface
      * @return array<int|string,array<int>>
      */
     public function getFieldData(string $fieldName): array;
-
 
     /**
      * Get all records from index
@@ -79,14 +81,14 @@ interface IndexInterface
      * @param mixed $value
      * @return int
      */
-    public function getRecordsCount(string $field, $value) : int;
+    public function getRecordsCount(string $field, $value): int;
 
     /**
      * Check if field exists
      * @param string $fieldName
      * @return bool
      */
-    public function hasField(string $fieldName) : bool;
+    public function hasField(string $fieldName): bool;
 
     /**
      * Get facet data.
@@ -98,15 +100,40 @@ interface IndexInterface
      * Find acceptable filter values
      * @param array<FilterInterface> $filters
      * @param array<int> $inputRecords
+     * @param bool $countValues
      * @return array<string,array<int|string,int|string>>
+     * @deprecated use aggregation
      */
     public function aggregate(array $filters = [], array $inputRecords = [], bool $countValues = false): array;
+
+    /**
+     * Find acceptable filter values. Note that the format of the result has changed compared to the "aggregate" method
+     * @param AggregationQuery $query
+     * @return array<string,array<int|string,int|true>>
+     * [
+     *   'field1' => [
+     *          'value1' => int count | true,  (Depending on AggregationQuery settings)
+     *          'value2' => int count | true, 
+     *          ...
+     *   ],
+     *   ...
+     * ]
+     */
+    public function aggregation(AggregationQuery $query): array;
 
     /**
      * Find records by filters as list of int
      * @param array<FilterInterface> $filters
      * @param array<int>|null $inputRecords - list of record id to search in. Use it for limit results
      * @return array<int>
+     * @deprecated use query
      */
     public function find(array $filters, ?array $inputRecords = null): array;
+
+    /**
+     * Find records using Query
+     * @param SearchQuery $query
+     * @return array<int>
+     */
+    public function query(SearchQuery $query): array;
 }

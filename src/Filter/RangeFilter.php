@@ -25,6 +25,7 @@
  * SOFTWARE.
  *
  */
+
 declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Filter;
@@ -65,14 +66,14 @@ class RangeFilter extends AbstractFilter
                 /**
                  * @var array<int>|\SplFixedArray<int> $records
                  */
-                if($records instanceof \SplFixedArray){
+                if ($records instanceof \SplFixedArray) {
                     $limit = $records->toArray();
-                }else{
+                } else {
                     $limit = $records;
                 }
             } else {
                 // array sum (faster than array_merge here)
-                foreach ($records as $item){
+                foreach ($records as $item) {
                     $limit[] = $item;
                 }
             }
@@ -83,7 +84,7 @@ class RangeFilter extends AbstractFilter
         }
 
         $limitData = [];
-        foreach ($limit as $v){
+        foreach ($limit as $v) {
             $limitData[$v] = true;
         }
 
@@ -127,5 +128,78 @@ class RangeFilter extends AbstractFilter
             'min' => $value['min'] ?? null,
             'max' => $value['max'] ?? null,
         ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function filterInput(array $facetedData,  array &$inputIdKeys): void
+    {
+        /**
+         * @var array{min:int|float|null,max:int|float|null} $value
+         */
+        $value = $this->getValue();
+
+        $min = $value['min'] ?? null;
+        $max = $value['max'] ?? null;
+
+        if ($min === null && $max === null) {
+            $inputIdKeys = [];
+            return;
+        }
+
+        // collect list for different values of one property
+        $limit = [];
+        foreach ($facetedData as $value => $records) {
+            if ($min !== null && (float)$value < (float)$min) {
+                continue;
+            }
+            if ($max !== null && (float)$value > (float)$max) {
+                continue;
+            }
+            if (empty($limit)) {
+                /**
+                 * @var array<int>|\SplFixedArray<int> $records
+                 */
+                if ($records instanceof \SplFixedArray) {
+                    $limit = $records->toArray();
+                } else {
+                    $limit = $records;
+                }
+            } else {
+                // array sum (faster than array_merge here)
+                foreach ($records as $item) {
+                    $limit[] = $item;
+                }
+            }
+        }
+
+        if (empty($limit)) {
+            $inputIdKeys = [];
+            return;
+        }
+
+        if (empty($inputIdKeys)) {
+            foreach ($limit as $v) {
+                $inputIdKeys[$v] = true;
+            }
+            return;
+        }
+
+        // Solution without allocating memory to a new index map.
+        // Reuse of input data. Set mark "2" for the data that needs to be in result.
+        foreach ($limit as $index) {
+            if (isset($inputIdKeys[$index])) {
+                $inputIdKeys[$index] = 2;
+            }
+        }
+        // Clear unmarked data
+        foreach ($inputIdKeys as $index => &$value) {
+            if ($value === 2) {
+                $value = true;
+                continue;
+            }
+            unset($inputIdKeys[$index]);
+        }
     }
 }
