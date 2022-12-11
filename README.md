@@ -38,7 +38,8 @@ for new results.
 This is easy enough. Even if the goods have a different structure of properties.
 ```php
 <?php
-$filterData = $search->findAcceptableFiltersCount($filters);
+  $query =  (new AggregationQuery())->filters($filters);
+  $filterData = $search->aggregate($query);
 ```
 
 
@@ -148,7 +149,9 @@ use KSamuel\FacetedSearch\Index\ArrayIndex;
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Filter\RangeFilter;
-use KSamuel\FacetedSearch\Sorter\ByField;
+use KSamuel\FacetedSearch\Query\SearchQuery;
+use KSamuel\FacetedSearch\Query\AggregationQuery;
+use KSamuel\FacetedSearch\Query\Order;
 
 // load index by product category (use request params)
 $indexData = json_decode(file_get_contents('./first-index.json'), true);
@@ -162,29 +165,32 @@ $filters = [
     // RangeFilter example for numeric property ranges (min - max)
     new RangeFilter('size', ['min'=>36, 'max'=>40])
 ];
+// create SearchQuery
+$query = (new SearchQuery())->filters($filters);
 // Find records using filters. Note, it doesn't guarantee sorted result
-$records = $search->find($filters);
+$records = $search->query($query);
 // Now we have filtered list of record identifiers.
 // Find records in your storage and send results into client application.
 
 // Also we can send acceptable filters values for current selection.
 // It can be used for updating client UI.
-$filterData = $search->findAcceptableFilters($filters);
+$query = (new AggregationQuery())->filters($filters);
+$filterData = $search->aggregate($query);
 
 // If you want to get acceptable filters values with items count use findAcceptableFiltersCount
 // note that filters is not applied for itself for counting
 // values count of a particular field depends only on filters imposed on other fields 
-$filterData = $search->findAcceptableFiltersCount($filters);
+$query = (new AggregationQuery())->filters($filters)->countValues();
+$filterData = $search->aggregate($query);
 
 
-// If $filters is an empty array [], all acceptable values will be returned
-$filterData = $search->findAcceptableFilters([]);
+// If $filters is an empty array [] or not passed into AggregationQuery, all acceptable values will be returned
+$query = (new AggregationQuery());
+$filterData = $search->findAcceptableFilters($query);
 
-// Also you can sort results using FacetedIndex
-$sorter = new ByField($searchIndex);
-$records = $sorter->sort($records, 'price', ByField::SORT_DESC);
-
-
+// Also you can sort results by field using FacetedIndex
+$query = (new SearchQuery())->filters($filters)->sort('price', Order::SORT_DESC);
+$records = $search->query($query);
 
 
 ```
@@ -212,13 +218,13 @@ $index->addRecord(2,['price'=>100]);
 $index->addRecord(3,['price'=>150]);
 $index->addRecord(4,['price'=>200]);
 
-
 $filters = [
   new RangeFilter('price', ['min'=>100,'max'=>200])
 ];
 
 $search = new Search($index);
-$search->find($filters);
+$query = (new SearchQuery())->filters($filters);
+$search->query($query);
 
 // will return [2,3,4]
 ```

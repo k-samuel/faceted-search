@@ -5,19 +5,30 @@ use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Filter\RangeFilter;
 use KSamuel\FacetedSearch\Index;
-use KSamuel\FacetedSearch\Index\ArrayIndex;
 
-class SearchArrayIndexTest extends TestCase
+class QueryFixedArrayIndexTest extends TestCase
 {
+
+    protected function loadIndex(array $records): Index\FixedArrayIndex
+    {
+        $index = new Index\FixedArrayIndex();
+        $index->writeMode();
+        foreach ($records as $id => $item) {
+            if (isset($item['id'])) {
+                $id = $item['id'];
+                unset($item['id']);
+            }
+            $index->addRecord($id, $item);
+        }
+        $index->commitChanges();
+        return $index;
+    }
 
     public function testFind()
     {
         $records = $this->getTestData();
-        $index = new ArrayIndex();
+        $index = $this->loadIndex($records);
 
-        foreach ($records as $id => $item) {
-            $index->addRecord($id, $item);
-        }
         $facets = new Search($index);
         $filter = new ValueFilter('vendor');
         $filter->setValue(['Samsung', 'Apple']);
@@ -60,11 +71,8 @@ class SearchArrayIndexTest extends TestCase
     public function testFindWithLimit()
     {
         $records = $this->getTestData();
-        $index = new ArrayIndex();
+        $index = $this->loadIndex($records);
 
-        foreach ($records as $id => $item) {
-            $index->addRecord($id, $item);
-        }
         $facets = new Search($index);
         $filter = new ValueFilter('vendor');
         $filter->setValue(['Samsung', 'Apple']);
@@ -77,10 +85,8 @@ class SearchArrayIndexTest extends TestCase
     public function testGetAcceptableFilters()
     {
         $records = $this->getTestData();
-        $index = new Index\ArrayIndex();
-        foreach ($records as $id => $item) {
-            $index->addRecord($id, $item);
-        }
+        $index = $this->loadIndex($records);
+
         $facets = new Search($index);
         $filter = new ValueFilter('color', 'black');
 
@@ -119,10 +125,7 @@ class SearchArrayIndexTest extends TestCase
             ['color' => 'yellow', 'size' => 7, 'group' => 'C'],
             ['color' => 'black', 'size' => 7, 'group' => 'C'],
         ];
-        $index = new Index();
-        foreach ($records as $id => $item) {
-            $index->addRecord($id, $item);
-        }
+        $index = $this->loadIndex($records);
         $facets = new Search($index);
 
         $acceptableFilters = $facets->findAcceptableFiltersCount();
@@ -156,10 +159,7 @@ class SearchArrayIndexTest extends TestCase
             ['id' => 4, 'color' => 'yellow', 'size' => 7, 'group' => 'C'],
             ['id' => 5, 'color' => 'black', 'size' => 7, 'group' => 'C'],
         ];
-        $index = new Index();
-        foreach ($records as  $item) {
-            $index->addRecord($item['id'], $item);
-        }
+        $index = $this->loadIndex($records);
         $facets = new Search($index);
 
         $acceptableFilters = $facets->findAcceptableFiltersCount([], [1, 2]);
@@ -187,10 +187,7 @@ class SearchArrayIndexTest extends TestCase
     public function testGetAcceptableFiltersCount()
     {
         $records = $this->getTestData();
-        $index = new Index();
-        foreach ($records as $id => $item) {
-            $index->addRecord($id, $item);
-        }
+        $index = $this->loadIndex($records);
         $facets = new Search($index);
         $filter = new ValueFilter('color', 'black');
 
@@ -230,10 +227,7 @@ class SearchArrayIndexTest extends TestCase
             ['color' => 'yellow', 'size' => 7, 'group' => 'C'],
             ['color' => 'black', 'size' => 7, 'group' => 'C'],
         ];
-        $index = new Index();
-        foreach ($records as $id => $item) {
-            $index->addRecord($id, $item);
-        }
+        $index = $this->loadIndex($records);
         $facets = new Search($index);
         $filter = new ValueFilter('color', 'black');
         $filter2 = new ValueFilter('size', 7);
@@ -260,51 +254,6 @@ class SearchArrayIndexTest extends TestCase
         }
     }
 
-    public function testIntFilterNames()
-    {
-        $index = new KSamuel\FacetedSearch\Index\ArrayIndex();
-        $records = [
-            ['id' => 1, 1 => 'black', 2 => 7.5, 'group' => 'A'],
-            ['id' => 2, 1 => 'black', 2 => 8.9, 'group' => 'A'],
-            ['id' => 3, 1 => 'white', 2 => 7.11, 'group' => 'B'],
-        ];
-        foreach ($records as $item) {
-            $id = $item['id'];
-            unset($item['id']);
-            $index->addRecord($id, $item);
-        }
-        $facets = new Search($index);
-        $filter = new ValueFilter(2, 7.11);
-        $result = $facets->find([$filter]);
-        $this->assertEquals(3, $result[0]);
-        $filter = new ValueFilter(1, 'black');
-        $filter2 = new ValueFilter('group', 'A');
-        $result = $facets->find([$filter, $filter2]);
-        $this->assertEquals(1, $result[0]);
-        $this->assertEquals(2, $result[1]);
-
-        $acceptableFilters = $facets->findAcceptableFiltersCount([$filter, $filter2]);
-
-        $expect = [
-            1 => ['black' => 2],
-            2 => ['8.9' => 1, '7.5' => 1],
-            'group' => ['A' => 2]
-        ];
-        foreach ($expect as  &$values) {
-            asort($values);
-        }
-        unset($values);
-        foreach ($acceptableFilters as &$values) {
-            asort($values);
-        }
-        unset($values);
-
-        foreach ($expect as $filter => $values) {
-            $this->assertArrayHasKey($filter, $acceptableFilters);
-            $this->assertEquals($values, $acceptableFilters[$filter]);
-        }
-    }
-
     public function testFindFloat()
     {
         $records = [
@@ -312,12 +261,8 @@ class SearchArrayIndexTest extends TestCase
             ['id' => 2, 'color' => 'black', 'size' => 8.9, 'group' => 'A'],
             ['id' => 3, 'color' => 'white', 'size' => 7.11, 'group' => 'B'],
         ];
-        $index = new Index();
-        foreach ($records as $item) {
-            $id = $item['id'];
-            unset($item['id']);
-            $index->addRecord($id, $item);
-        }
+        $index = $this->loadIndex($records);
+
         $facets = new Search($index);
         $filter = new ValueFilter('size', 7.11);
         $result = $facets->find([$filter]);

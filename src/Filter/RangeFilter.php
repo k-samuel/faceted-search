@@ -25,6 +25,7 @@
  * SOFTWARE.
  *
  */
+
 declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Filter;
@@ -33,7 +34,7 @@ namespace KSamuel\FacetedSearch\Filter;
  * Range filter for faceted index. Filter item by range (min,max)
  * @package KSamuel\FacetedSearch\Filter
  */
-class RangeFilter extends AbstractFilter implements InputFilterInterface
+class RangeFilter extends AbstractFilter
 {
     /**
      * @inheritDoc
@@ -65,14 +66,14 @@ class RangeFilter extends AbstractFilter implements InputFilterInterface
                 /**
                  * @var array<int>|\SplFixedArray<int> $records
                  */
-                if($records instanceof \SplFixedArray){
+                if ($records instanceof \SplFixedArray) {
                     $limit = $records->toArray();
-                }else{
+                } else {
                     $limit = $records;
                 }
             } else {
                 // array sum (faster than array_merge here)
-                foreach ($records as $item){
+                foreach ($records as $item) {
                     $limit[] = $item;
                 }
             }
@@ -83,7 +84,7 @@ class RangeFilter extends AbstractFilter implements InputFilterInterface
         }
 
         $limitData = [];
-        foreach ($limit as $v){
+        foreach ($limit as $v) {
             $limitData[$v] = true;
         }
 
@@ -132,9 +133,9 @@ class RangeFilter extends AbstractFilter implements InputFilterInterface
     /**
      * @inheritDoc
      */
-    public function filterInput(array $facetedData,  array & $inputIdKeys) : void
+    public function filterInput(array $facetedData,  array &$inputIdKeys): void
     {
-         /**
+        /**
          * @var array{min:int|float|null,max:int|float|null} $value
          */
         $value = $this->getValue();
@@ -145,7 +146,6 @@ class RangeFilter extends AbstractFilter implements InputFilterInterface
         if ($min === null && $max === null) {
             $inputIdKeys = [];
             return;
-
         }
 
         // collect list for different values of one property
@@ -161,14 +161,14 @@ class RangeFilter extends AbstractFilter implements InputFilterInterface
                 /**
                  * @var array<int>|\SplFixedArray<int> $records
                  */
-                if($records instanceof \SplFixedArray){
+                if ($records instanceof \SplFixedArray) {
                     $limit = $records->toArray();
-                }else{
+                } else {
                     $limit = $records;
                 }
             } else {
                 // array sum (faster than array_merge here)
-                foreach ($records as $item){
+                foreach ($records as $item) {
                     $limit[] = $item;
                 }
             }
@@ -180,7 +180,7 @@ class RangeFilter extends AbstractFilter implements InputFilterInterface
         }
 
         if (empty($inputIdKeys)) {
-            foreach ($limit as $v){
+            foreach ($limit as $v) {
                 $inputIdKeys[$v] = true;
             }
             return;
@@ -188,14 +188,14 @@ class RangeFilter extends AbstractFilter implements InputFilterInterface
 
         // Solution without allocating memory to a new index map.
         // Reuse of input data. Set mark "2" for the data that needs to be in result.
-        foreach($limit as $index){
+        foreach ($limit as $index) {
             if (isset($inputIdKeys[$index])) {
                 $inputIdKeys[$index] = 2;
             }
         }
         // Clear unmarked data
-        foreach ($inputIdKeys as $index => &$value){
-            if($value === 2){
+        foreach ($inputIdKeys as $index => &$value) {
+            if ($value === 2) {
                 $value = true;
                 continue;
             }

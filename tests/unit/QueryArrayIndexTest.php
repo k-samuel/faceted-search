@@ -6,11 +6,13 @@ use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Filter\RangeFilter;
 use KSamuel\FacetedSearch\Index;
 use KSamuel\FacetedSearch\Index\ArrayIndex;
+use KSamuel\FacetedSearch\Query\AggregationQuery;
+use KSamuel\FacetedSearch\Query\SearchQuery;
 
-class SearchArrayIndexTest extends TestCase
+class QueryArrayIndexTest extends TestCase
 {
 
-    public function testFind()
+    public function testFind(): void
     {
         $records = $this->getTestData();
         $index = new ArrayIndex();
@@ -37,7 +39,8 @@ class SearchArrayIndexTest extends TestCase
             $filter3,
             $filter4
         ];
-        $result = $facets->find($filters);
+
+        $result = $facets->query((new SearchQuery())->filters($filters));
         sort($result);
         $this->assertEquals([3, 4], $result);
 
@@ -53,11 +56,11 @@ class SearchArrayIndexTest extends TestCase
         $index->setData($index->getData());
         $filter = new ValueFilter('vendor_field');
         $filter->setValue(['Google']);
-        $result = $facets->find([$filter], [3, 4]);
+        $result = $facets->query((new SearchQuery())->filters($filters)->inRecords([3, 4]));
         $this->assertEquals([], $result);
     }
 
-    public function testFindWithLimit()
+    public function testFindWithLimit(): void
     {
         $records = $this->getTestData();
         $index = new ArrayIndex();
@@ -68,13 +71,13 @@ class SearchArrayIndexTest extends TestCase
         $facets = new Search($index);
         $filter = new ValueFilter('vendor');
         $filter->setValue(['Samsung', 'Apple']);
-        $result = $facets->find([$filter], [1, 3]);
+        $result = $facets->query((new SearchQuery())->filters([$filter])->inRecords([1, 3]));
         $result = array_flip($result);
         $this->assertArrayHasKey(1, $result);
         $this->assertArrayHasKey(3, $result);
     }
 
-    public function testGetAcceptableFilters()
+    public function testGetAcceptableFilters(): void
     {
         $records = $this->getTestData();
         $index = new Index\ArrayIndex();
@@ -84,16 +87,16 @@ class SearchArrayIndexTest extends TestCase
         $facets = new Search($index);
         $filter = new ValueFilter('color', 'black');
 
-        $acceptableFilters = $facets->findAcceptableFilters([$filter]);
+        $acceptableFilters = $facets->aggregate((new AggregationQuery())->filter($filter));
 
         $expect = [
-            'vendor' => ['Apple', 'Samsung', 'Xiaomi'],
-            'model' => ['Iphone X Pro Max', 'Galaxy S20', 'Galaxy A5', 'MI 9'],
-            'price' => [80999, 70599, 15000, 26000],
-            'color' => ['black', 'white', 'yellow'],
-            'has_phones' => [1],
-            'cam_mp' => [40, 105, 12, 48],
-            'sale' => [1, 0]
+            'vendor' => ['Apple' => true, 'Samsung' => true, 'Xiaomi' => true],
+            'model' => ['Iphone X Pro Max' => true, 'Galaxy S20' => true, 'Galaxy A5' => true, 'MI 9' => true],
+            'price' => [80999 => true, 70599 => true, 15000 => true, 26000 => true],
+            'color' => ['black' => true, 'white' => true, 'yellow' => true],
+            'has_phones' => [1 => true],
+            'cam_mp' => [40 => true, 105 => true, 12 => true, 48 => true],
+            'sale' => [1 => true, 0 => true]
         ];
         foreach ($expect as $field => &$values) {
             sort($values);
@@ -110,7 +113,7 @@ class SearchArrayIndexTest extends TestCase
         }
     }
 
-    public function testGetAcceptableFiltersCountNoFilters()
+    public function testGetAcceptableFiltersCountNoFilters(): void
     {
         $records = [
             ['color' => 'black', 'size' => 7, 'group' => 'A'],
@@ -119,13 +122,13 @@ class SearchArrayIndexTest extends TestCase
             ['color' => 'yellow', 'size' => 7, 'group' => 'C'],
             ['color' => 'black', 'size' => 7, 'group' => 'C'],
         ];
-        $index = new Index();
+        $index = new ArrayIndex();
         foreach ($records as $id => $item) {
             $index->addRecord($id, $item);
         }
         $facets = new Search($index);
 
-        $acceptableFilters = $facets->findAcceptableFiltersCount();
+        $acceptableFilters = $facets->aggregate((new AggregationQuery())->countValues());
 
         $expect = [
             'color' => ['black' => 3, 'white' => 1, 'yellow' => 1],
@@ -147,7 +150,7 @@ class SearchArrayIndexTest extends TestCase
         }
     }
 
-    public function testGetAcceptableFiltersCountLimit()
+    public function testGetAcceptableFiltersCountLimit(): void
     {
         $records = [
             ['id' => 1, 'color' => 'black', 'size' => 7, 'group' => 'A'],
@@ -156,13 +159,13 @@ class SearchArrayIndexTest extends TestCase
             ['id' => 4, 'color' => 'yellow', 'size' => 7, 'group' => 'C'],
             ['id' => 5, 'color' => 'black', 'size' => 7, 'group' => 'C'],
         ];
-        $index = new Index();
+        $index = new ArrayIndex();
         foreach ($records as  $item) {
             $index->addRecord($item['id'], $item);
         }
         $facets = new Search($index);
 
-        $acceptableFilters = $facets->findAcceptableFiltersCount([], [1, 2]);
+        $acceptableFilters = $facets->aggregate((new AggregationQuery())->inRecords([1, 2])->countValues());
 
         $expect = [
             'color' => ['black' => 2],
@@ -184,17 +187,18 @@ class SearchArrayIndexTest extends TestCase
         }
     }
 
-    public function testGetAcceptableFiltersCount()
+    public function testGetAcceptableFiltersCount(): void
     {
         $records = $this->getTestData();
-        $index = new Index();
+        $index = new ArrayIndex();
         foreach ($records as $id => $item) {
             $index->addRecord($id, $item);
         }
         $facets = new Search($index);
         $filter = new ValueFilter('color', 'black');
 
-        $acceptableFilters = $facets->findAcceptableFiltersCount([$filter]);
+        $acceptableFilters = $facets->aggregate((new AggregationQuery())->filter($filter)->countValues());
+
 
         $expect = [
             'vendor' => ['Apple' => 1, 'Samsung' => 2, 'Xiaomi' => 1],
@@ -221,7 +225,7 @@ class SearchArrayIndexTest extends TestCase
         }
     }
 
-    public function testGetAcceptableFiltersCountMulty()
+    public function testGetAcceptableFiltersCountMulty(): void
     {
         $records = [
             ['color' => 'black', 'size' => 7, 'group' => 'A'],
@@ -230,7 +234,7 @@ class SearchArrayIndexTest extends TestCase
             ['color' => 'yellow', 'size' => 7, 'group' => 'C'],
             ['color' => 'black', 'size' => 7, 'group' => 'C'],
         ];
-        $index = new Index();
+        $index = new ArrayIndex();
         foreach ($records as $id => $item) {
             $index->addRecord($id, $item);
         }
@@ -238,7 +242,7 @@ class SearchArrayIndexTest extends TestCase
         $filter = new ValueFilter('color', 'black');
         $filter2 = new ValueFilter('size', 7);
 
-        $acceptableFilters = $facets->findAcceptableFiltersCount([$filter, $filter2]);
+        $acceptableFilters =  $facets->aggregate((new AggregationQuery())->filters([$filter, $filter2])->countValues());
 
         $expect = [
             'color' => ['black' => 2, 'white' => 1, 'yellow' => 1],
@@ -260,9 +264,9 @@ class SearchArrayIndexTest extends TestCase
         }
     }
 
-    public function testIntFilterNames()
+    public function testIntFilterNames(): void
     {
-        $index = new KSamuel\FacetedSearch\Index\ArrayIndex();
+        $index = new ArrayIndex();
         $records = [
             ['id' => 1, 1 => 'black', 2 => 7.5, 'group' => 'A'],
             ['id' => 2, 1 => 'black', 2 => 8.9, 'group' => 'A'],
@@ -275,15 +279,16 @@ class SearchArrayIndexTest extends TestCase
         }
         $facets = new Search($index);
         $filter = new ValueFilter(2, 7.11);
-        $result = $facets->find([$filter]);
+        $result = $facets->query((new SearchQuery())->filters([$filter]));
         $this->assertEquals(3, $result[0]);
+
         $filter = new ValueFilter(1, 'black');
         $filter2 = new ValueFilter('group', 'A');
-        $result = $facets->find([$filter, $filter2]);
+        $result = $facets->query((new SearchQuery())->filters([$filter, $filter2]));
         $this->assertEquals(1, $result[0]);
         $this->assertEquals(2, $result[1]);
 
-        $acceptableFilters = $facets->findAcceptableFiltersCount([$filter, $filter2]);
+        $acceptableFilters =  $facets->aggregate((new AggregationQuery())->filters([$filter, $filter2])->countValues());
 
         $expect = [
             1 => ['black' => 2],
@@ -305,7 +310,7 @@ class SearchArrayIndexTest extends TestCase
         }
     }
 
-    public function testFindFloat()
+    public function testFindFloat(): void
     {
         $records = [
             ['id' => 1, 'color' => 'black', 'size' => 7.5, 'group' => 'A'],
@@ -319,13 +324,17 @@ class SearchArrayIndexTest extends TestCase
             $index->addRecord($id, $item);
         }
         $facets = new Search($index);
+
         $filter = new ValueFilter('size', 7.11);
-        $result = $facets->find([$filter]);
+        $result = $facets->query((new SearchQuery())->filters([$filter]));
         $this->assertEquals(3, $result[0]);
+
         $filter = new ValueFilter('size', '8.9');
-        $result = $facets->find([$filter]);
+        $result = $facets->query((new SearchQuery())->filters([$filter]));
         $this->assertEquals(2, $result[0]);
-        $acceptableFilters = $facets->findAcceptableFiltersCount([$filter]);
+
+
+        $acceptableFilters =  $facets->aggregate((new AggregationQuery())->filters([$filter])->countValues());
 
         $expect = [
             'color' => ['black' => 1],
