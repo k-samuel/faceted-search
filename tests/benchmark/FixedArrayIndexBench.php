@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Tests\Benchmark;
 
-use KSamuel\FacetedSearch\Filter\FilterInterface;
-use KSamuel\FacetedSearch\Index;
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Sorter\ByField;
 use KSamuel\FacetedSearch\Tests\Benchmark\DatasetFactory;
 use PhpBench\Benchmark\Metadata\Annotations\BeforeMethods;
-use PhpBench\Benchmark\Metadata\Annotations\Groups;
 use PhpBench\Benchmark\Metadata\Annotations\Iterations;
-use PhpBench\Benchmark\Metadata\Annotations\ParamProviders;
 use PhpBench\Benchmark\Metadata\Annotations\Revs;
+use KSamuel\FacetedSearch\Query\AggregationQuery;
+use KSamuel\FacetedSearch\Query\SearchQuery;
 
 /**
  * @Iterations(5)
@@ -34,7 +32,10 @@ class FixedArrayIndexBench extends ArrayIndexBench
             new ValueFilter('warehouse', [789, 45, 65, 1, 10]),
             new ValueFilter('type', ["normal", "middle"])
         ];
-        $this->firstResults = $this->search->find($this->filters);
+        $this->searchQuery = (new SearchQuery())->filters($this->filters);
+        $this->aggregationQuery = (new AggregationQuery())->filters($this->filters);
+        $this->aggregationQueryCount = (new AggregationQuery())->filters($this->filters)->countItems();
+        $this->firstResults = $this->search->query($this->searchQuery);
         $this->sorter = new ByField($index);
     }
 }

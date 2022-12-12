@@ -32,7 +32,6 @@ namespace KSamuel\FacetedSearch;
 
 use KSamuel\FacetedSearch\Filter\FilterInterface;
 use KSamuel\FacetedSearch\Index\IndexInterface;
-use KSamuel\FacetedSearch\OrderBy\ByField;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
 use KSamuel\FacetedSearch\Query\SearchQuery;
 
@@ -62,6 +61,7 @@ class Search
      * @param array<FilterInterface> $filters
      * @param array<int>|null $inputRecords - list of record id to search in. Use it for limit results
      * @return array<int>
+     * @deprecated use query
      */
     public function find(array $filters, ?array $inputRecords = null): array
     {

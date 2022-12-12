@@ -200,7 +200,7 @@ $records = $search->query($query);
 $query = (new AggregationQuery())->filters($filters);
 $filterData = $search->aggregate($query);
 
-// If you want to get acceptable filters values with items count use findAcceptableFiltersCount
+// If you want to get acceptable filters values with items count use $search->aggregate
 // note that filters is not applied for itself for counting
 // values count of a particular field depends only on filters imposed on other fields 
 $query = (new AggregationQuery())->filters($filters)->countItems();

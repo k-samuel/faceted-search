@@ -86,6 +86,54 @@ public function filterResults(array $facetedData, ?array $inputIdKeys = null): a
 public function filterInput(array $facetedData,  array &$inputIdKeys): void;
 ```
 
+## Performance
+
+v2.2.0 Bench ArrayIndex  PHP 8.2 + JIT + opcache (no xdebug extension)
+
+| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
+| 10,000          | ~3Mb     | ~0.0004 s.       | ~0.001 s.                | ~0.002 s.                      | ~0.0001 s.   | 907              |
+| 50,000          | ~20Mb    | ~0.001 s.        | ~0.006 s.                | ~0.011 s.                      | ~0.0005 s.   | 4550             |
+| 100,000         | ~40Mb    | ~0.003 s.        | ~0.014 s.                | ~0.024 s.                      | ~0.001 s.    | 8817             |
+| 300,000         | ~95Mb    | ~0.010 s.        | ~0.042 s.                | ~0.082 s                       | ~0.003 s.    | 26891            |
+| 1,000,000       | ~329Mb   | ~0.046 s.        | ~0.164 s.                | ~0.306 s.                      | ~0.015 s.    | 90520            |
+
+v2.2.0 Bench FixedArrayIndex PHP 8.2 + JIT + opcache (no xdebug extension) 
+
+| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
+| 10,000          | ~2Mb     | ~0.0006 s.       | ~0.001 s.                | ~0.003 s.                      | ~0.0002 s.   | 907              |
+| 50,000          | ~12Mb    | ~0.003 s.        | ~0.007 s.                | ~0.017 s.                      | ~0.0009 s.   | 4550             |
+| 100,000         | ~23Mb    | ~0.006 s.        | ~0.017 s.                | ~0.040 s.                      | ~0.001 s.    | 8817             |
+| 300,000         | ~70Mb    | ~0.019 s.        | ~0.056 s.                | ~0.120 s.                      | ~0.006 s.    | 26891            |
+| 1,000,000       | ~233Mb   | ~0.077 s.        | ~0.202 s.                | ~0.455 s.                      | ~0.023 s.    | 90520            |
+
+
+### Previous version
+
+v2.1.5 Bench ArrayIndex  PHP 8.2 + JIT + opcache (no xdebug extension)
+
+| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
+| 10,000          | ~3Mb     | ~0.0004 s.       | ~0.001 s.                | ~0.002 s.                      | ~0.0001 s.   | 907              |
+| 50,000          | ~20Mb    | ~0.001 s.        | ~0.006 s.                | ~0.011 s.                      | ~0.0005 s.   | 4550             |
+| 100,000         | ~40Mb    | ~0.003 s.        | ~0.014 s.                | ~0.024 s.                      | ~0.001 s.    | 8817             |
+| 300,000         | ~95Mb    | ~0.010 s.        | ~0.042 s.                | ~0.082 s                       | ~0.003 s.    | 26891            |
+| 1,000,000       | ~329Mb   | ~0.046 s.        | ~0.164 s.                | ~0.306 s.                      | ~0.015 s.    | 90520            |
+
+v2.1.5 Bench FixedArrayIndex PHP 8.2 + JIT + opcache (no xdebug extension) 
+
+| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
+| 10,000          | ~2Mb     | ~0.0006 s.       | ~0.001 s.                | ~0.003 s.                      | ~0.0002 s.   | 907              |
+| 50,000          | ~12Mb    | ~0.003 s.        | ~0.007 s.                | ~0.017 s.                      | ~0.0009 s.   | 4550             |
+| 100,000         | ~23Mb    | ~0.006 s.        | ~0.017 s.                | ~0.040 s.                      | ~0.001 s.    | 8817             |
+| 300,000         | ~70Mb    | ~0.019 s.        | ~0.056 s.                | ~0.120 s.                      | ~0.006 s.    | 26891            |
+| 1,000,000       | ~233Mb   | ~0.077 s.        | ~0.202 s.                | ~0.455 s.                      | ~0.023 s.    | 90520            |
+
+
+
+
 ### v2.1.6 (12.10.2022)
 ### Bug Fix
 * [issue#8](https://github.com/k-samuel/faceted-search/issues/9) Version 2.1.5 does not allow integer names for data fields. Reported by [pixobit](https://github.com/pixobit).

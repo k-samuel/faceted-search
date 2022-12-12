@@ -25,12 +25,16 @@
  * SOFTWARE.
  *
  */
+
 declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Sorter;
 
 use KSamuel\FacetedSearch\Index;
 
+/**
+ * @deprecated use SearchQuery for sorting
+ */
 class ByField
 {
     public const SORT_ASC = 0;
