@@ -46,7 +46,7 @@ class ArrayIndex implements IndexInterface
 {
     /**
      * Index data
-     * @var array<int|string,array<int|string,array<int>|\SplFixedArray<int>>>
+     * @var array<int|string,array<int|string,array<int>>>
      */
     protected array $data = [];
     /**
@@ -234,8 +234,6 @@ class ArrayIndex implements IndexInterface
 
         if (!empty($inputRecords)) {
             $inputRecords = $this->mapInputArray($inputRecords);
-        } else {
-            $inputRecords = [];
         }
 
         // Aggregates optimization for value filters.
@@ -259,11 +257,12 @@ class ArrayIndex implements IndexInterface
      * @param array<int> $inputRecords
      * @param bool $countValues
      * @return array<string,array<int|string,int|string>>
-     * @deprecated use aggregation
+     * @deprecated use aggregation (not replaced with aggregation has different result format)
      */
     public function aggregate(array $filters = [], array $inputRecords = [], bool $countValues = false): array
     {
         $input = [];
+
         if (!empty($inputRecords)) {
             $input = $this->mapInputArray($inputRecords);
         }
@@ -281,18 +280,24 @@ class ArrayIndex implements IndexInterface
         $resultCache = [];
 
         if (!empty($filters)) {
+            // Aggregates optimization for value filters.
+            // The fewer elements after the first filtering, the fewer data copies and memory allocations in iterations
+            if (count($filters) > 1) {
+                $filters = $this->sortFiltersByCount($filters);
+            }
             // index filters by field
             foreach ($filters as $filter) {
-                /**
-                 * @var FilterInterface $filter
-                 */
-                $indexedFilters[$filter->getFieldName()] = $filter;
-                $resultCache[$filter->getFieldName()] = $this->findRecordsMap([$filter], $input);
+                $name = $filter->getFieldName();
+                $indexedFilters[$name] = $filter;
+                $resultCache[$name] = $this->findRecordsMap([$filter], $input);
             }
+            // merge results
             $filteredRecords = $this->mergeFilters($resultCache);
-        } elseif (!empty($inputRecords)) {
+        } elseif (!empty($input)) {
             $filteredRecords = $this->findRecordsMap([], $input);
         }
+
+        $resultCacheCount = count($resultCache);
 
         foreach ($this->data as $filterName => $filterValues) {
             /**
@@ -313,7 +318,7 @@ class ArrayIndex implements IndexInterface
             // do not apply self filtering
             if (isset($resultCache[$filterName])) {
                 // count of cached filters must be > 1 (1 filter will be skipped by field name)
-                if (count($resultCache) > 1) {
+                if ($resultCacheCount > 1) {
                     // optimization with cache of findRecordsMap
                     $recordIds = $this->mergeFilters($resultCache, $filterName);
                 } else {
@@ -348,7 +353,7 @@ class ArrayIndex implements IndexInterface
     /**
      * Find acceptable filter values
      * @param AggregationQuery $query
-     * @return array<string,array<int|string,int|true>>
+     * @return array<int|string,array<int|string,int|true>>
      */
     public function aggregation(AggregationQuery $query): array
     {
@@ -356,60 +361,52 @@ class ArrayIndex implements IndexInterface
         $filters = $query->getFilters();
         $countValues = $query->getCountItems();
 
-        if (!empty($input)) {
-            $input = $this->mapInputArray($input);
-        } else {
-            $input = [];
+        // Return all values from index if filters and input is not set
+        if (empty($filters) && empty($input)) {
+            if ($countValues) {
+                return $this->getValuesCount();
+            }
+            return $this->getValues();
         }
 
-        // Aggregates optimization for value filters.
-        // The fewer elements after the first filtering, the fewer data copies and memory allocations in iterations
-        if (empty($input) && count($filters) > 1) {
-            $filters = $this->sortFiltersByCount($filters);
+        if (!empty($input)) {
+            $input = $this->mapInputArray($input);
         }
 
         $result = [];
         $indexedFilters = [];
         $filteredRecords = [];
-
         $resultCache = [];
 
         if (!empty($filters)) {
+            // Aggregates optimization for value filters.
+            // The fewer elements after the first filtering, the fewer data copies and memory allocations in iterations
+            if (count($filters) > 1) {
+                $filters = $this->sortFiltersByCount($filters);
+            }
             // index filters by field
             foreach ($filters as $filter) {
-                /**
-                 * @var FilterInterface $filter
-                 */
-                $indexedFilters[$filter->getFieldName()] = $filter;
-                $resultCache[$filter->getFieldName()] = $this->findRecordsMap([$filter], $input);
+                $name = $filter->getFieldName();
+                $indexedFilters[$name] = $filter;
+                $resultCache[$name] = $this->findRecordsMap([$filter], $input);
             }
+            // merge results
             $filteredRecords = $this->mergeFilters($resultCache);
         } elseif (!empty($input)) {
             $filteredRecords = $this->findRecordsMap([], $input);
         }
 
+        $resultCacheCount = count($resultCache);
+
         foreach ($this->data as $filterName => $filterValues) {
             /**
              * @var string $filterName
              */
-            if (empty($indexedFilters) && empty($input)) {
-                if ($countValues) {
-                    // need to count values
-                    foreach ($filterValues as $key => $list) {
-                        $result[$filterName][$key] = count($list);
-                    }
-                } else {
-                    foreach ($filterValues as $key => $info) {
-                        $result[$filterName][$key] = true;
-                    }
-                }
-                continue;
-            }
 
             // do not apply self filtering
             if (isset($resultCache[$filterName])) {
                 // count of cached filters must be > 1 (1 filter will be skipped by field name)
-                if (count($resultCache) > 1) {
+                if ($resultCacheCount > 1) {
                     // optimization with cache of findRecordsMap
                     $recordIds = $this->mergeFilters($resultCache, $filterName);
                 } else {
@@ -419,9 +416,8 @@ class ArrayIndex implements IndexInterface
                 $recordIds = $filteredRecords;
             }
 
-            foreach ($filterValues as $filterValue => $data) {
-                if ($countValues) {
-                    // need to count values
+            if ($countValues) {
+                foreach ($filterValues as $filterValue => $data) {
                     /**
                      * @var array<int,int> $data
                      */
@@ -430,19 +426,45 @@ class ArrayIndex implements IndexInterface
                     if ($intersect === 0) {
                         continue;
                     }
-
                     $result[$filterName][$filterValue] = $intersect;
-                    // results without count
-                } elseif ($this->hasIntersectIntMap($data, $recordIds)) {
-                    $result[$filterName][$filterValue] = true;
+                }
+            } else {
+                foreach ($filterValues as $filterValue => $data) {
+                    if ($this->hasIntersectIntMap($data, $recordIds)) {
+                        $result[$filterName][$filterValue] = true;
+                    }
                 }
             }
         }
         return $result;
     }
 
-
-
+    /**
+     * @return array<int|string,array<string|int,true>>
+     */
+    protected function getValues(): array
+    {
+        $result = [];
+        foreach ($this->data as $filterName => $filterValues) {
+            foreach ($filterValues as $key => $info) {
+                $result[$filterName][$key] = true;
+            }
+        }
+        return $result;
+    }
+    /**
+     * @return array<int|string,array<string|int,int>>
+     */
+    protected function getValuesCount(): array
+    {
+        $result = [];
+        foreach ($this->data as $filterName => $filterValues) {
+            foreach ($filterValues as $key => $list) {
+                $result[$filterName][$key] = count($list);
+            }
+        }
+        return $result;
+    }
 
     /**
      * @param array<mixed,array<int,bool>> $maps
@@ -523,11 +545,11 @@ class ArrayIndex implements IndexInterface
         return $total;
     }
     /**
-     * @param array<int,int>|\SplFixedArray<int> $a
+     * @param array<int,int> $a
      * @param array<int,bool> $b
      * @return int
      */
-    protected function getIntersectMapCount($a, array $b): int
+    protected function getIntersectMapCount(array $a, array $b): int
     {
         $intersectLen = 0;
 
@@ -541,11 +563,11 @@ class ArrayIndex implements IndexInterface
     }
 
     /**
-     * @param array<int,int>|\SplFixedArray<int> $a
+     * @param array<int,int> $a
      * @param array<int,bool> $b
      * @return bool
      */
-    protected function hasIntersectIntMap($a, array $b): bool
+    protected function hasIntersectIntMap(array $a, array $b): bool
     {
         foreach ($a as $key) {
             if (isset($b[$key])) {

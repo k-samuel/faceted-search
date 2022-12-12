@@ -8,41 +8,41 @@ use KSamuel\FacetedSearch\Index;
 
 class IndexTest extends TestCase
 {
-    public function testAddRecord()
+    public function testAddRecord(): void
     {
         $index = new Index\ArrayIndex();
         $this->assertTrue($index->addRecord(112, ['vendor' => 'Tester', 'price' => 100]));
         $this->assertTrue($index->addRecord(113, ['vendor' => 'Tester2', 'price' => 101]));
         $this->assertTrue($index->addRecord(114, ['vendor' => 'Tester2', 'price' => 101]));
         $this->assertEquals([
-                                'vendor' => [
-                                    'Tester' => [112],
-                                    'Tester2' => [113, 114]
-                                ],
-                                'price' => [
-                                    100 => [112],
-                                    101 => [113, 114]
-                                ]
-                            ], $index->getData());
+            'vendor' => [
+                'Tester' => [112],
+                'Tester2' => [113, 114]
+            ],
+            'price' => [
+                100 => [112],
+                101 => [113, 114]
+            ]
+        ], $index->getData());
         $this->assertTrue($index->addRecord(114, ['vendor' => 'Tester2', 'price' => 0.15]));
     }
 
-    public function testFixedAddRecord()
+    public function testFixedAddRecord(): void
     {
         $index = new Index\FixedArrayIndex();
         $this->assertTrue($index->addRecord(112, ['vendor' => 'Tester', 'price' => 100]));
         $this->assertTrue($index->addRecord(113, ['vendor' => 'Tester2', 'price' => 101]));
         $this->assertTrue($index->addRecord(114, ['vendor' => 'Tester2', 'price' => 101]));
         $this->assertEquals([
-                                'vendor' => [
-                                    'Tester' => [112],
-                                    'Tester2' => [113, 114]
-                                ],
-                                'price' => [
-                                    100 => [112],
-                                    101 => [113, 114]
-                                ]
-                            ], $index->export());
+            'vendor' => [
+                'Tester' => [112],
+                'Tester2' => [113, 114]
+            ],
+            'price' => [
+                100 => [112],
+                101 => [113, 114]
+            ]
+        ], $index->export());
         $this->assertTrue($index->addRecord(114, ['vendor' => 'Tester2', 'price' => 0.15]));
     }
 
@@ -104,7 +104,7 @@ class IndexTest extends TestCase
         );
     }
 
-    public function testExport():void
+    public function testExport(): void
     {
         $index = new Index\FixedArrayIndex();
         $index->writeMode();

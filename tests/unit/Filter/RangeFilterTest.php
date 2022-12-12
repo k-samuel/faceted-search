@@ -1,4 +1,5 @@
 <?php
+
 use PHPUnit\Framework\TestCase;
 use KSamuel\FacetedSearch\Filter\RangeFilter;
 use KSamuel\FacetedSearch\Index\ArrayIndex;
@@ -7,45 +8,45 @@ use KSamuel\FacetedSearch\Search;
 
 class RangeFilterTest extends TestCase
 {
-    public function testSetWrongValueException()
+    public function testSetWrongValueException(): void
     {
         $filter = new RangeFilter('field');
         $this->expectException('Exception');
         $filter->setValue(1);
     }
 
-    public function testSetEmptyValueException()
+    public function testSetEmptyValueException(): void
     {
         $filter = new RangeFilter('field');
         $this->expectException('Exception');
-        $filter->setValue(['min'=>null, 'max'=>null]);
+        $filter->setValue(['min' => null, 'max' => null]);
     }
 
-    public function testSetValue()
+    public function testSetValue(): void
     {
         $filter = new RangeFilter('field');
-        $filter->setValue(['min'=>10]);
+        $filter->setValue(['min' => 10]);
 
-        $this->assertEquals(['min'=>10,'max'=>null], $filter->getValue());
+        $this->assertEquals(['min' => 10, 'max' => null], $filter->getValue());
     }
 
-    public function testCombinationTest()
+    public function testCombinationTest(): void
     {
         $index = new ArrayIndex();
         $rangeIndexer = new RangeIndexer(100);
         $index->addIndexer('price', $rangeIndexer);
 
-        $index->addRecord(1,['price'=>90]);
-        $index->addRecord(2,['price'=>100]);
-        $index->addRecord(3,['price'=>150]);
-        $index->addRecord(4,['price'=>200]);
+        $index->addRecord(1, ['price' => 90]);
+        $index->addRecord(2, ['price' => 100]);
+        $index->addRecord(3, ['price' => 150]);
+        $index->addRecord(4, ['price' => 200]);
 
         $filters = [
-            new RangeFilter('price', ['min'=>100,'max'=>200])
+            new RangeFilter('price', ['min' => 100, 'max' => 200])
         ];
 
         $search = new Search($index);
         $result = $search->find($filters);
-        $this->assertEquals([2,3,4], $result);
+        $this->assertEquals([2, 3, 4], $result);
     }
 }

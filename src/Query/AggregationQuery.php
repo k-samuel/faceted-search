@@ -90,7 +90,7 @@ class AggregationQuery
      * Records getter
      * @return array<int>
      */
-    public function getInRecords(): ?array
+    public function getInRecords(): array
     {
         return $this->records;
     }

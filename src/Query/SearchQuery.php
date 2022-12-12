@@ -42,9 +42,9 @@ class SearchQuery
     protected ?Order $order = null;
     protected ?int $limit = null;
     /**
-     * @var ?array<int> $records
+     * @var array<int> $records
      */
-    protected ?array $records = null;
+    protected array $records = [];
 
     public function filter(FilterInterface $filter): self
     {
@@ -99,9 +99,9 @@ class SearchQuery
 
     /**
      * Records getter
-     * @return ?array<int>
+     * @return array<int>
      */
-    public function getInRecords(): ?array
+    public function getInRecords(): array
     {
         return $this->records;
     }

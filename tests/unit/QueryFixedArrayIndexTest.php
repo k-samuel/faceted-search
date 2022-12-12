@@ -26,7 +26,7 @@ class QueryFixedArrayIndexTest extends TestCase
         return $index;
     }
 
-    public function testFind()
+    public function testFind(): void
     {
         $records = $this->getTestData();
         $index = $this->loadIndex($records);
@@ -55,24 +55,24 @@ class QueryFixedArrayIndexTest extends TestCase
 
         sort($result);
         $this->assertEquals([3, 4], $result);
+        $result = $facets->query((new SearchQuery())->filters($filters)->inRecords(array_keys($records)));
 
-        $result = $facets->find($filters, array_keys($records));
         sort($result);
         $this->assertEquals([3, 4], $result);
 
         $filter = new ValueFilter('vendor');
         $filter->setValue(['Google']);
-        $result = $facets->find([$filter]);
+        $result = $facets->query((new SearchQuery())->filter($filter));
         $this->assertEquals([], $result);
 
         $index->setData($index->getData());
         $filter = new ValueFilter('vendor_field');
         $filter->setValue(['Google']);
-        $result = $facets->find([$filter], [3, 4]);
+        $facets->query((new SearchQuery())->filters([$filter])->inRecords([3, 4]));
         $this->assertEquals([], $result);
     }
 
-    public function testFindWithLimit()
+    public function testFindWithLimit(): void
     {
         $records = $this->getTestData();
         $index = $this->loadIndex($records);
@@ -86,7 +86,7 @@ class QueryFixedArrayIndexTest extends TestCase
         $this->assertArrayHasKey(3, $result);
     }
 
-    public function testGetAcceptableFilters()
+    public function testGetAcceptableFilters(): void
     {
         $records = $this->getTestData();
         $index = $this->loadIndex($records);
@@ -120,7 +120,7 @@ class QueryFixedArrayIndexTest extends TestCase
         }
     }
 
-    public function testGetAcceptableFiltersCountNoFilters()
+    public function testGetAcceptableFiltersCountNoFilters(): void
     {
         $records = [
             ['color' => 'black', 'size' => 7, 'group' => 'A'],
@@ -154,7 +154,7 @@ class QueryFixedArrayIndexTest extends TestCase
         }
     }
 
-    public function testGetAcceptableFiltersCountLimit()
+    public function testGetAcceptableFiltersCountLimit(): void
     {
         $records = [
             ['id' => 1, 'color' => 'black', 'size' => 7, 'group' => 'A'],
@@ -166,7 +166,7 @@ class QueryFixedArrayIndexTest extends TestCase
         $index = $this->loadIndex($records);
         $facets = new Search($index);
 
-        $acceptableFilters = $facets->findAcceptableFiltersCount([], [1, 2]);
+        $acceptableFilters = $facets->aggregate((new AggregationQuery())->countItems()->inRecords([1, 2]));
 
         $expect = [
             'color' => ['black' => 2],
@@ -188,7 +188,7 @@ class QueryFixedArrayIndexTest extends TestCase
         }
     }
 
-    public function testGetAcceptableFiltersCount()
+    public function testGetAcceptableFiltersCount(): void
     {
         $records = $this->getTestData();
         $index = $this->loadIndex($records);
@@ -222,7 +222,7 @@ class QueryFixedArrayIndexTest extends TestCase
         }
     }
 
-    public function testGetAcceptableFiltersCountMulti()
+    public function testGetAcceptableFiltersCountMulti(): void
     {
         $records = [
             ['color' => 'black', 'size' => 7, 'group' => 'A'],
@@ -259,7 +259,7 @@ class QueryFixedArrayIndexTest extends TestCase
         }
     }
 
-    public function testFindFloat()
+    public function testFindFloat(): void
     {
         $records = [
             ['id' => 1, 'color' => 'black', 'size' => 7.5, 'group' => 'A'],
@@ -270,10 +270,11 @@ class QueryFixedArrayIndexTest extends TestCase
 
         $facets = new Search($index);
         $filter = new ValueFilter('size', 7.11);
-        $result = $facets->find([$filter]);
+        $result =  $facets->query((new SearchQuery())->filter($filter));
+
         $this->assertEquals(3, $result[0]);
         $filter = new ValueFilter('size', '8.9');
-        $result = $facets->find([$filter]);
+        $result =  $facets->query((new SearchQuery())->filter($filter));
         $this->assertEquals(2, $result[0]);
         $acceptableFilters =  $facets->aggregate((new AggregationQuery())->filter($filter)->countItems());
 
@@ -297,7 +298,11 @@ class QueryFixedArrayIndexTest extends TestCase
             $this->assertEquals($values, $acceptableFilters[$filter]);
         }
     }
-
+    /**
+     * Undocumented function
+     *
+     * @return array<int,array<string,mixed>>
+     */
     public function getTestData(): array
     {
         return [
