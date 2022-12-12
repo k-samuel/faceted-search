@@ -57,7 +57,37 @@ class SearchArrayIndexTest extends TestCase
         $this->assertEquals([], $result);
     }
 
-    public function testFindWithLimit()
+    public function testFindOneFilter(): void
+    {
+        $records = $this->getTestData();
+        $index = new ArrayIndex();
+
+        foreach ($records as $id => $item) {
+            $index->addRecord($id, $item);
+        }
+        $facets = new Search($index);
+        $filter = new ValueFilter('vendor');
+        $filter->setValue(['Samsung', 'Apple']);
+        $result = $facets->find([$filter]);
+        sort($result);
+        $this->assertEquals([1, 2, 3, 4, 5], $result);
+    }
+
+    public function testFindNoFilter(): void
+    {
+        $records = $this->getTestData();
+        $index = new ArrayIndex();
+
+        foreach ($records as $id => $item) {
+            $index->addRecord($id, $item);
+        }
+        $facets = new Search($index);
+        $result = $facets->find([]);
+        sort($result);
+        $this->assertEquals([1, 2, 3, 4, 5, 6], $result);
+    }
+
+    public function testFindWithLimit(): void
     {
         $records = $this->getTestData();
         $index = new ArrayIndex();

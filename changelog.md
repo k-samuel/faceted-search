@@ -70,8 +70,21 @@ $search->findAcceptableFilters()
 $search->findAcceptableFiltersCount()
 ```
 
-The version is fully backward compatible. 
+## Backward compatibility
+The version is fully backward compatible if you haven't used own filters implementations.
+
 The old API format is available but marked as deprecated.
+
+
+**FilterInterface** changed. You need to take this into account if you implemented your own versions of filters
+```PHP
+//Interface 
+use KSamuel\FacetedSearch\Filter\FilterInterface;
+//changed
+public function filterResults(array $facetedData, ?array $inputIdKeys = null): array;
+//replaced with
+public function filterInput(array $facetedData,  array &$inputIdKeys): void;
+```
 
 ### v2.1.6 (12.10.2022)
 ### Bug Fix

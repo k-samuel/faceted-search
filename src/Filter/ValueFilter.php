@@ -75,57 +75,6 @@ class ValueFilter extends AbstractFilter
     /**
      * @inheritDoc
      */
-    public function filterResults(array $facetedData, ?array $inputIdKeys = null): array
-    {
-        $result = [];
-        $hasInput = !empty($inputIdKeys);
-
-        // collect list for different values of one property
-        foreach ($this->value as $item) {
-            if (!isset($facetedData[$item])) {
-                continue;
-            }
-
-            if (is_array($facetedData[$item])) {
-                foreach ($facetedData[$item] as $recId) {
-                    /**
-                     * @var int $recId
-                     */
-                    if (!$hasInput) {
-                        $result[$recId] = true;
-                        continue;
-                    }
-
-                    if (isset($inputIdKeys[$recId])) {
-                        $result[$recId] = true;
-                    }
-                }
-            } else {
-                // Performance patch SplFixedArray index access is faster than iteration
-                $count = count($facetedData[$item]);
-                for ($i = 0; $i < $count; $i++) {
-                    $recId = $facetedData[$item][$i];
-                    /**
-                     * @var int $recId
-                     */
-                    if (!$hasInput) {
-                        $result[$recId] = true;
-                        continue;
-                    }
-
-                    if (isset($inputIdKeys[$recId])) {
-                        $result[$recId] = true;
-                    }
-                }
-            }
-        }
-        return $result;
-    }
-
-
-    /**
-     * @inheritDoc
-     */
     public function filterInput(array $facetedData,  array &$inputIdKeys): void
     {
         if (empty($inputIdKeys)) {
