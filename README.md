@@ -145,7 +145,6 @@ use KSamuel\FacetedSearch\Index\ArrayIndex;
 $searchIndex = new ArrayIndex();
 /*
  * Getting products data from DB
- * Sort data by $recordId before using Index->addRecord it can improve performance 
  */
 $data = [
     ['id'=>7, 'color'=>'black', 'price'=>100, 'sale'=>true, 'size'=>36],   
@@ -158,6 +157,12 @@ foreach($data as $item){
    unset($item['id']);
    $searchIndex->addRecord($recordId, $item);
 }
+
+// You can optionally call index optimization before using (since v2.2.0). 
+// The procedure can be run once after changing the index data. 
+// Optimization takes a few seconds, you should not call it during the processing of user requests.
+$searchIndex->optimize();
+
 // save index data to some storage 
 $indexData = $searchIndex->getData();
 // We will use file for example
@@ -294,6 +299,11 @@ foreach($data as $item){
    unset($item['id']);
    $searchIndex->addRecord($recordId, $item);
 }
+// You can optionally call index optimization before using (since v2.2.0). 
+// The procedure can be run once after changing the index data. 
+// Optimization takes a few seconds, you should not call it during the processing of user requests.
+// Can be called only in write mode of FixedArrayIndex
+$searchIndex->optimize();
 // After the data is added, you need to commit the changes 
 $searchIndex->commitChanges();
 // save index data to some storage 

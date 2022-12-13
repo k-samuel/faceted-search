@@ -96,7 +96,7 @@ class ArrayIndex implements IndexInterface
         return true;
     }
 
-    protected function resetLocalCache(): void
+    public function resetLocalCache(): void
     {
         $this->idMapCache = [];
     }
@@ -374,7 +374,6 @@ class ArrayIndex implements IndexInterface
         }
 
         $result = [];
-        $indexedFilters = [];
         $filteredRecords = [];
         $resultCache = [];
 
@@ -387,7 +386,6 @@ class ArrayIndex implements IndexInterface
             // index filters by field
             foreach ($filters as $filter) {
                 $name = $filter->getFieldName();
-                $indexedFilters[$name] = $filter;
                 $resultCache[$name] = $this->findRecordsMap([$filter], $input);
             }
             // merge results
@@ -416,23 +414,16 @@ class ArrayIndex implements IndexInterface
                 $recordIds = $filteredRecords;
             }
 
-            if ($countValues) {
-                foreach ($filterValues as $filterValue => $data) {
-                    /**
-                     * @var array<int,int> $data
-                     */
+            foreach ($filterValues as $filterValue => $data) {
+                if ($countValues) {
                     $intersect = $this->getIntersectMapCount($data, $recordIds);
 
                     if ($intersect === 0) {
                         continue;
                     }
                     $result[$filterName][$filterValue] = $intersect;
-                }
-            } else {
-                foreach ($filterValues as $filterValue => $data) {
-                    if ($this->hasIntersectIntMap($data, $recordIds)) {
-                        $result[$filterName][$filterValue] = true;
-                    }
+                } elseif ($this->hasIntersectIntMap($data, $recordIds)) {
+                    $result[$filterName][$filterValue] = true;
                 }
             }
         }
@@ -710,5 +701,25 @@ class ArrayIndex implements IndexInterface
             }
         }
         return $sorted;
+    }
+
+    public function optimize(): void
+    {
+        foreach ($this->data as $fieldName => &$valueList) {
+
+            $valueCounts = [];
+            foreach ($valueList as $value => &$list) {
+                $valueCounts[$value] = count($list);
+                // sort records by id ASC
+                sort($list);
+            }
+            // sort values by records count
+            asort($valueCounts);
+            $oldList = $valueList;
+            $valueList = [];
+            foreach ($valueCounts as $value => $count) {
+                $valueList[$value] = $oldList[$value];
+            }
+        }
     }
 }

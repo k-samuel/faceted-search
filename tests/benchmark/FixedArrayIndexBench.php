@@ -25,7 +25,7 @@ class FixedArrayIndexBench extends ArrayIndexBench
 
     public function before(): void
     {
-        $index = (new DatasetFactory('tests/data/'))->getFixedFacetedIndex($this->dataSize);
+        $index = (new DatasetFactory('tests/data/'))->getFixedFacetedIndex($this->dataSize, $this->isBalanced);
         $this->search = new Search($index);
         $this->filters = [
             new ValueFilter('color', 'black'),

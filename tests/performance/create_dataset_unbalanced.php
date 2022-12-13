@@ -1,18 +1,18 @@
 <?php
 
 $t = microtime(true);
-$resultsCount = 10000;
+$resultsCount = 1000000;
 
-$colors = ['red', 'green', 'blue', 'yellow', 'black', 'white'];
+$colors = ['red', 'red',  'green', 'blue', 'yellow', 'black', 'black', 'black', 'black', 'white', 'white', 'white'];
 $brands = [
     'Nike',
-    'H&M',
+    'H&M', 'H&M', 'H&M', 'H&M',
     'Zara',
     'Adidas',
     'Louis Vuitton',
-    'Cartier',
+    'Cartier', 'Cartier', 'Cartier',
     'Hermes',
-    'Gucci',
+    'Gucci', 'Gucci',
     'Uniqlo',
     'Rolex',
     'Coach',
@@ -25,12 +25,13 @@ $brands = [
     'Prada',
     'Under Armour',
     'Armani',
-    'Puma',
+    'Puma', 'Puma', 'Puma', 'Puma',
     'Ray-Ban'
 ];
 
 $warehouses = [1, 10, 23, 345, 43, 5476, 34, 675, 34, 24, 789, 45, 65, 34, 54, 511, 512, 520];
-$type = ['normal', 'middle', 'good'];
+$type = ['normal', 'normal', 'normal', 'middle', 'good', 'good'];
+$sizes = [34, 35, 36, 37, 38, 3, 40, 41, 42, 43, 44, 45];
 
 $dataSet = [];
 
@@ -42,9 +43,9 @@ for ($i = 1; $i <= $resultsCount; $i++) {
     }
     $rec = [
         'id' => $i,
-        'color' => $colors[rand(0, 5)],
+        'color' => $colors[rand(0, count($colors) - 1)],
         'back_color' => $colors[rand(0, 5)],
-        'size' => rand(34, 50),
+        'size' => $sizes[rand(0, count($sizes) - 1)],
         'brand' => $brands[rand(0, count($brands) - 1)],
         'price' => rand(1000, 10000),
         'discount' => rand(0, 10),
@@ -53,7 +54,7 @@ for ($i = 1; $i <= $resultsCount; $i++) {
         'warehouse' => array_unique($wh),
         'type' => $type[rand(0, count($type) - 1)]
     ];
-    file_put_contents('./data.json', json_encode($rec) . "\n", FILE_APPEND);
+    file_put_contents('./ub_data.json', json_encode($rec) . "\n", FILE_APPEND);
 }
 
 echo 'total time: ' . number_format(microtime(true) - $t, 3) . PHP_EOL;

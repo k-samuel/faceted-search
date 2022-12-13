@@ -37,7 +37,7 @@ interface FilterInterface
      * @return string
      */
     public function getFieldName(): string;
-    
+
     /**
      * Filter faceted data
      * @param array<int|string,array<int>|\SplFixedArray<int>> $facetedData

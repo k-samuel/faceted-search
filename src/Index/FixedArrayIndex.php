@@ -140,4 +140,11 @@ class FixedArrayIndex extends ArrayIndex
         }
         return false;
     }
+    public function optimize(): void
+    {
+        if ($this->isCompact) {
+            throw new \RuntimeException('FixedArray can by optimized only in write mode');
+        }
+        parent::optimize();
+    }
 }

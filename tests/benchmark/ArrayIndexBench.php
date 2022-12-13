@@ -60,9 +60,11 @@ class ArrayIndexBench
      */
     protected AggregationQuery $aggregationQueryCount;
 
+    protected bool $isBalanced = true;
+
     public function before(): void
     {
-        $this->index = (new DatasetFactory('tests/data/'))->getFacetedIndex($this->dataSize);
+        $this->index = (new DatasetFactory('tests/data/'))->getFacetedIndex($this->dataSize, $this->isBalanced);
         $this->search = new Search($this->index);
         $this->filters = [
             new ValueFilter('color', 'black'),

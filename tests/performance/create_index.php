@@ -4,7 +4,7 @@ require '../../vendor/autoload.php';
 
 $dataDir = './';
 $t = microtime(true);
-$f = fopen($dataDir . 'data.json', "r");
+$f = fopen($dataDir . 'ub_data.json', "r");
 $indexData = [];
 while ($row = fgets($f)) {
     if (!empty($row)) {
@@ -22,6 +22,6 @@ foreach ($indexData as $rec) {
     $index->addRecord($id, $rec);
 }
 
-file_put_contents($dataDir . 'facet.json', json_encode($index->getData()));
+file_put_contents($dataDir . 'ub_facet.json', json_encode($index->getData()));
 
 echo 'total time: ' . number_format(microtime(true) - $t, 3) . PHP_EOL;

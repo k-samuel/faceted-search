@@ -18,17 +18,23 @@ $t = microtime(true);
 $m = memory_get_usage();
 $indexData = json_decode(file_get_contents($dataFile), true);
 $time = (microtime(true) - $t);
-//$index = new Index\ArrayIndex();
 
 $index = new Index\ArrayIndex();
-//$index->writeMode();
+//$index = new Index\FixedArrayIndex();
+
 $index->setData($indexData);
 unset($indexData);
-//$index->commitChanges();
 gc_collect_cycles();
 $memUse = (int)((memory_get_usage() - $m) / 1024 / 1024);
 $resultData[] = ['Index memory usage', (string) $memUse . "Mb", ''];
 $resultData[] = ['Loading time', number_format($time, 6) . 's', ''];
+
+$t = microtime(true);
+//$index->writeMode();
+$index->optimize();
+//$index->commitChanges();
+$time = microtime(true) - $t;
+$resultData[] = ['Optimize time', number_format($time, 6) . 's', ''];
 
 $search = new Search($index);
 
@@ -44,22 +50,17 @@ $filters2 = [
     new RangeFilter('price', ['min' => 1000, 'max' => 5000])
 ];
 
-
-//
-///// test find
+//test find
 $t = microtime(true);
 $results = $search->query((new SearchQuery())->filters($filters));
 $time = microtime(true) - $t;
 $resultData[] = ['Find Results', number_format($time, 6) . "s", count($results)];
-
-
 
 //test acceptable
 $t = microtime(true);
 $filtersData = $search->aggregate((new AggregationQuery())->filters($filters));
 $time = microtime(true) - $t;
 $resultData[] = ['Filters', number_format($time, 6) . "s", count($filters)];
-
 
 //test aggregate with count
 $query = (new AggregationQuery())
@@ -72,6 +73,8 @@ $time = microtime(true) - $t;
 $resultData[] = ['Filters with count', number_format($time, 6) . "s", count($filters)];
 
 
+
+/*
 // find and sorter
 $sorter = new ByField($index);
 $sortField = 'quantity';
@@ -99,8 +102,9 @@ $results2 = $search->query((new SearchQuery())->filters($filters2));
 $time = microtime(true) - $t;
 $resultData[] = ['Find Results (ranges)', number_format($time, 6) . "s", count($results2)];
 
+*/
 
-// test sort
+//test sort
 $sorter = new ByField($index);
 $sortField = 'quantity';
 $results = $search->query((new SearchQuery())->filters($filters));
@@ -110,10 +114,16 @@ $time = microtime(true) - $t;
 $resultData[] = ['Sort by quantity DESC', number_format($time, 6) . "s", count($results)];
 
 
+$count = count($index->getAllRecordIdMap());
+$index->resetLocalCache();
+array_unshift($resultData, ['Records', number_format($count), '']);
+
+
 $colLen = [25, 14, 10];
 echo str_repeat("-", 56) . PHP_EOL;
+
 foreach ($resultData as $index => $cols) {
-    if ($index === 2) {
+    if ($index == 4) {
         echo str_repeat("-", 56) . PHP_EOL;
     }
 

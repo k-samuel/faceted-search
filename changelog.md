@@ -88,6 +88,37 @@ public function filterInput(array $facetedData,  array &$inputIdKeys): void;
 
 ## Performance
 
+ Added index optimization method.
+```php
+<?php
+use KSamuel\FacetedSearch\Index\ArrayIndex;
+
+$searchIndex = new ArrayIndex();
+/*
+ * Getting products data from DB
+ */
+$data = [
+    ['id'=>7, 'color'=>'black', 'price'=>100, 'sale'=>true, 'size'=>36],   
+    // ....
+];
+foreach($data as $item){ 
+   $recordId = $item['id'];
+   // no need to add faceted index by id
+   unset($item['id']);
+   $searchIndex->addRecord($recordId, $item);
+}
+
+// You can optionally call index optimization before using (since v2.2.0). 
+// The procedure can be run once after changing the index data. 
+// Optimization takes a few seconds, you should not call it during the processing of user requests.
+$searchIndex->optimize();
+
+// save index data to some storage 
+$indexData = $searchIndex->getData();
+// We will use file for example
+file_put_contents('./first-index.json', json_encode($indexData));
+```
+
 v2.2.0 Bench ArrayIndex  PHP 8.2 + JIT + opcache (no xdebug extension)
 
 | Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |

@@ -136,4 +136,11 @@ interface IndexInterface
      * @return array<int>
      */
     public function query(SearchQuery $query): array;
+
+
+    /**
+     * Optimize index structure
+     * @return void
+     */
+    public function optimize(): void;
 }
