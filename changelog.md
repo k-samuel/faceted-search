@@ -1,6 +1,6 @@
 # Changelog
 
-### v2.2.0 (xx.xx.2022)
+### v3.0.0 (xx.xx.2022)
 New Query API
 ```PHP
 <?php
@@ -39,7 +39,9 @@ $query = (new AggregationQuery())
                 new ValueFilter('size', [41,42])
           ])
           // Count items for each acceptable filter value (slower)
-          ->countItems();
+          ->countItems()
+          // Sort results by fields and values
+          ->sort();
 
 $results = $search->aggregate(query);            
 ```
@@ -118,6 +120,8 @@ $indexData = $searchIndex->getData();
 // We will use file for example
 file_put_contents('./first-index.json', json_encode($indexData));
 ```
+Unbalanced Dataset added to Benchmark test
+
 
 v2.2.0 Bench ArrayIndex  PHP 8.2 + JIT + opcache (no xdebug extension)
 
@@ -151,6 +155,7 @@ v2.1.5 Bench ArrayIndex  PHP 8.2 + JIT + opcache (no xdebug extension)
 | 100,000         | ~40Mb    | ~0.003 s.        | ~0.014 s.                | ~0.024 s.                      | ~0.001 s.    | 8817             |
 | 300,000         | ~95Mb    | ~0.010 s.        | ~0.042 s.                | ~0.082 s                       | ~0.003 s.    | 26891            |
 | 1,000,000       | ~329Mb   | ~0.046 s.        | ~0.164 s.                | ~0.306 s.                      | ~0.015 s.    | 90520            |
+| 1,000,000 UB    | ~324Mb   | ~0.102 s.        | ~0.238 s.                | ~0.446 s.                      | ~0.031 s.    | 179856           |
 
 v2.1.5 Bench FixedArrayIndex PHP 8.2 + JIT + opcache (no xdebug extension) 
 
@@ -161,6 +166,7 @@ v2.1.5 Bench FixedArrayIndex PHP 8.2 + JIT + opcache (no xdebug extension)
 | 100,000         | ~23Mb    | ~0.006 s.        | ~0.017 s.                | ~0.040 s.                      | ~0.001 s.    | 8817             |
 | 300,000         | ~70Mb    | ~0.019 s.        | ~0.056 s.                | ~0.120 s.                      | ~0.006 s.    | 26891            |
 | 1,000,000       | ~233Mb   | ~0.077 s.        | ~0.202 s.                | ~0.455 s.                      | ~0.023 s.    | 90520            |
+| 1,000,000 UB    | ~233Mb   | ~0.146 s.        | ~0.292 s.                | ~0.586 s.                      | ~0.044 s.    | 179856           |
 
 
 

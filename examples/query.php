@@ -19,6 +19,7 @@ function findFilters(Search $search, array $filters): array
     $query = (new AggregationQuery())->filters($filters)->countItems();
     $data =  $search->aggregate($query);
 
+    ksort($data);
     foreach ($data as &$filterValues) {
         ksort($filterValues);
     }

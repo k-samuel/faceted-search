@@ -7,6 +7,7 @@ use KSamuel\FacetedSearch\Filter\RangeFilter;
 use KSamuel\FacetedSearch\Index;
 use KSamuel\FacetedSearch\Index\ArrayIndex;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
+use KSamuel\FacetedSearch\Query\AggregationSort;
 use KSamuel\FacetedSearch\Query\Order;
 use KSamuel\FacetedSearch\Query\SearchQuery;
 
@@ -385,6 +386,35 @@ class QueryArrayIndexTest extends TestCase
         $results = $facets->query($query);
 
         $this->assertEquals([5, 4], $results);
+    }
+    public function testAggregationSort(): void
+    {
+        $records = [
+            ['size' => 7, 'color' => 'yellow', 'group' => 'C'],
+            ['color' => 'black', 'size' => 7, 'group' => 'C'],
+            ['color' => 'black', 'size' => 7, 'group' => 'A'],
+            ['color' => 'black', 'size' => 8, 'group' => 'A'],
+            ['color' => 'white', 'size' => 7, 'group' => 'B'],
+        ];
+        $index = new ArrayIndex();
+        foreach ($records as $id => $item) {
+            $index->addRecord($id, $item);
+        }
+        $facets = new Search($index);
+
+        $acceptableFilters = $facets->aggregate((new AggregationQuery())->countItems()->sort());
+
+        $expect = [
+            'color' => ['black' => 3,  'white' => 1, 'yellow' => 1],
+            'group' => ['A' => 2, 'B' => 1, 'C' => 2],
+            'size' => [7 => 4, 8 => 1],
+        ];
+
+        $this->assertEquals(array_keys($expect), array_keys($acceptableFilters));
+        foreach ($expect as $field => $values) {
+            $this->assertEquals(array_keys($expect[$field]), array_keys($values));
+            $this->assertEquals(array_values($expect[$field]), array_values($values));
+        }
     }
 
     public function getTestData(): array

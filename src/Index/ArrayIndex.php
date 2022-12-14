@@ -34,6 +34,7 @@ use KSamuel\FacetedSearch\Filter\FilterInterface;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Indexer\IndexerInterface;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
+use KSamuel\FacetedSearch\Query\AggregationSort;
 use KSamuel\FacetedSearch\Query\Order;
 use KSamuel\FacetedSearch\Query\SearchQuery;
 
@@ -360,13 +361,22 @@ class ArrayIndex implements IndexInterface
         $input = $query->getInRecords();
         $filters = $query->getFilters();
         $countValues = $query->getCountItems();
+        $sort = $query->getSort();
 
         // Return all values from index if filters and input is not set
         if (empty($filters) && empty($input)) {
             if ($countValues) {
-                return $this->getValuesCount();
+                $result = $this->getValuesCount();
+                if ($sort) {
+                    $this->sortAggregationResults($sort, $result);
+                }
+                return $result;
             }
-            return $this->getValues();
+            $result = $this->getValues();
+            if ($sort) {
+                $this->sortAggregationResults($sort, $result);
+            }
+            return $result;
         }
 
         if (!empty($input)) {
@@ -427,7 +437,32 @@ class ArrayIndex implements IndexInterface
                 }
             }
         }
+        if ($sort !== null) {
+            $this->sortAggregationResults($sort, $result);
+        }
         return $result;
+    }
+    /**
+     * Sort aggregation result fields and values
+     * @param AggregationSort $sort
+     * @param array<int|string,array<int|string,int|true>> & $result
+     */
+    protected function sortAggregationResults(AggregationSort $sort, array &$result): void
+    {
+        $sortFlags = $sort->getSortFlags();
+        if ($sort->getDirection() === AggregationSort::SORT_ASC) {
+            ksort($result, $sortFlags);
+            foreach ($result as $k => &$v) {
+                ksort($v, $sortFlags);
+            }
+            unset($v);
+        } else {
+            krsort($result, $sortFlags);
+            foreach ($result as $k => &$v) {
+                krsort($v, $sortFlags);
+            }
+            unset($v);
+        }
     }
 
     /**

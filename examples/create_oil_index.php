@@ -22,7 +22,9 @@ foreach ($data as $item) {
     ];
     $searchIndex->addRecord($recordId, $itemData);
 }
+$searchIndex->optimize();
 // save index data to some storage
 $indexData = $searchIndex->getData();
 // We will use file for example
 file_put_contents('./data/oils-index.json', json_encode($indexData));
+echo 'Index created' . PHP_EOL;

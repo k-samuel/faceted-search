@@ -45,6 +45,8 @@ class AggregationQuery
      */
     protected array $records = [];
 
+    protected ?AggregationSort $sort = null;
+
 
     public function filter(FilterInterface $filter): self
     {
@@ -102,5 +104,30 @@ class AggregationQuery
     public function getFilters(): array
     {
         return $this->filters;
+    }
+
+    /**
+     * Sort result fields and values
+     * @param int $direction Query\OrderBy::SORT_ASC | Query\OrderBy::SORT_DESC
+     * @param int $sortFlags
+     *  Sorting type flags:
+     *     SORT_REGULAR - compare items normally; the details are described in the comparison operators section
+     *     SORT_NUMERIC - compare items numerically
+     *     SORT_STRING - compare items as strings
+     *     SORT_LOCALE_STRING - compare items as strings, based on the current locale. It uses the locale, which can be changed using setlocale()
+     *     SORT_NATURAL - compare items as strings using "natural ordering" like natsort()
+     *     SORT_FLAG_CASE - can be combined (bitwise OR) with SORT_STRING or SORT_NATURAL to sort strings case-insensitively
+     *
+     * @return self
+     */
+    public function sort(int $direction = AggregationSort::SORT_ASC, int $sortFlags = SORT_REGULAR): self
+    {
+        $this->sort = new AggregationSort($direction, $sortFlags);
+        return $this;
+    }
+
+    public function getSort(): ?AggregationSort
+    {
+        return $this->sort;
     }
 }
