@@ -58,25 +58,28 @@ For example: list of ProductId "in stock" to exclude not available products.
 Tests on sets of products with 10 attributes, search with filters by 3 fields.
 
 ### PHP 8.2
-v2.1.5 Bench ArrayIndex  PHP 8.2 + JIT + opcache (no xdebug extension)
+v2.2.0 Bench ArrayIndex  PHP 8.2 + JIT + opcache (no xdebug extension)
 
 | Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
 | 10,000          | ~3Mb     | ~0.0004 s.       | ~0.001 s.                | ~0.002 s.                      | ~0.0001 s.   | 907              |
-| 50,000          | ~20Mb    | ~0.001 s.        | ~0.006 s.                | ~0.011 s.                      | ~0.0005 s.   | 4550             |
-| 100,000         | ~40Mb    | ~0.003 s.        | ~0.014 s.                | ~0.024 s.                      | ~0.001 s.    | 8817             |
-| 300,000         | ~95Mb    | ~0.010 s.        | ~0.042 s.                | ~0.082 s                       | ~0.003 s.    | 26891            |
-| 1,000,000       | ~329Mb   | ~0.046 s.        | ~0.164 s.                | ~0.306 s.                      | ~0.015 s.    | 90520            |
+| 50,000          | ~20Mb    | ~0.001 s.        | ~0.005 s.                | ~0.010 s.                      | ~0.0005 s.   | 4550             |
+| 100,000         | ~40Mb    | ~0.003 s.        | ~0.014 s.                | ~0.024 s.                      | ~0.0009 s.   | 8817             |
+| 300,000         | ~95Mb    | ~0.009 s.        | ~0.044 s.                | ~0.079 s                       | ~0.003 s.    | 26891            |
+| 1,000,000       | ~329Mb   | ~0.042 s.        | ~0.149 s.                | ~0.295 s.                      | ~0.014 s.    | 90520            |
+| 1,000,000 UB    | ~324Mb   | ~0.124 s.        | ~0.227 s.                | ~0.406 s.                      | ~0.209 s.    | 179856           |
 
-v2.1.5 Bench FixedArrayIndex PHP 8.2 + JIT + opcache (no xdebug extension) 
+v2.2.0 Bench FixedArrayIndex PHP 8.2 + JIT + opcache (no xdebug extension) 
 
 | Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
-| 10,000          | ~2Mb     | ~0.0006 s.       | ~0.001 s.                | ~0.003 s.                      | ~0.0002 s.   | 907              |
+| 10,000          | ~2Mb     | ~0.0007 s.       | ~0.001 s.                | ~0.003 s.                      | ~0.0002 s.   | 907              |
 | 50,000          | ~12Mb    | ~0.003 s.        | ~0.007 s.                | ~0.017 s.                      | ~0.0009 s.   | 4550             |
-| 100,000         | ~23Mb    | ~0.006 s.        | ~0.017 s.                | ~0.040 s.                      | ~0.001 s.    | 8817             |
-| 300,000         | ~70Mb    | ~0.019 s.        | ~0.056 s.                | ~0.120 s.                      | ~0.006 s.    | 26891            |
-| 1,000,000       | ~233Mb   | ~0.077 s.        | ~0.202 s.                | ~0.455 s.                      | ~0.023 s.    | 90520            |
+| 100,000         | ~23Mb    | ~0.006 s.        | ~0.017 s.                | ~0.039 s.                      | ~0.001 s.    | 8817             |
+| 300,000         | ~70Mb    | ~0.020 s.        | ~0.056 s.                | ~0.120 s.                      | ~0.005 s.    | 26891            |
+| 1,000,000       | ~233Mb   | ~0.073 s.        | ~0.207 s.                | ~0.447 s.                      | ~0.021 s.    | 90520            |
+| 1,000,000 UB    | ~233Mb   | ~0.162 s.        | ~0.271 s.                | ~0.609 s.                      | ~0.035 s.    | 179856           |
+
 
 
 ### PHP 8.1.10
@@ -122,7 +125,7 @@ Bench v0.3.3 golang 1.19.4 with parallel aggregates
 | 100,000         | ~21Mb    | ~0.003 s.        | ~0.025 s.                | ~0.002 s.    | 8817             |
 | 300,000         | ~47Mb    | ~0.010 s.        | ~0.082 s.                | ~0.006 s.    | 26891            |
 | 1,000,000       | ~140Mb   | ~0.037 s.        | ~0.285 s.                | ~0.026 s.    | 90520            |
-
+| 1,000,000 UB    | ~138Mb   | ~0.130 s.        | ~0.574 s.                | ~0.044 s.    | 179856           |
 
 *Since version 0.3.3, the index structures in PHP and Golang have diverged due to the peculiarities of the 
 implementation of hasMap in languages. In Go, hashMap had to be abandoned in favor of a more efficient storage 
@@ -208,7 +211,7 @@ $filterData = $search->aggregate($query);
 // If you want to get acceptable filters values with items count use $search->aggregate
 // note that filters is not applied for itself for counting
 // values count of a particular field depends only on filters imposed on other fields.
-// Also u can sort results using $query->sort(direction,flags)
+// Sort results using $query->sort(direction,flags)
 $query = (new AggregationQuery())->filters($filters)->countItems()->sort();
 $filterData = $search->aggregate($query);
 
@@ -217,7 +220,7 @@ $filterData = $search->aggregate($query);
 $query = (new AggregationQuery());
 $filterData = $search->aggregate($query);
 
-// Also you can sort results by field using FacetedIndex
+// You can sort search query results by field using FacetedIndex
 $query = (new SearchQuery())->filters($filters)->sort('price', Order::SORT_DESC);
 $records = $search->query($query);
 

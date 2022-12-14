@@ -137,6 +137,13 @@ class ValueFilter extends AbstractFilter
             }
 
             if (is_array($facetedData[$item])) {
+
+                // fast fill unique records (memory allocation optimization)
+                if (empty($result)) {
+                    $result = array_fill_keys($facetedData[$item], true);
+                    continue;
+                }
+
                 foreach ($facetedData[$item] as $recId) {
                     /**
                      * @var int $recId
