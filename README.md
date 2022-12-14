@@ -58,7 +58,7 @@ For example: list of ProductId "in stock" to exclude not available products.
 Tests on sets of products with 10 attributes, search with filters by 3 fields.
 
 ### PHP 8.2
-v2.2.0 Bench ArrayIndex  PHP 8.2 + JIT + opcache (no xdebug extension)
+v2.2.0 Bench ArrayIndex  PHP 8.2 + JIT + opcache (no xdebug extension). UB - unbalanced dataset
 
 | Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
@@ -69,7 +69,7 @@ v2.2.0 Bench ArrayIndex  PHP 8.2 + JIT + opcache (no xdebug extension)
 | 1,000,000       | ~329Mb   | ~0.042 s.        | ~0.149 s.                | ~0.295 s.                      | ~0.014 s.    | 90520            |
 | 1,000,000 UB    | ~324Mb   | ~0.124 s.        | ~0.227 s.                | ~0.406 s.                      | ~0.209 s.    | 179856           |
 
-v2.2.0 Bench FixedArrayIndex PHP 8.2 + JIT + opcache (no xdebug extension) 
+v2.2.0 Bench FixedArrayIndex PHP 8.2 + JIT + opcache (no xdebug extension). UB - unbalanced dataset
 
 | Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
@@ -83,7 +83,7 @@ v2.2.0 Bench FixedArrayIndex PHP 8.2 + JIT + opcache (no xdebug extension)
 
 
 ### PHP 8.1.10
-v2.1.5 Bench ArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension) 
+v2.1.5 Bench ArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension).
 
 | Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
@@ -93,7 +93,7 @@ v2.1.5 Bench ArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension)
 | 300,000         | ~189Mb   | ~0.011 s.        | ~0.044 s.                | ~0.091 s                       | ~0.004 s.    | 26891            |
 | 1,000,000       | ~657Mb   | ~0.047 s.        | ~0.169 s.                | ~0.333 s.                      | ~0.018 s.    | 90520            |
 
-v2.1.5 Bench FixedArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension) macOS Monterey
+v2.1.5 Bench FixedArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension)
 
 | Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
@@ -116,7 +116,7 @@ v2.1.5 Bench FixedArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension) ma
 
 Experimental Golang port bench https://github.com/k-samuel/go-faceted-search
 
-Bench v0.3.3 golang 1.19.4 with parallel aggregates
+Bench v0.3.3 golang 1.19.4 with parallel aggregates. UB - unbalanced dataset 
 
 | Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
