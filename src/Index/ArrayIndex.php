@@ -365,14 +365,13 @@ class ArrayIndex implements IndexInterface
 
         // Return all values from index if filters and input is not set
         if (empty($filters) && empty($input)) {
+
             if ($countValues) {
                 $result = $this->getValuesCount();
-                if ($sort) {
-                    $this->sortAggregationResults($sort, $result);
-                }
-                return $result;
+            } else {
+                $result = $this->getValues();
             }
-            $result = $this->getValues();
+
             if ($sort) {
                 $this->sortAggregationResults($sort, $result);
             }

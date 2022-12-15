@@ -114,17 +114,6 @@ v2.1.5 Bench FixedArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension)
 | 1,000,000       | ~233Mb   | ~0.079 s.        | ~0.206 s.                | ~0.448 s.                      | ~0.026 s.    | 90520            |
 
 
-* Items count - Products in index
-* Memory - RAM used for index
-* Find - time of getting list of products filtered by 3 fields
-* Get Filters - find acceptable filter values for found products.
-  List of common properties and their values for found products (Aggregates)
-* Get Filters & Count - find acceptable filter values for found products.
-  List of common properties their values and count of found products (Aggregates)
-* Sort by field - time of sorting found results by field value
-* Results Found - count of found products (Find)
-
-
 Experimental Golang port bench https://github.com/k-samuel/go-faceted-search
 
 Bench v0.3.3 golang 1.19.4 with parallel aggregates. UB - unbalanced dataset 
