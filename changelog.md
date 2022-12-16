@@ -1,7 +1,16 @@
 # Changelog
 
-### v2.2.0 (xx.xx.2022)
-New Query API
+### v2.2.0 (16.12.2022)
+
+- New Query API
+- More efficient result sorting using SearchQuery
+- Ability to sort aggregation results
+- Performance improvements
+- Index optimization using ```$searchIndex->optimize()```
+- FilterInterface changed
+
+
+## New Query API
 ```PHP
 <?php
 use KSamuel\FacetedSearch\Index\ArrayIndex;
@@ -51,7 +60,7 @@ With countItems:
  [
     'field1' => [
         'value1' => 10,
-        'value1' => 20
+        'value2' => 20
     ]
  ]
 ```
@@ -60,7 +69,7 @@ Without countItems:
  [
     'field1' => [
         'value1' => true,
-        'value1' => true
+        'value2' => true
     ]
  ]
 ```
