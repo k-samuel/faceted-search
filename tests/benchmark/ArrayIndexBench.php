@@ -8,12 +8,12 @@ use KSamuel\FacetedSearch\Filter\FilterInterface;
 use KSamuel\FacetedSearch\Index;
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
+use KSamuel\FacetedSearch\Query\AggregationQuery;
+use KSamuel\FacetedSearch\Query\SearchQuery;
 use KSamuel\FacetedSearch\Sorter\ByField;
 use KSamuel\FacetedSearch\Tests\Benchmark\DatasetFactory;
 use PhpBench\Benchmark\Metadata\Annotations\BeforeMethods;
-use PhpBench\Benchmark\Metadata\Annotations\Groups;
 use PhpBench\Benchmark\Metadata\Annotations\Iterations;
-use PhpBench\Benchmark\Metadata\Annotations\ParamProviders;
 use PhpBench\Benchmark\Metadata\Annotations\Revs;
 
 /**
@@ -47,33 +47,50 @@ class ArrayIndexBench
      * @var ByField
      */
     protected $sorter;
+    /**
+     * @var SearchQuery
+     */
+    protected SearchQuery $searchQuery;
+    /**
+     * @var AggregationQuery
+     */
+    protected AggregationQuery $aggregationQuery;
+    /**
+     * @var AggregationQuery
+     */
+    protected AggregationQuery $aggregationQueryCount;
+
+    protected bool $isBalanced = true;
 
     public function before(): void
     {
-        $this->index = (new DatasetFactory('tests/data/'))->getFacetedIndex($this->dataSize);
+        $this->index = (new DatasetFactory('tests/data/'))->getFacetedIndex($this->dataSize, $this->isBalanced);
         $this->search = new Search($this->index);
         $this->filters = [
             new ValueFilter('color', 'black'),
             new ValueFilter('warehouse', [789, 45, 65, 1, 10]),
             new ValueFilter('type', ["normal", "middle"])
         ];
-        $this->firstResults = $this->search->find($this->filters);
+        $this->searchQuery = (new SearchQuery())->filters($this->filters);
+        $this->aggregationQuery = (new AggregationQuery())->filters($this->filters);
+        $this->aggregationQueryCount = (new AggregationQuery())->filters($this->filters)->countItems();
+        $this->firstResults = $this->search->query($this->searchQuery);
         $this->sorter = new ByField($this->index);
     }
 
     public function benchFind(): void
     {
-        $result = $this->search->find($this->filters);
+        $result = $this->search->query($this->searchQuery);
     }
 
     public function benchAggregations(): void
     {
-        $result = $this->search->findAcceptableFilters($this->filters);
+        $result = $this->search->aggregate($this->aggregationQuery);
     }
 
     public function benchAggregationsAndCount(): void
     {
-        $result = $this->search->findAcceptableFiltersCount($this->filters);
+        $result = $this->search->aggregate($this->aggregationQueryCount);
     }
 
     public function benchSort(): void

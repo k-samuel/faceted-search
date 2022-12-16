@@ -1,9 +1,10 @@
 <?php
+
 /**
  *
  * MIT License
  *
- * Copyright (C) 2020  Kirill Yegorov https://github.com/k-samuel
+ * Copyright (C) 2020-2022  Kirill Yegorov https://github.com/k-samuel
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +33,11 @@ namespace KSamuel\FacetedSearch\Index;
 use KSamuel\FacetedSearch\Filter\FilterInterface;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Indexer\IndexerInterface;
+use KSamuel\FacetedSearch\Query\AggregationQuery;
+use KSamuel\FacetedSearch\Query\AggregationSort;
+use KSamuel\FacetedSearch\Query\Order;
+use KSamuel\FacetedSearch\Query\SearchQuery;
+
 
 /**
  * Simple faceted index
@@ -41,7 +47,7 @@ class ArrayIndex implements IndexInterface
 {
     /**
      * Index data
-     * @var array<int|string,array<int|string,array<int>|\SplFixedArray<int>>>
+     * @var array<int|string,array<int|string,array<int>>>
      */
     protected array $data = [];
     /**
@@ -91,7 +97,7 @@ class ArrayIndex implements IndexInterface
         return true;
     }
 
-    protected function resetLocalCache(): void
+    public function resetLocalCache(): void
     {
         $this->idMapCache = [];
     }
@@ -197,7 +203,8 @@ class ArrayIndex implements IndexInterface
      * Find records by filters as list of int
      * @param array<FilterInterface> $filters
      * @param array<int>|null $inputRecords - list of record id to search in. Use it for limit results
-     * @return array<int>
+     * @return array<int> 
+     * @deprecated use query
      */
     public function find(array $filters, ?array $inputRecords = null): array
     {
@@ -206,7 +213,7 @@ class ArrayIndex implements IndexInterface
             $input = $this->mapInputArray($inputRecords);
         }
 
-        // Aggregates optimisation for value filters.
+        // Aggregates optimization for value filters.
         // The fewer elements after the first filtering, the fewer data copies and memory allocations in iterations
         if (empty($inputRecords) && count($filters) > 1) {
             $filters = $this->sortFiltersByCount($filters);
@@ -216,20 +223,52 @@ class ArrayIndex implements IndexInterface
     }
 
     /**
+     * Find records using Query
+     * @param SearchQuery $query
+     * @return array<int>
+     */
+    public function query(SearchQuery $query): array
+    {
+        $inputRecords =  $query->getInRecords();
+        $filters = $query->getFilters();
+        $order = $query->getOrder();
+
+        if (!empty($inputRecords)) {
+            $inputRecords = $this->mapInputArray($inputRecords);
+        }
+
+        // Aggregates optimization for value filters.
+        // The fewer elements after the first filtering, the fewer data copies and memory allocations in iterations
+        if (empty($inputRecords) && count($filters) > 1) {
+            $filters = $this->sortFiltersByCount($filters);
+        }
+
+        $map = $this->findRecordsMap($filters, $inputRecords);
+
+        if (!empty($order)) {
+            return $this->sortResults($map, $order);
+        }
+
+        return array_keys($map);
+    }
+
+    /**
      * Find acceptable filter values
      * @param array<FilterInterface> $filters
      * @param array<int> $inputRecords
      * @param bool $countValues
      * @return array<string,array<int|string,int|string>>
+     * @deprecated use aggregation (not replaced with aggregation has different result format)
      */
     public function aggregate(array $filters = [], array $inputRecords = [], bool $countValues = false): array
     {
         $input = [];
+
         if (!empty($inputRecords)) {
             $input = $this->mapInputArray($inputRecords);
         }
 
-        // Aggregates optimisation for value filters.
+        // Aggregates optimization for value filters.
         // The fewer elements after the first filtering, the fewer data copies and memory allocations in iterations
         if (empty($inputRecords) && count($filters) > 1) {
             $filters = $this->sortFiltersByCount($filters);
@@ -242,18 +281,24 @@ class ArrayIndex implements IndexInterface
         $resultCache = [];
 
         if (!empty($filters)) {
+            // Aggregates optimization for value filters.
+            // The fewer elements after the first filtering, the fewer data copies and memory allocations in iterations
+            if (count($filters) > 1) {
+                $filters = $this->sortFiltersByCount($filters);
+            }
             // index filters by field
             foreach ($filters as $filter) {
-                /**
-                 * @var FilterInterface $filter
-                 */
-                $indexedFilters[$filter->getFieldName()] = $filter;
-                $resultCache[$filter->getFieldName()] = $this->findRecordsMap([$filter], $input);
+                $name = $filter->getFieldName();
+                $indexedFilters[$name] = $filter;
+                $resultCache[$name] = $this->findRecordsMap([$filter], $input);
             }
+            // merge results
             $filteredRecords = $this->mergeFilters($resultCache);
-        } elseif (!empty($inputRecords)) {
+        } elseif (!empty($input)) {
             $filteredRecords = $this->findRecordsMap([], $input);
         }
+
+        $resultCacheCount = count($resultCache);
 
         foreach ($this->data as $filterName => $filterValues) {
             /**
@@ -273,12 +318,13 @@ class ArrayIndex implements IndexInterface
 
             // do not apply self filtering
             if (isset($resultCache[$filterName])) {
-                if(count($resultCache) > 1){
+                // count of cached filters must be > 1 (1 filter will be skipped by field name)
+                if ($resultCacheCount > 1) {
+                    // optimization with cache of findRecordsMap
                     $recordIds = $this->mergeFilters($resultCache, $filterName);
-                }else{
+                } else {
                     $recordIds = $this->findRecordsMap([], $input);
                 }
-
             } else {
                 $recordIds = $filteredRecords;
             }
@@ -306,6 +352,146 @@ class ArrayIndex implements IndexInterface
     }
 
     /**
+     * Find acceptable filter values
+     * @param AggregationQuery $query
+     * @return array<int|string,array<int|string,int|true>>
+     */
+    public function aggregation(AggregationQuery $query): array
+    {
+        $input = $query->getInRecords();
+        $filters = $query->getFilters();
+        $countValues = $query->getCountItems();
+        $sort = $query->getSort();
+
+        // Return all values from index if filters and input is not set
+        if (empty($filters) && empty($input)) {
+
+            if ($countValues) {
+                $result = $this->getValuesCount();
+            } else {
+                $result = $this->getValues();
+            }
+
+            if ($sort) {
+                $this->sortAggregationResults($sort, $result);
+            }
+            return $result;
+        }
+
+        if (!empty($input)) {
+            $input = $this->mapInputArray($input);
+        }
+
+        $result = [];
+        $filteredRecords = [];
+        $resultCache = [];
+
+        if (!empty($filters)) {
+            // Aggregates optimization for value filters.
+            // The fewer elements after the first filtering, the fewer data copies and memory allocations in iterations
+            if (count($filters) > 1) {
+                $filters = $this->sortFiltersByCount($filters);
+            }
+            // index filters by field
+            foreach ($filters as $filter) {
+                $name = $filter->getFieldName();
+                $resultCache[$name] = $this->findRecordsMap([$filter], $input);
+            }
+            // merge results
+            $filteredRecords = $this->mergeFilters($resultCache);
+        } elseif (!empty($input)) {
+            $filteredRecords = $this->findRecordsMap([], $input);
+        }
+
+        $resultCacheCount = count($resultCache);
+
+        foreach ($this->data as $filterName => $filterValues) {
+            /**
+             * @var string $filterName
+             */
+
+            // do not apply self filtering
+            if (isset($resultCache[$filterName])) {
+                // count of cached filters must be > 1 (1 filter will be skipped by field name)
+                if ($resultCacheCount > 1) {
+                    // optimization with cache of findRecordsMap
+                    $recordIds = $this->mergeFilters($resultCache, $filterName);
+                } else {
+                    $recordIds = $this->findRecordsMap([], $input);
+                }
+            } else {
+                $recordIds = $filteredRecords;
+            }
+
+            foreach ($filterValues as $filterValue => $data) {
+                if ($countValues) {
+                    $intersect = $this->getIntersectMapCount($data, $recordIds);
+
+                    if ($intersect === 0) {
+                        continue;
+                    }
+                    $result[$filterName][$filterValue] = $intersect;
+                } elseif ($this->hasIntersectIntMap($data, $recordIds)) {
+                    $result[$filterName][$filterValue] = true;
+                }
+            }
+        }
+        if ($sort !== null) {
+            $this->sortAggregationResults($sort, $result);
+        }
+        return $result;
+    }
+    /**
+     * Sort aggregation result fields and values
+     * @param AggregationSort $sort
+     * @param array<int|string,array<int|string,int|true>> & $result
+     */
+    protected function sortAggregationResults(AggregationSort $sort, array &$result): void
+    {
+        $sortFlags = $sort->getSortFlags();
+        if ($sort->getDirection() === AggregationSort::SORT_ASC) {
+            ksort($result, $sortFlags);
+            foreach ($result as $k => &$v) {
+                ksort($v, $sortFlags);
+            }
+            unset($v);
+        } else {
+            krsort($result, $sortFlags);
+            foreach ($result as $k => &$v) {
+                krsort($v, $sortFlags);
+            }
+            unset($v);
+        }
+    }
+
+    /**
+     * @return array<int|string,array<string|int,true>>
+     */
+    protected function getValues(): array
+    {
+        $result = [];
+        foreach ($this->data as $filterName => $filterValues) {
+            foreach ($filterValues as $key => $info) {
+                $result[$filterName][$key] = true;
+            }
+        }
+        return $result;
+    }
+    /**
+     * @return array<int|string,array<string|int,int>>
+     */
+    protected function getValuesCount(): array
+    {
+        $result = [];
+        foreach ($this->data as $filterName => $filterValues) {
+            foreach ($filterValues as $key => $list) {
+                $result[$filterName][$key] = count($list);
+            }
+        }
+        return $result;
+    }
+
+    /**
      * @param array<mixed,array<int,bool>> $maps
      * @param string|int|null $skipKey user defined filter name
      * @return array<int,bool>
@@ -314,6 +500,7 @@ class ArrayIndex implements IndexInterface
     {
         $result = [];
         $start = true;
+
         foreach ($maps as $key => $map) {
             if ($skipKey !== null && $key === $skipKey) {
                 continue;
@@ -324,6 +511,7 @@ class ArrayIndex implements IndexInterface
                 $start = false;
                 continue;
             }
+
             foreach ($result as $k => $v) {
                 if (!isset($map[$k])) {
                     unset($result[$k]);
@@ -341,16 +529,10 @@ class ArrayIndex implements IndexInterface
      */
     private function findRecordsMap(array $filters, array $inputRecords): array
     {
+
         // if no filters passed
         if (empty($filters)) {
-            $total = $this->getAllRecordIdMap();
-            if (!empty($inputRecords)) {
-                return array_intersect_key($total, $inputRecords);
-            }
-            /**
-             * @var array<int,bool> $total
-             */
-            return $total;
+            return $this->findInput($inputRecords);
         }
 
         /**
@@ -362,7 +544,7 @@ class ArrayIndex implements IndexInterface
                 return [];
             }
 
-            $inputRecords = $filter->filterResults($indexData, $inputRecords);
+            $filter->filterInput($indexData, $inputRecords);
 
             if (empty($inputRecords)) {
                 return [];
@@ -371,13 +553,28 @@ class ArrayIndex implements IndexInterface
 
         return $inputRecords;
     }
-
     /**
-     * @param array<int,int>|\SplFixedArray<int> $a
+     * Find records without filters as array map [$id1=>true, $id2=>true, ...]
+     * @param array<int,bool> $inputRecords
+     * @return array<int,bool>
+     */
+    private function findInput(array $inputRecords): array
+    {
+        $total = $this->getAllRecordIdMap();
+        if (!empty($inputRecords)) {
+            return array_intersect_key($total, $inputRecords);
+        }
+        /**
+         * @var array<int,bool> $total
+         */
+        return $total;
+    }
+    /**
+     * @param array<int,int> $a
      * @param array<int,bool> $b
      * @return int
      */
-    protected function getIntersectMapCount($a, array $b): int
+    protected function getIntersectMapCount(array $a, array $b): int
     {
         $intersectLen = 0;
 
@@ -391,11 +588,11 @@ class ArrayIndex implements IndexInterface
     }
 
     /**
-     * @param array<int,int>|\SplFixedArray<int> $a
+     * @param array<int,int> $a
      * @param array<int,bool> $b
      * @return bool
      */
-    protected function hasIntersectIntMap($a, array $b): bool
+    protected function hasIntersectIntMap(array $a, array $b): bool
     {
         foreach ($a as $key) {
             if (isset($b[$key])) {
@@ -420,7 +617,7 @@ class ArrayIndex implements IndexInterface
 
     /**
      * Sort filters by minimum values count
-     * Used for aggregates optimisation (for ValueFilter)
+     * Used for aggregates optimization (for ValueFilter)
      * @param array<FilterInterface> $filters
      * @return array<FilterInterface>
      */
@@ -479,5 +676,84 @@ class ArrayIndex implements IndexInterface
         }
 
         return $result;
+    }
+    /**
+     * Sort results by field value
+     * @param array<int,bool> & $resultsMap
+     * @param Order $order
+     * @return array<int>
+     */
+    protected function sortResults(array &$resultsMap, Order $order): array
+    {
+        $field = $order->getField();
+
+        if (!isset($this->data[$field]) || empty($this->data[$field])) {
+            return [];
+        }
+
+        $values = array_keys($this->data[$field]);
+
+        if ($order->getDirection() === Order::SORT_ASC) {
+            sort($values, $order->getSortFlags());
+        } else {
+            rsort($values, $order->getSortFlags());
+        }
+
+        $sorted = [];
+        foreach ($values as $value) {
+            $records = &$this->data[$field][$value];
+
+            // inline intersection - intersectIntMap
+            /**
+             * @var array<int>|\SplFixedArray<int> $records
+             */
+            if (is_array($records)) {
+                foreach ($records as $key) {
+                    /**
+                     * @var int $key
+                     */
+                    if (isset($resultsMap[$key])) {
+                        $sorted[] = $key;
+                        // already sorted
+                        unset($resultsMap[$key]);
+                    }
+                }
+            } else {
+                // Performance patch SplFixedArray index access is faster than iteration
+                $count = count($records);
+                for ($i = 0; $i < $count; $i++) {
+                    /**
+                     * @var int $key
+                     */
+                    $key = $records[$i];
+                    if (isset($resultsMap[$key])) {
+                        $sorted[] = $key;
+                        // already sorted
+                        unset($resultsMap[$key]);
+                    }
+                }
+            }
+        }
+        return $sorted;
+    }
+
+    public function optimize(): void
+    {
+        foreach ($this->data as $fieldName => &$valueList) {
+
+            $valueCounts = [];
+            foreach ($valueList as $value => &$list) {
+                $valueCounts[$value] = count($list);
+                // sort records by id ASC
+                sort($list);
+            }
+            // sort values by records count
+            asort($valueCounts);
+            $oldList = $valueList;
+            $valueList = [];
+            foreach ($valueCounts as $value => $count) {
+                $valueList[$value] = $oldList[$value];
+            }
+        }
     }
 }

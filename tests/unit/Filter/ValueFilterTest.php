@@ -7,7 +7,7 @@ use KSamuel\FacetedSearch\Search;
 
 class ValueFilterTest extends TestCase
 {
-    public function testSetValue()
+    public function testSetValue(): void
     {
         $records = [
             1 => [

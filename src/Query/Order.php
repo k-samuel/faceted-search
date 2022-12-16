@@ -4,7 +4,7 @@
  *
  * MIT License
  *
- * Copyright (C) 2020  Kirill Yegorov https://github.com/k-samuel
+ * Copyright (C) 2022  Kirill Yegorov https://github.com/k-samuel
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,33 +28,22 @@
 
 declare(strict_types=1);
 
-namespace KSamuel\FacetedSearch\Sorter;
+namespace KSamuel\FacetedSearch\Query;
 
 use KSamuel\FacetedSearch\Index;
 
-/**
- * @deprecated use SearchQuery for sorting
- */
-class ByField
+class Order
 {
     public const SORT_ASC = 0;
     public const SORT_DESC = 1;
-
-    /**
-     * @var Index\IndexInterface
-     */
-    private Index\IndexInterface $index;
-
-    public function __construct(Index\IndexInterface $index)
-    {
-        $this->index = $index;
-    }
+    private int $direction = self::SORT_ASC;
+    private int $sortFlags = SORT_REGULAR;
+    private string $fieldName;
 
     /**
      * Note. Result will contains only records with defined field data.
      * If your data structure is not normalized, records without sorting field will be ignored
-     * @param int[] $results
-     * @param string $field
+     * @param string $fieldName
      * @param int $direction
      * @param int $sortFlags
      *  Sorting type flags:
@@ -67,54 +56,25 @@ class ByField
      *
      * @return int[]
      */
-    public function sort(
-        array $results,
-        string $field,
-        int $direction = self::SORT_ASC,
-        int $sortFlags = SORT_REGULAR
-    ): array {
-        $data = $this->index->getFieldData($field);
-        if ($direction === self::SORT_ASC) {
-            ksort($data, $sortFlags);
-        } else {
-            krsort($data, $sortFlags);
-        }
+    public function __construct(string $fieldName, int $direction = self::SORT_ASC, int $sortFlags = SORT_REGULAR)
+    {
+        $this->fieldName = $fieldName;
+        $this->direction = $direction;
+        $this->sortFlags = $sortFlags;
+    }
 
-        $results = array_flip($results);
+    public function getField(): string
+    {
+        return $this->fieldName;
+    }
 
-        $sorted = [];
-        foreach ($data as $records) {
-            // inline intersection - intersectIntMap
-            /**
-             * @var array<int>|\SplFixedArray<int> $records
-             */
-            if (is_array($records)) {
-                foreach ($records as $key) {
-                    /**
-                     * @var int $key
-                     */
-                    if (isset($results[$key])) {
-                        $sorted[] = $key;
-                        // already sorted
-                        unset($results[$key]);
-                    }
-                }
-            } else {
-                // Performance patch SplFixedArray index access is faster than iteration
-                $count = count($records);
-                for ($i = 0; $i < $count; $i++) {
-                    /**
-                     * @var int $key
-                     */
-                    $key = $records[$i];
-                    if (isset($results[$key])) {
-                        $sorted[] = $key;
-                        // already sorted
-                        unset($results[$key]);
-                    }
-                }
-            }
-        }
-        return $sorted;
+    public function getDirection(): int
+    {
+        return $this->direction;
+    }
+
+    public function getSortFlags(): int
+    {
+        return $this->sortFlags;
     }
 }

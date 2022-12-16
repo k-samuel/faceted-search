@@ -1,4 +1,187 @@
 # Changelog
+
+### v2.2.0 (16.12.2022)
+
+- New Query API
+- More efficient result sorting using SearchQuery
+- Ability to sort aggregation results
+- Performance improvements
+- Index optimization using ```$searchIndex->optimize()```
+- FilterInterface changed
+
+
+## New Query API
+```PHP
+<?php
+use KSamuel\FacetedSearch\Index\ArrayIndex;
+use KSamuel\FacetedSearch\Search;
+use KSamuel\FacetedSearch\Query\SearchQuery;
+use KSamuel\FacetedSearch\Query\AggregationQuery;
+use KSamuel\FacetedSearch\Query\Order;
+use KSamuel\FacetedSearch\Filter\ValueFilter;
+
+// load index
+$searchIndex = new ArrayIndex();
+$searchIndex->setData($someIndexData);
+// create search instance
+$search = new Search($searchIndex);
+
+// Find results
+$query = (new SearchQuery())
+    ->filters([
+        new ValueFilter('color', ['black','white']),
+        new ValueFilter('size', [41,42])
+    ])
+    // It is possible to set List of record id to search in. 
+    // For example list of records id that found by external FullText search.
+    ->inRecords([1,2,3,19,17,21/*..some input record ids..*/])
+   // Now results can be sorted by field value.
+   // Note! If result item has not such field then item will be excluded from results
+    ->order('price', Order::SORT_DESC);
+
+$results = $search->query(query);   
+
+// Find Acceptable filters for user selected input
+$query = (new AggregationQuery())
+          ->filters([
+                new ValueFilter('color', ['black','white']),
+                new ValueFilter('size', [41,42])
+          ])
+          // Count items for each acceptable filter value (slower)
+          ->countItems()
+          // Sort results by fields and values
+          ->sort();
+
+$results = $search->aggregate(query);            
+```
+New aggregation API has changed result format for ```$search->aggregate()```
+With countItems:
+```PHP
+ [
+    'field1' => [
+        'value1' => 10,
+        'value2' => 20
+    ]
+ ]
+```
+Without countItems:
+```PHP
+ [
+    'field1' => [
+        'value1' => true,
+        'value2' => true
+    ]
+ ]
+```
+The change was necessary to unify the results structure.
+Old API produces results as before in slightly different formats for: 
+
+```PHP
+$search->findAcceptableFilters();
+$search->findAcceptableFiltersCount();
+```
+
+## Backward compatibility
+The version is fully backward compatible if you haven't used own filters implementations.
+
+The old API format is available but marked as deprecated.
+
+
+**FilterInterface** changed. You need to take this into account if you implemented your own versions of filters
+```PHP
+//Interface 
+use KSamuel\FacetedSearch\Filter\FilterInterface;
+//changed
+public function filterResults(array $facetedData, ?array $inputIdKeys = null): array;
+//replaced with
+public function filterInput(array $facetedData,  array &$inputIdKeys): void;
+```
+
+## Performance
+
+ Added index optimization method.
+```php
+<?php
+use KSamuel\FacetedSearch\Index\ArrayIndex;
+
+$searchIndex = new ArrayIndex();
+/*
+ * Getting products data from DB
+ */
+$data = [
+    ['id'=>7, 'color'=>'black', 'price'=>100, 'sale'=>true, 'size'=>36],   
+    // ....
+];
+foreach($data as $item){ 
+   $recordId = $item['id'];
+   // no need to add faceted index by id
+   unset($item['id']);
+   $searchIndex->addRecord($recordId, $item);
+}
+
+// You can optionally call index optimization before using (since v2.2.0). 
+// The procedure can be run once after changing the index data. 
+// Optimization takes a few seconds, you should not call it during the processing of user requests.
+$searchIndex->optimize();
+
+// save index data to some storage 
+$indexData = $searchIndex->getData();
+// We will use file for example
+file_put_contents('./first-index.json', json_encode($indexData));
+```
+Unbalanced Dataset added to Benchmark test
+
+
+v2.2.0 Bench ArrayIndex  PHP 8.2 + JIT + opcache (no xdebug extension)
+
+|  Items count | Memory |       Find | Get Filters (aggregate) | Get Filters & Count (aggregate) | Sort by field | Results Found |
+| -----------: | -----: | ---------: | ----------------------: | ------------------------------: | ------------: | ------------: |
+|       10,000 |   ~3Mb | ~0.0004 s. |               ~0.001 s. |                       ~0.002 s. |    ~0.0001 s. |           907 |
+|       50,000 |  ~20Mb |  ~0.001 s. |               ~0.005 s. |                       ~0.010 s. |    ~0.0004 s. |          4550 |
+|      100,000 |  ~40Mb |  ~0.003 s. |               ~0.013 s. |                       ~0.023 s. |    ~0.0009 s. |          8817 |
+|      300,000 |  ~95Mb |  ~0.009 s. |               ~0.034 s. |                       ~0.077 s  |     ~0.003 s. |         26891 |
+|    1,000,000 | ~329Mb |  ~0.039 s. |               ~0.131 s. |                       ~0.281 s. |     ~0.014 s. |         90520 |
+| 1,000,000 UB | ~324Mb |  ~0.099 s. |               ~0.218 s. |                       ~0.401 s. |     ~0.028 s. |        179856 |
+
+v2.2.0 Bench FixedArrayIndex PHP 8.2 + JIT + opcache (no xdebug extension) 
+
+|  Items count | Memory |       Find | Get Filters (aggregate) | Get Filters & Count (aggregate) | Sort by field | Results Found |
+| -----------: | -----: | ---------: | ----------------------: | ------------------------------: | ------------: | ------------: |
+|       10,000 |   ~2Mb | ~0.0007 s. |               ~0.001 s. |                       ~0.003 s. |    ~0.0002 s. |           907 |
+|       50,000 |  ~12Mb |  ~0.003 s. |               ~0.007 s. |                       ~0.017 s. |    ~0.0009 s. |          4550 |
+|      100,000 |  ~23Mb |  ~0.006 s. |               ~0.017 s. |                       ~0.039 s. |     ~0.001 s. |          8817 |
+|      300,000 |  ~70Mb |  ~0.020 s. |               ~0.056 s. |                       ~0.120 s. |     ~0.005 s. |         26891 |
+|    1,000,000 | ~233Mb |  ~0.073 s. |               ~0.207 s. |                       ~0.447 s. |     ~0.021 s. |         90520 |
+| 1,000,000 UB | ~233Mb |  ~0.162 s. |               ~0.271 s. |                       ~0.609 s. |     ~0.035 s. |        179856 |
+
+
+### Previous version
+
+v2.1.5 Bench ArrayIndex  PHP 8.2 + JIT + opcache (no xdebug extension)
+
+|  Items count | Memory |       Find | Get Filters (aggregate) | Get Filters & Count (aggregate) | Sort by field | Results Found |
+| -----------: | -----: | ---------: | ----------------------: | ------------------------------: | ------------: | ------------: |
+|       10,000 |   ~3Mb | ~0.0004 s. |               ~0.001 s. |                       ~0.002 s. |    ~0.0001 s. |           907 |
+|       50,000 |  ~20Mb |  ~0.001 s. |               ~0.006 s. |                       ~0.011 s. |    ~0.0005 s. |          4550 |
+|      100,000 |  ~40Mb |  ~0.003 s. |               ~0.014 s. |                       ~0.024 s. |     ~0.001 s. |          8817 |
+|      300,000 |  ~95Mb |  ~0.010 s. |               ~0.042 s. |                        ~0.082 s |     ~0.003 s. |         26891 |
+|    1,000,000 | ~329Mb |  ~0.046 s. |               ~0.164 s. |                       ~0.306 s. |     ~0.015 s. |         90520 |
+| 1,000,000 UB | ~324Mb |  ~0.102 s. |               ~0.238 s. |                       ~0.446 s. |     ~0.031 s. |        179856 |
+
+v2.1.5 Bench FixedArrayIndex PHP 8.2 + JIT + opcache (no xdebug extension) 
+
+|  Items count | Memory |       Find | Get Filters (aggregate) | Get Filters & Count (aggregate) | Sort by field | Results Found |
+| -----------: | -----: | ---------: | ----------------------: | ------------------------------: | ------------: | ------------: |
+|       10,000 |   ~2Mb | ~0.0006 s. |               ~0.001 s. |                       ~0.003 s. |    ~0.0002 s. |           907 |
+|       50,000 |  ~12Mb |  ~0.003 s. |               ~0.007 s. |                       ~0.017 s. |    ~0.0009 s. |          4550 |
+|      100,000 |  ~23Mb |  ~0.006 s. |               ~0.017 s. |                       ~0.040 s. |     ~0.001 s. |          8817 |
+|      300,000 |  ~70Mb |  ~0.019 s. |               ~0.056 s. |                       ~0.120 s. |     ~0.006 s. |         26891 |
+|    1,000,000 | ~233Mb |  ~0.077 s. |               ~0.202 s. |                       ~0.455 s. |     ~0.023 s. |         90520 |
+| 1,000,000 UB | ~233Mb |  ~0.146 s. |               ~0.292 s. |                       ~0.586 s. |     ~0.044 s. |        179856 |
+
+
+
+
 ### v2.1.6 (12.10.2022)
 ### Bug Fix
 * [issue#8](https://github.com/k-samuel/faceted-search/issues/9) Version 2.1.5 does not allow integer names for data fields. Reported by [pixobit](https://github.com/pixobit).
@@ -11,23 +194,23 @@ Aggregate method now up to 33 % faster.
 
 PHPBench v2.1.5 ArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension)
 
-| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
-| 10,000          | ~6Mb     | ~0.0004 s.       | ~0.001 s.                | ~0.002 s.                      | ~0.0001 s.   | 907              |
-| 50,000          | ~40Mb    | ~0.001 s.        | ~0.005 s.                | ~0.010 s.                      | ~0.0005 s.   | 4550             |
-| 100,000         | ~80Mb    | ~0.003 s.        | ~0.016 s.                | ~0.029 s.                      | ~0.001 s.    | 8817             |
-| 300,000         | ~189Mb   | ~0.011 s.        | ~0.044 s.                | ~0.091 s                       | ~0.004 s.    | 26891            |
-| 1,000,000       | ~657Mb   | ~0.047 s.        | ~0.169 s.                | ~0.333 s.                      | ~0.018 s.    | 90520            |
+| Items count | Memory |       Find | Get Filters (aggregate) | Get Filters & Count (aggregate) | Sort by field | Results Found |
+| ----------: | -----: | ---------: | ----------------------: | ------------------------------: | ------------: | ------------: |
+|      10,000 |   ~6Mb | ~0.0004 s. |               ~0.001 s. |                       ~0.002 s. |    ~0.0001 s. |           907 |
+|      50,000 |  ~40Mb |  ~0.001 s. |               ~0.005 s. |                       ~0.010 s. |    ~0.0005 s. |          4550 |
+|     100,000 |  ~80Mb |  ~0.003 s. |               ~0.016 s. |                       ~0.029 s. |     ~0.001 s. |          8817 |
+|     300,000 | ~189Mb |  ~0.011 s. |               ~0.044 s. |                        ~0.091 s |     ~0.004 s. |         26891 |
+|   1,000,000 | ~657Mb |  ~0.047 s. |               ~0.169 s. |                       ~0.333 s. |     ~0.018 s. |         90520 |
 
 PHPBench v2.1.5 FixedArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension)
 
-| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
-| 10,000          | ~2Mb     | ~0.0007 s.       | ~0.001 s.                | ~0.003 s.                      | ~0.0002 s.   | 907              |
-| 50,000          | ~12Mb    | ~0.003 s.        | ~0.007 s.                | ~0.018 s.                      | ~0.0009 s.   | 4550             |
-| 100,000         | ~23Mb    | ~0.006 s.        | ~0.017 s.                | ~0.040 s.                      | ~0.002 s.    | 8817             |
-| 300,000         | ~70Mb    | ~0.020 s.        | ~0.059 s.                | ~0.118 s.                      | ~0.006 s.    | 26891            |
-| 1,000,000       | ~233Mb   | ~0.079 s.        | ~0.206 s.                | ~0.448 s.                      | ~0.026 s.    | 90520            |
+| Items count | Memory |       Find | Get Filters (aggregate) | Get Filters & Count (aggregate) | Sort by field | Results Found |
+| ----------: | -----: | ---------: | ----------------------: | ------------------------------: | ------------: | ------------: |
+|      10,000 |   ~2Mb | ~0.0007 s. |               ~0.001 s. |                       ~0.003 s. |    ~0.0002 s. |           907 |
+|      50,000 |  ~12Mb |  ~0.003 s. |               ~0.007 s. |                       ~0.018 s. |    ~0.0009 s. |          4550 |
+|     100,000 |  ~23Mb |  ~0.006 s. |               ~0.017 s. |                       ~0.040 s. |     ~0.002 s. |          8817 |
+|     300,000 |  ~70Mb |  ~0.020 s. |               ~0.059 s. |                       ~0.118 s. |     ~0.006 s. |         26891 |
+|   1,000,000 | ~233Mb |  ~0.079 s. |               ~0.206 s. |                       ~0.448 s. |     ~0.026 s. |         90520 |
 
 
 # Changelog
@@ -42,23 +225,23 @@ PHPBench v2.1.5 FixedArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension)
 
 PHPBench v2.1.4 ArrayIndex PHP 8.1.9 + JIT + opcache (no xdebug extension)
 
-| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
-| 10,000          | ~6Mb     | ~0.0004 s.       | ~0.001 s.                | ~0.002 s.                      | ~0.0001 s.   | 907              |
-| 50,000          | ~40Mb    | ~0.001 s.        | ~0.007 s.                | ~0.013 s.                      | ~0.0005 s.   | 4550             |
-| 100,000         | ~80Mb    | ~0.003 s.        | ~0.015 s.                | ~0.028 s.                      | ~0.001 s.    | 8817             |
-| 300,000         | ~189Mb   | ~0.012 s.        | ~0.057 s.                | ~0.097 s                       | ~0.004 s.    | 26891            |
-| 1,000,000       | ~657Mb   | ~0.047 s.        | ~0.233 s.                | ~0.385 s.                      | ~0.017 s.    | 90520            |
+| Items count | Memory |       Find | Get Filters (aggregate) | Get Filters & Count (aggregate) | Sort by field | Results Found |
+| ----------: | -----: | ---------: | ----------------------: | ------------------------------: | ------------: | ------------: |
+|      10,000 |   ~6Mb | ~0.0004 s. |               ~0.001 s. |                       ~0.002 s. |    ~0.0001 s. |           907 |
+|      50,000 |  ~40Mb |  ~0.001 s. |               ~0.007 s. |                       ~0.013 s. |    ~0.0005 s. |          4550 |
+|     100,000 |  ~80Mb |  ~0.003 s. |               ~0.015 s. |                       ~0.028 s. |     ~0.001 s. |          8817 |
+|     300,000 | ~189Mb |  ~0.012 s. |               ~0.057 s. |                        ~0.097 s |     ~0.004 s. |         26891 |
+|   1,000,000 | ~657Mb |  ~0.047 s. |               ~0.233 s. |                       ~0.385 s. |     ~0.017 s. |         90520 |
 
 PHPBench v2.1.4 FixedArrayIndex PHP 8.1.9 + JIT + opcache (no xdebug extension)
 
-| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
-| 10,000          | ~2Mb     | ~0.0007 s.       | ~0.002 s.                | ~0.005 s.                      | ~0.0002 s.   | 907              |
-| 50,000          | ~12Mb    | ~0.003 s.        | ~0.012 s.                | ~0.024 s.                      | ~0.0009 s.   | 4550             |
-| 100,000         | ~23Mb    | ~0.006 s.        | ~0.025 s.                | ~0.047 s.                      | ~0.002 s.    | 8817             |
-| 300,000         | ~70Mb    | ~0.019 s.        | ~0.083 s.                | ~0.149 s.                      | ~0.006 s.    | 26891            |
-| 1,000,000       | ~233Mb   | ~0.077 s.        | ~0.306 s.                | ~0.550 s.                      | ~0.025 s.    | 90520            |
+| Items count | Memory |       Find | Get Filters (aggregate) | Get Filters & Count (aggregate) | Sort by field | Results Found |
+| ----------: | -----: | ---------: | ----------------------: | ------------------------------: | ------------: | ------------: |
+|      10,000 |   ~2Mb | ~0.0007 s. |               ~0.002 s. |                       ~0.005 s. |    ~0.0002 s. |           907 |
+|      50,000 |  ~12Mb |  ~0.003 s. |               ~0.012 s. |                       ~0.024 s. |    ~0.0009 s. |          4550 |
+|     100,000 |  ~23Mb |  ~0.006 s. |               ~0.025 s. |                       ~0.047 s. |     ~0.002 s. |          8817 |
+|     300,000 |  ~70Mb |  ~0.019 s. |               ~0.083 s. |                       ~0.149 s. |     ~0.006 s. |         26891 |
+|   1,000,000 | ~233Mb |  ~0.077 s. |               ~0.306 s. |                       ~0.550 s. |     ~0.025 s. |         90520 |
 
 
 ### v2.1.3 (04.05.2022)
@@ -81,23 +264,23 @@ PHPBench v2.1.4 FixedArrayIndex PHP 8.1.9 + JIT + opcache (no xdebug extension)
 
 PHPBench v2.1.1 ArrayIndex PHP 8.1.0 + JIT + opcache (no xdebug extension)
 
-| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~6Mb     | ~0.0003 s.       | ~0.002 s.                | ~0.0001 s.   | 907              |
-| 50,000          | ~40Mb    | ~0.001 s.        | ~0.013 s.                | ~0.0005 s.   | 4550             |
-| 100,000         | ~80Mb    | ~0.003 s.        | ~0.028 s.                | ~0.001 s.    | 8817             |
-| 300,000         | ~189Mb   | ~0.011 s.        | ~0.100 s.                | ~0.004 s.    | 26891            |
-| 1,000,000       | ~657Mb   | ~0.047 s.        | ~0.387 s.                | ~0.018 s.    | 90520            |
+| Items count | Memory |       Find | Get Filters (aggregates) | Sort by field | Results Found |
+| ----------: | -----: | ---------: | -----------------------: | ------------: | ------------: |
+|      10,000 |   ~6Mb | ~0.0003 s. |                ~0.002 s. |    ~0.0001 s. |           907 |
+|      50,000 |  ~40Mb |  ~0.001 s. |                ~0.013 s. |    ~0.0005 s. |          4550 |
+|     100,000 |  ~80Mb |  ~0.003 s. |                ~0.028 s. |     ~0.001 s. |          8817 |
+|     300,000 | ~189Mb |  ~0.011 s. |                ~0.100 s. |     ~0.004 s. |         26891 |
+|   1,000,000 | ~657Mb |  ~0.047 s. |                ~0.387 s. |     ~0.018 s. |         90520 |
 
 PHPBench v2.1.1 FixedArrayIndex PHP 8.1.0 + JIT + opcache (no xdebug extension)
 
-| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~2Mb     | ~0.0007 s.       | ~0.004 s.                | ~0.0001 s.   | 907              |
-| 50,000          | ~12Mb    | ~0.003 s.        | ~0.024 s.                | ~0.0009 s.   | 4550             |
-| 100,000         | ~23Mb    | ~0.006 s.        | ~0.049 s.                | ~0.001 s.    | 8817             |
-| 300,000         | ~70Mb    | ~0.019 s.        | ~0.151 s.                | ~0.006 s.    | 26891            |
-| 1,000,000       | ~233Mb   | ~0.078 s.        | ~0.565 s.                | ~0.024 s.    | 90520            |
+| Items count | Memory |       Find | Get Filters (aggregates) | Sort by field | Results Found |
+| ----------: | -----: | ---------: | -----------------------: | ------------: | ------------: |
+|      10,000 |   ~2Mb | ~0.0007 s. |                ~0.004 s. |    ~0.0001 s. |           907 |
+|      50,000 |  ~12Mb |  ~0.003 s. |                ~0.024 s. |    ~0.0009 s. |          4550 |
+|     100,000 |  ~23Mb |  ~0.006 s. |                ~0.049 s. |     ~0.001 s. |          8817 |
+|     300,000 |  ~70Mb |  ~0.019 s. |                ~0.151 s. |     ~0.006 s. |         26891 |
+|   1,000,000 | ~233Mb |  ~0.078 s. |                ~0.565 s. |     ~0.024 s. |         90520 |
 
 
 ### v2.1.0 (06.01.2022)
@@ -114,23 +297,23 @@ FixedArrayIndex is much slower than ArrayIndex but requires significant less mem
 
 PHPBench v2.1.0 ArrayIndex PHP 8.1.0 + JIT + opcache (no xdebug extension)
 
-| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~6Mb     | ~0.0003 s.       | ~0.002 s.                | ~0.0001 s.   | 907              |
-| 50,000          | ~40Mb    | ~0.001 s.        | ~0.013 s.                | ~0.0005 s.   | 4550             |
-| 100,000         | ~80Mb    | ~0.003 s.        | ~0.030 s.                | ~0.001 s.    | 8817             |
-| 300,000         | ~189Mb   | ~0.011 s.        | ~0.101 s.                | ~0.005 s.    | 26891            |
-| 1,000,000       | ~657Mb   | ~0.049 s.        | ~0.396 s.                | ~0.017 s.    | 90520            |
+| Items count | Memory |       Find | Get Filters (aggregates) | Sort by field | Results Found |
+| ----------: | -----: | ---------: | -----------------------: | ------------: | ------------: |
+|      10,000 |   ~6Mb | ~0.0003 s. |                ~0.002 s. |    ~0.0001 s. |           907 |
+|      50,000 |  ~40Mb |  ~0.001 s. |                ~0.013 s. |    ~0.0005 s. |          4550 |
+|     100,000 |  ~80Mb |  ~0.003 s. |                ~0.030 s. |     ~0.001 s. |          8817 |
+|     300,000 | ~189Mb |  ~0.011 s. |                ~0.101 s. |     ~0.005 s. |         26891 |
+|   1,000,000 | ~657Mb |  ~0.049 s. |                ~0.396 s. |     ~0.017 s. |         90520 |
 
 PHPBench v2.1.0 FixedArrayIndex PHP 8.1.0 + JIT + opcache (no xdebug extension)
 
-| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~2Mb     | ~0.0007 s.       | ~0.006 s.                | ~0.0002 s.   | 907              |
-| 50,000          | ~12Mb    | ~0.003 s.        | ~0.027 s.                | ~0.001 s.    | 4550             |
-| 100,000         | ~23Mb    | ~0.006 s.        | ~0.057 s.                | ~0.002 s.    | 8817             |
-| 300,000         | ~70Mb    | ~0.021 s.        | ~0.188 s.                | ~0.007 s.    | 26891            |
-| 1,000,000       | ~233Mb   | ~0.080 s.        | ~0.674 s.                | ~0.032 s.    | 90520            |
+| Items count | Memory |       Find | Get Filters (aggregates) | Sort by field | Results Found |
+| ----------: | -----: | ---------: | -----------------------: | ------------: | ------------: |
+|      10,000 |   ~2Mb | ~0.0007 s. |                ~0.006 s. |    ~0.0002 s. |           907 |
+|      50,000 |  ~12Mb |  ~0.003 s. |                ~0.027 s. |     ~0.001 s. |          4550 |
+|     100,000 |  ~23Mb |  ~0.006 s. |                ~0.057 s. |     ~0.002 s. |          8817 |
+|     300,000 |  ~70Mb |  ~0.021 s. |                ~0.188 s. |     ~0.007 s. |         26891 |
+|   1,000,000 | ~233Mb |  ~0.080 s. |                ~0.674 s. |     ~0.032 s. |         90520 |
 
 ### v2.0.3  (30.12.2021)
 Performance update
@@ -142,13 +325,13 @@ Performance update
 
 PHPBench v2.0.3 PHP 8.1.0 + JIT + opcache (no xdebug extension)
 
-| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~6Mb     | ~0.0003 s.       | ~0.002 s.                | ~0.0001 s.   | 907              |
-| 50,000          | ~40Mb    | ~0.001 s.        | ~0.013 s.                | ~0.0006 s.   | 4550             |
-| 100,000         | ~80Mb    | ~0.003 s.        | ~0.029 s.                | ~0.001 s.    | 8817             |
-| 300,000         | ~189Mb   | ~0.011 s.        | ~0.108 s.                | ~0.005 s.    | 26891            |
-| 1,000,000       | ~657Mb   | ~0.052 s.        | ~0.419 s.                | ~0.018 s.    | 90520            |
+| Items count | Memory |       Find | Get Filters (aggregates) | Sort by field | Results Found |
+| ----------: | -----: | ---------: | -----------------------: | ------------: | ------------: |
+|      10,000 |   ~6Mb | ~0.0003 s. |                ~0.002 s. |    ~0.0001 s. |           907 |
+|      50,000 |  ~40Mb |  ~0.001 s. |                ~0.013 s. |    ~0.0006 s. |          4550 |
+|     100,000 |  ~80Mb |  ~0.003 s. |                ~0.029 s. |     ~0.001 s. |          8817 |
+|     300,000 | ~189Mb |  ~0.011 s. |                ~0.108 s. |     ~0.005 s. |         26891 |
+|   1,000,000 | ~657Mb |  ~0.052 s. |                ~0.419 s. |     ~0.018 s. |         90520 |
 
 
 ### v2.0.2 (13.12.2021)
@@ -164,23 +347,23 @@ Backward incompatibility, faceted index should be reindex before using new versi
 
 Bench v2.0.0 PHP 8.1.0 + JIT + opcache (no xdebug extension)
 
-| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~6Mb     | ~0.0007 s.       | ~0.004 s.                | ~0.0005 s.   | 907              |
-| 50,000          | ~40Mb    | ~0.002 s.        | ~0.014 s.                | ~0.001 s.    | 4550             |
-| 100,000         | ~80Mb    | ~0.004 s.        | ~0.028 s.                | ~0.001 s.    | 8817             |
-| 300,000         | ~189Mb   | ~0.011 s.        | ~0.104 s.                | ~0.006 s.    | 26891            |
-| 1,000,000       | ~657Mb   | ~0.050 s.        | ~0.426 s.                | ~0.030 s.    | 90520            |
+| Items count | Memory |       Find | Get Filters (aggregates) | Sort by field | Results Found |
+| ----------: | -----: | ---------: | -----------------------: | ------------: | ------------: |
+|      10,000 |   ~6Mb | ~0.0007 s. |                ~0.004 s. |    ~0.0005 s. |           907 |
+|      50,000 |  ~40Mb |  ~0.002 s. |                ~0.014 s. |     ~0.001 s. |          4550 |
+|     100,000 |  ~80Mb |  ~0.004 s. |                ~0.028 s. |     ~0.001 s. |          8817 |
+|     300,000 | ~189Mb |  ~0.011 s. |                ~0.104 s. |     ~0.006 s. |         26891 |
+|   1,000,000 | ~657Mb |  ~0.050 s. |                ~0.426 s. |     ~0.030 s. |         90520 |
 
 Bench v1.3.3 PHP 8.1.0 + JIT + opcache (no xdebug extension)
 
-| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~7Mb     | ~0.0007 s.       | ~0.004 s.                | ~0.0003 s.   | 907              |
-| 50,000          | ~49Mb    | ~0.002 s.        | ~0.014 s.                | ~0.0009 s.   | 4550             |
-| 100,000         | ~98Mb    | ~0.004 s.        | ~0.028 s.                | ~0.002 s.    | 8817             |
-| 300,000         | ~242Mb   | ~0.012 s.        | ~0.112 s.                | ~0.007 s.    | 26891            |
-| 1,000,000       | ~812Mb   | ~0.057 s.        | ~0.443 s.                | ~0.034 s.    | 90520            |
+| Items count | Memory |       Find | Get Filters (aggregates) | Sort by field | Results Found |
+| ----------: | -----: | ---------: | -----------------------: | ------------: | ------------: |
+|      10,000 |   ~7Mb | ~0.0007 s. |                ~0.004 s. |    ~0.0003 s. |           907 |
+|      50,000 |  ~49Mb |  ~0.002 s. |                ~0.014 s. |    ~0.0009 s. |          4550 |
+|     100,000 |  ~98Mb |  ~0.004 s. |                ~0.028 s. |     ~0.002 s. |          8817 |
+|     300,000 | ~242Mb |  ~0.012 s. |                ~0.112 s. |     ~0.007 s. |         26891 |
+|   1,000,000 | ~812Mb |  ~0.057 s. |                ~0.443 s. |     ~0.034 s. |         90520 |
 
 
 ### v1.3.4 (13.12.2021)
@@ -197,23 +380,23 @@ Unfortunately, the filter sequence in previous performance tests was already opt
 
 Bench v1.3.3 PHP 8.1.0 + JIT + opcache (no xdebug extension)
 
-| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~7Mb     | ~0.0007 s.       | ~0.004 s.                | ~0.0003 s.   | 907              |
-| 50,000          | ~49Mb    | ~0.002 s.        | ~0.014 s.                | ~0.0009 s.   | 4550             |
-| 100,000         | ~98Mb    | ~0.004 s.        | ~0.028 s.                | ~0.002 s.    | 8817             |
-| 300,000         | ~242Mb   | ~0.012 s.        | ~0.112 s.                | ~0.007 s.    | 26891            |
-| 1,000,000       | ~812Mb   | ~0.057 s.        | ~0.443 s.                | ~0.034 s.    | 90520            |
+| Items count | Memory |       Find | Get Filters (aggregates) | Sort by field | Results Found |
+| ----------: | -----: | ---------: | -----------------------: | ------------: | ------------: |
+|      10,000 |   ~7Mb | ~0.0007 s. |                ~0.004 s. |    ~0.0003 s. |           907 |
+|      50,000 |  ~49Mb |  ~0.002 s. |                ~0.014 s. |    ~0.0009 s. |          4550 |
+|     100,000 |  ~98Mb |  ~0.004 s. |                ~0.028 s. |     ~0.002 s. |          8817 |
+|     300,000 | ~242Mb |  ~0.012 s. |                ~0.112 s. |     ~0.007 s. |         26891 |
+|   1,000,000 | ~812Mb |  ~0.057 s. |                ~0.443 s. |     ~0.034 s. |         90520 |
 
 Bench v1.3.2 PHP 8.1.0 + JIT + opcache (no xdebug extension)
 
-| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~7Mb     | ~0.0007 s.       | ~0.003 s.                | ~0.0003 s.   | 907              |
-| 50,000          | ~49Mb    | ~0.002 s.        | ~0.014 s.                | ~0.0009 s.   | 4550             |
-| 100,000         | ~98Mb    | ~0.004 s.        | ~0.029 s.                | ~0.002 s.    | 8817             |
-| 300,000         | ~242Mb   | ~0.013 s.        | ~0.113 s.                | ~0.007 s.    | 26891            |
-| 1,000,000       | ~812Mb   | ~0.064 s.        | ~0.447 s.                | ~0.037 s.    | 90520            |
+| Items count | Memory |       Find | Get Filters (aggregates) | Sort by field | Results Found |
+| ----------: | -----: | ---------: | -----------------------: | ------------: | ------------: |
+|      10,000 |   ~7Mb | ~0.0007 s. |                ~0.003 s. |    ~0.0003 s. |           907 |
+|      50,000 |  ~49Mb |  ~0.002 s. |                ~0.014 s. |    ~0.0009 s. |          4550 |
+|     100,000 |  ~98Mb |  ~0.004 s. |                ~0.029 s. |     ~0.002 s. |          8817 |
+|     300,000 | ~242Mb |  ~0.013 s. |                ~0.113 s. |     ~0.007 s. |         26891 |
+|   1,000,000 | ~812Mb |  ~0.064 s. |                ~0.447 s. |     ~0.037 s. |         90520 |
 
 ### v1.3.2 (4.12.2021)
 Performance update
@@ -225,23 +408,23 @@ Note. Search->find doesn't guarantee sorted result
 
 Bench v1.3.2 PHP 8.1.0 + JIT + opcache (no xdebug extension)
 
-| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~7Mb     | ~0.0007 s.       | ~0.003 s.                | ~0.0003 s.   | 907              |
-| 50,000          | ~49Mb    | ~0.002 s.        | ~0.014 s.                | ~0.0009 s.   | 4550             |
-| 100,000         | ~98Mb    | ~0.004 s.        | ~0.029 s.                | ~0.002 s.    | 8817             |
-| 300,000         | ~242Mb   | ~0.013 s.        | ~0.113 s.                | ~0.007 s.    | 26891            |
-| 1,000,000       | ~812Mb   | ~0.064 s.        | ~0.447 s.                | ~0.037 s.    | 90520            |
+| Items count | Memory |       Find | Get Filters (aggregates) | Sort by field | Results Found |
+| ----------: | -----: | ---------: | -----------------------: | ------------: | ------------: |
+|      10,000 |   ~7Mb | ~0.0007 s. |                ~0.003 s. |    ~0.0003 s. |           907 |
+|      50,000 |  ~49Mb |  ~0.002 s. |                ~0.014 s. |    ~0.0009 s. |          4550 |
+|     100,000 |  ~98Mb |  ~0.004 s. |                ~0.029 s. |     ~0.002 s. |          8817 |
+|     300,000 | ~242Mb |  ~0.013 s. |                ~0.113 s. |     ~0.007 s. |         26891 |
+|   1,000,000 | ~812Mb |  ~0.064 s. |                ~0.447 s. |     ~0.037 s. |         90520 |
 
 Bench v1.3.1 PHP 8.1.0 + JIT + opcache (no xdebug extension)
 
-| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~7Mb     | ~0.0007 s.       | ~0.003 s.                | ~0.0004 s.   | 907              |
-| 50,000          | ~49Mb    | ~0.004 s.        | ~0.016 s.                | ~0.0009 s.   | 4550             |
-| 100,000         | ~98Mb    | ~0.007 s.        | ~0.036 s.                | ~0.002 s.    | 8817             |
-| 300,000         | ~242Mb   | ~0.022 s.        | ~0.135 s.                | ~0.009 s.    | 26891            |
-| 1,000,000       | ~812Mb   | ~0.095 s.        | ~0.572 s.                | ~0.035 s.    | 90520            |
+| Items count | Memory |       Find | Get Filters (aggregates) | Sort by field | Results Found |
+| ----------: | -----: | ---------: | -----------------------: | ------------: | ------------: |
+|      10,000 |   ~7Mb | ~0.0007 s. |                ~0.003 s. |    ~0.0004 s. |           907 |
+|      50,000 |  ~49Mb |  ~0.004 s. |                ~0.016 s. |    ~0.0009 s. |          4550 |
+|     100,000 |  ~98Mb |  ~0.007 s. |                ~0.036 s. |     ~0.002 s. |          8817 |
+|     300,000 | ~242Mb |  ~0.022 s. |                ~0.135 s. |     ~0.009 s. |         26891 |
+|   1,000,000 | ~812Mb |  ~0.095 s. |                ~0.572 s. |     ~0.035 s. |         90520 |
 
 
 
@@ -252,23 +435,23 @@ Performance update
 
 Bench v1.3.1 PHP 8.1.0 + JIT + opcache (no xdebug extension)
 
-| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~7Mb     | ~0.0007 s.       | ~0.003 s.                | ~0.0004 s.   | 907              |
-| 50,000          | ~49Mb    | ~0.004 s.        | ~0.016 s.                | ~0.0009 s.   | 4550             |
-| 100,000         | ~98Mb    | ~0.007 s.        | ~0.036 s.                | ~0.002 s.    | 8817             |
-| 300,000         | ~242Mb   | ~0.022 s.        | ~0.135 s.                | ~0.009 s.    | 26891            |
-| 1,000,000       | ~812Mb   | ~0.095 s.        | ~0.572 s.                | ~0.035 s.    | 90520            |
+| Items count | Memory |       Find | Get Filters (aggregates) | Sort by field | Results Found |
+| ----------: | -----: | ---------: | -----------------------: | ------------: | ------------: |
+|      10,000 |   ~7Mb | ~0.0007 s. |                ~0.003 s. |    ~0.0004 s. |           907 |
+|      50,000 |  ~49Mb |  ~0.004 s. |                ~0.016 s. |    ~0.0009 s. |          4550 |
+|     100,000 |  ~98Mb |  ~0.007 s. |                ~0.036 s. |     ~0.002 s. |          8817 |
+|     300,000 | ~242Mb |  ~0.022 s. |                ~0.135 s. |     ~0.009 s. |         26891 |
+|   1,000,000 | ~812Mb |  ~0.095 s. |                ~0.572 s. |     ~0.035 s. |         90520 |
 
 Bench v1.3.0 PHP 8.1.0 + JIT + opcache (no xdebug extension)
 
-| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~7Mb     | ~0.0007 s.       | ~0.003 s.                | ~0.0004 s.   | 907              |
-| 50,000          | ~49Mb    | ~0.003 s.        | ~0.019 s.                | ~0.0009 s.   | 4550             |
-| 100,000         | ~98Mb    | ~0.007 s.        | ~0.040 s.                | ~0.002 s.    | 8817             |
-| 300,000         | ~242Mb   | ~0.022 s.        | ~0.166 s.                | ~0.009 s.    | 26891            |
-| 1,000,000       | ~812Mb   | ~0.107 s.        | ~0.660 s.                | ~0.035 s.    | 90520            |
+| Items count | Memory |       Find | Get Filters (aggregates) | Sort by field | Results Found |
+| ----------: | -----: | ---------: | -----------------------: | ------------: | ------------: |
+|      10,000 |   ~7Mb | ~0.0007 s. |                ~0.003 s. |    ~0.0004 s. |           907 |
+|      50,000 |  ~49Mb |  ~0.003 s. |                ~0.019 s. |    ~0.0009 s. |          4550 |
+|     100,000 |  ~98Mb |  ~0.007 s. |                ~0.040 s. |     ~0.002 s. |          8817 |
+|     300,000 | ~242Mb |  ~0.022 s. |                ~0.166 s. |     ~0.009 s. |         26891 |
+|   1,000,000 | ~812Mb |  ~0.107 s. |                ~0.660 s. |     ~0.035 s. |         90520 |
 
 ### v1.3.0 (16.11.2021)
 Performance update
@@ -279,23 +462,23 @@ Performance update
 
 Bench v1.3.0 PHP 7.4.25 (no xdebug extension)
 
-| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~7Mb     | ~0.0004 s.       | ~0.003 s.                | ~0.0002 s.   | 907              |
-| 50,000          | ~49Mb    | ~0.003 s.        | ~0.019 s.                | ~0.0008 s.   | 4550             |
-| 100,000         | ~98Mb    | ~0.007 s.        | ~0.042 s.                | ~0.002 s.    | 8817             |
-| 300,000         | ~242Mb   | ~0.021 s.        | ~0.167 s.                | ~0.009 s.    | 26891            |
-| 1,000,000       | ~812Mb   | ~0.107 s.        | ~0.687 s.                | ~0.036 s.    | 90520            |
+| Items count | Memory |       Find | Get Filters (aggregates) | Sort by field | Results Found |
+| ----------: | -----: | ---------: | -----------------------: | ------------: | ------------: |
+|      10,000 |   ~7Mb | ~0.0004 s. |                ~0.003 s. |    ~0.0002 s. |           907 |
+|      50,000 |  ~49Mb |  ~0.003 s. |                ~0.019 s. |    ~0.0008 s. |          4550 |
+|     100,000 |  ~98Mb |  ~0.007 s. |                ~0.042 s. |     ~0.002 s. |          8817 |
+|     300,000 | ~242Mb |  ~0.021 s. |                ~0.167 s. |     ~0.009 s. |         26891 |
+|   1,000,000 | ~812Mb |  ~0.107 s. |                ~0.687 s. |     ~0.036 s. |         90520 |
 
 Bench v1.2.8 PHP 7.4.25 (no xdebug extension)
 
-| Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~7Mb     | ~0.0004 s.       | ~0.003 s.                | ~0.001 s.    | 907              |
-| 50,000          | ~49Mb    | ~0.004 s.        | ~0.022 s.                | ~0.007 s.    | 4550             |
-| 100,000         | ~98Mb    | ~0.009 s.        | ~0.049 s.                | ~0.015 s.    | 8817             |
-| 300,000         | ~242Mb   | ~0.026 s.        | ~0.182 s.                | ~0.109 s.    | 26891            |
-| 1,000,000       | ~812Mb   | ~0.125 s.        | ~0.776 s.                | ~0.472 s.    | 90520            |
+| Items count | Memory |       Find | Get Filters (aggregates) | Sort by field | Results Found |
+| ----------: | -----: | ---------: | -----------------------: | ------------: | ------------: |
+|      10,000 |   ~7Mb | ~0.0004 s. |                ~0.003 s. |     ~0.001 s. |           907 |
+|      50,000 |  ~49Mb |  ~0.004 s. |                ~0.022 s. |     ~0.007 s. |          4550 |
+|     100,000 |  ~98Mb |  ~0.009 s. |                ~0.049 s. |     ~0.015 s. |          8817 |
+|     300,000 | ~242Mb |  ~0.026 s. |                ~0.182 s. |     ~0.109 s. |         26891 |
+|   1,000,000 | ~812Mb |  ~0.125 s. |                ~0.776 s. |     ~0.472 s. |         90520 |
 
 
 

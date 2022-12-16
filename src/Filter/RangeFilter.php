@@ -25,6 +25,7 @@
  * SOFTWARE.
  *
  */
+
 declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Filter;
@@ -36,9 +37,24 @@ namespace KSamuel\FacetedSearch\Filter;
 class RangeFilter extends AbstractFilter
 {
     /**
+     * @param mixed|array{min:int|float,max:int|float} $value
+     * @throws \InvalidArgumentException
+     */
+    public function setValue($value): void
+    {
+        if (!is_array($value) || (!isset($value['min']) && !isset($value['max']))) {
+            throw new \InvalidArgumentException('Wrong value format for RangeFilter. Expected format ["min"=>0,"max"=>100]');
+        }
+        $this->value = [
+            'min' => $value['min'] ?? null,
+            'max' => $value['max'] ?? null,
+        ];
+    }
+
+    /**
      * @inheritDoc
      */
-    public function filterResults(array $facetedData, ?array $inputIdKeys = null): array
+    public function filterInput(array $facetedData,  array &$inputIdKeys): void
     {
         /**
          * @var array{min:int|float|null,max:int|float|null} $value
@@ -49,7 +65,8 @@ class RangeFilter extends AbstractFilter
         $max = $value['max'] ?? null;
 
         if ($min === null && $max === null) {
-            return [];
+            $inputIdKeys = [];
+            return;
         }
 
         // collect list for different values of one property
@@ -65,67 +82,45 @@ class RangeFilter extends AbstractFilter
                 /**
                  * @var array<int>|\SplFixedArray<int> $records
                  */
-                if($records instanceof \SplFixedArray){
+                if ($records instanceof \SplFixedArray) {
                     $limit = $records->toArray();
-                }else{
+                } else {
                     $limit = $records;
                 }
             } else {
                 // array sum (faster than array_merge here)
-                foreach ($records as $item){
+                foreach ($records as $item) {
                     $limit[] = $item;
                 }
             }
         }
 
         if (empty($limit)) {
-            return [];
-        }
-
-        $limitData = [];
-        foreach ($limit as $v){
-            $limitData[$v] = true;
+            $inputIdKeys = [];
+            return;
         }
 
         if (empty($inputIdKeys)) {
-            /**
-             * @var array<int,bool>$limitData
-             */
-            return $limitData;
+            foreach ($limit as $v) {
+                $inputIdKeys[$v] = true;
+            }
+            return;
         }
 
-        if (count($inputIdKeys) < count($limitData)) {
-            $start = &$inputIdKeys;
-            $compare = &$limitData;
-        } else {
-            $start = &$limitData;
-            $compare = &$inputIdKeys;
-        }
-
-        $result = [];
-        foreach ($start as $index => $exists) {
-            /**
-             * @var int $index
-             */
-            if (isset($compare[$index])) {
-                $result[$index] = true;
+        // Solution without allocating memory to a new index map.
+        // Reuse of input data. Set mark "2" for the data that needs to be in result.
+        foreach ($limit as $index) {
+            if (isset($inputIdKeys[$index])) {
+                $inputIdKeys[$index] = 2;
             }
         }
-        return $result;
-    }
-
-    /**
-     * @param mixed|array{min:int|float,max:int|float} $value
-     * @throws \InvalidArgumentException
-     */
-    public function setValue($value): void
-    {
-        if (!is_array($value) || (!isset($value['min']) && !isset($value['max']))) {
-            throw new \InvalidArgumentException('Wrong value format for RangeFilter. Expected format ["min"=>0,"max"=>100]');
+        // Clear unmarked data
+        foreach ($inputIdKeys as $index => &$value) {
+            if ($value === 2) {
+                $value = true;
+                continue;
+            }
+            unset($inputIdKeys[$index]);
         }
-        $this->value = [
-            'min' => $value['min'] ?? null,
-            'max' => $value['max'] ?? null,
-        ];
     }
 }

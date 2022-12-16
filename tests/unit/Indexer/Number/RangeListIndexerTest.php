@@ -1,15 +1,16 @@
 <?php
+
 use PHPUnit\Framework\TestCase;
 use KSamuel\FacetedSearch\Index;
 use KSamuel\FacetedSearch\Indexer\Number\RangeListIndexer;
 
 class RangeListIndexerTest extends TestCase
 {
-    public function testAddRecord()
+    public function testAddRecord(): void
     {
         $index = new Index\ArrayIndex();
         $indexer = new RangeListIndexer([
-            100,200,150,500
+            100, 200, 150, 500
         ]);
         $index->addIndexer('price', $indexer);
 
@@ -21,16 +22,16 @@ class RangeListIndexerTest extends TestCase
         $this->assertEquals([
             'price' => [
                 0 => [2],
-                100 => [3,4],
+                100 => [3, 4],
                 500 => [5]
             ]
         ], $index->getData());
     }
 
-    public function testFixedAddRecord()
+    public function testFixedAddRecord(): void
     {
         $index = new Index\FixedArrayIndex();
-        $indexer = new RangeListIndexer([100,200,150,500]);
+        $indexer = new RangeListIndexer([100, 200, 150, 500]);
         $index->addIndexer('price', $indexer);
 
         $this->assertTrue($index->addRecord(2, ['price' => 90]));
@@ -41,7 +42,7 @@ class RangeListIndexerTest extends TestCase
         $this->assertEquals([
             'price' => [
                 0 => [2],
-                100 => [3,4],
+                100 => [3, 4],
                 500 => [5]
             ]
         ], $index->getData());

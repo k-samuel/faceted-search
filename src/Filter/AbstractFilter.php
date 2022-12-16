@@ -25,6 +25,7 @@
  * SOFTWARE.
  *
  */
+
 declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Filter;
@@ -84,5 +85,5 @@ abstract class AbstractFilter implements FilterInterface
     /**
      * @inheritDoc
      */
-    abstract public function filterResults(array $facetedData, ?array $inputIdKeys = null): array;
+    abstract public function filterInput(array $facetedData,  array &$inputIdKeys): void;
 }

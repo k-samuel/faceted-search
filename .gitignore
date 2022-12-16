@@ -1,4 +1,9 @@
 /.idea/
+/.vscode/
 /phpunit_report/
 /composer.lock
 /vendor/
+/tests/data/
+/tests/performance/*.json
+*.DS_Store
+/.phpunit.result.cache

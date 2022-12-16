@@ -1,4 +1,4 @@
-[![PHP Version](https://img.shields.io/badge/php-7.3%2B-blue.svg)](https://packagist.org/packages/k-samuel/faceted-search)
+[![PHP Version](https://img.shields.io/badge/php-7.4%2B-blue.svg)](https://packagist.org/packages/k-samuel/faceted-search)
 [![Total Downloads](https://img.shields.io/packagist/dt/k-samuel/faceted-search.svg?style=flat-square)](https://packagist.org/packages/k-samuel/faceted-search)
 ![Build and Test](https://github.com/k-samuel/faceted-search/workflows/Build%20and%20Test/badge.svg?branch=master&event=push)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/b9d174969c1b457fa8a6c3b753266698)](https://www.codacy.com/manual/kirill.a.egorov/faceted-search?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=k-samuel/faceted-search&amp;utm_campaign=Badge_Grade)
@@ -38,7 +38,8 @@ for new results.
 This is easy enough. Even if the goods have a different structure of properties.
 ```php
 <?php
-$filterData = $search->findAcceptableFiltersCount($filters);
+  $query =  (new AggregationQuery())->filters($filters);
+  $filterData = $search->aggregate($query);
 ```
 
 
@@ -57,48 +58,27 @@ For example: list of ProductId "in stock" to exclude not available products.
 Tests on sets of products with 10 attributes, search with filters by 3 fields.
 
 ### PHP 8.2
-v2.1.5 Bench ArrayIndex  PHP 8.2 + JIT + opcache (no xdebug extension) macOS Ventura
+v2.2.0 Bench ArrayIndex  PHP 8.2 + JIT + opcache (no xdebug extension). 
 
-| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
-| 10,000          | ~3Mb     | ~0.0004 s.       | ~0.001 s.                | ~0.002 s.                      | ~0.0001 s.   | 907              |
-| 50,000          | ~20Mb    | ~0.001 s.        | ~0.006 s.                | ~0.011 s.                      | ~0.0005 s.   | 4550             |
-| 100,000         | ~40Mb    | ~0.003 s.        | ~0.014 s.                | ~0.024 s.                      | ~0.001 s.    | 8817             |
-| 300,000         | ~95Mb    | ~0.010 s.        | ~0.042 s.                | ~0.082 s                       | ~0.003 s.    | 26891            |
-| 1,000,000       | ~329Mb   | ~0.046 s.        | ~0.164 s.                | ~0.306 s.                      | ~0.015 s.    | 90520            |
+|  Items count | Memory |       Find | Get Filters (aggregate) | Get Filters & Count (aggregate) | Sort by field | Results Found |
+| -----------: | -----: | ---------: | ----------------------: | ------------------------------: | ------------: | ------------: |
+|       10,000 |   ~3Mb | ~0.0004 s. |               ~0.001 s. |                       ~0.002 s. |    ~0.0001 s. |           907 |
+|       50,000 |  ~20Mb |  ~0.001 s. |               ~0.005 s. |                       ~0.010 s. |    ~0.0004 s. |          4550 |
+|      100,000 |  ~40Mb |  ~0.003 s. |               ~0.013 s. |                       ~0.023 s. |    ~0.0009 s. |          8817 |
+|      300,000 |  ~95Mb |  ~0.009 s. |               ~0.034 s. |                       ~0.077 s  |     ~0.003 s. |         26891 |
+|    1,000,000 | ~329Mb |  ~0.039 s. |               ~0.131 s. |                       ~0.281 s. |     ~0.014 s. |         90520 |
+| 1,000,000 UB | ~324Mb |  ~0.099 s. |               ~0.218 s. |                       ~0.401 s. |     ~0.028 s. |        179856 |
 
-v2.1.5 Bench FixedArrayIndex PHP 8.2 + JIT + opcache (no xdebug extension) macOS Ventura
-
-| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
-| 10,000          | ~2Mb     | ~0.0006 s.       | ~0.001 s.                | ~0.003 s.                      | ~0.0002 s.   | 907              |
-| 50,000          | ~12Mb    | ~0.003 s.        | ~0.007 s.                | ~0.017 s.                      | ~0.0009 s.   | 4550             |
-| 100,000         | ~23Mb    | ~0.006 s.        | ~0.017 s.                | ~0.040 s.                      | ~0.001 s.    | 8817             |
-| 300,000         | ~70Mb    | ~0.019 s.        | ~0.056 s.                | ~0.120 s.                      | ~0.006 s.    | 26891            |
-| 1,000,000       | ~233Mb   | ~0.077 s.        | ~0.202 s.                | ~0.455 s.                      | ~0.023 s.    | 90520            |
-
-
-### PHP 8.1.10
-v2.1.5 Bench ArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension) macOS Monterey
-
-| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
-| 10,000          | ~6Mb     | ~0.0004 s.       | ~0.001 s.                | ~0.002 s.                      | ~0.0001 s.   | 907              |
-| 50,000          | ~40Mb    | ~0.001 s.        | ~0.005 s.                | ~0.010 s.                      | ~0.0005 s.   | 4550             |
-| 100,000         | ~80Mb    | ~0.003 s.        | ~0.016 s.                | ~0.029 s.                      | ~0.001 s.    | 8817             |
-| 300,000         | ~189Mb   | ~0.011 s.        | ~0.044 s.                | ~0.091 s                       | ~0.004 s.    | 26891            |
-| 1,000,000       | ~657Mb   | ~0.047 s.        | ~0.169 s.                | ~0.333 s.                      | ~0.018 s.    | 90520            |
-
-v2.1.5 Bench FixedArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension) macOS Monterey
+v2.2.0 Bench FixedArrayIndex PHP 8.2 + JIT + opcache (no xdebug extension). 
 
 | Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
 | 10,000          | ~2Mb     | ~0.0007 s.       | ~0.001 s.                | ~0.003 s.                      | ~0.0002 s.   | 907              |
-| 50,000          | ~12Mb    | ~0.003 s.        | ~0.007 s.                | ~0.018 s.                      | ~0.0009 s.   | 4550             |
-| 100,000         | ~23Mb    | ~0.006 s.        | ~0.017 s.                | ~0.040 s.                      | ~0.002 s.    | 8817             |
-| 300,000         | ~70Mb    | ~0.020 s.        | ~0.059 s.                | ~0.118 s.                      | ~0.006 s.    | 26891            |
-| 1,000,000       | ~233Mb   | ~0.079 s.        | ~0.206 s.                | ~0.448 s.                      | ~0.026 s.    | 90520            |
-
+| 50,000          | ~12Mb    | ~0.003 s.        | ~0.007 s.                | ~0.017 s.                      | ~0.0009 s.   | 4550             |
+| 100,000         | ~23Mb    | ~0.006 s.        | ~0.017 s.                | ~0.039 s.                      | ~0.001 s.    | 8817             |
+| 300,000         | ~70Mb    | ~0.020 s.        | ~0.056 s.                | ~0.120 s.                      | ~0.005 s.    | 26891            |
+| 1,000,000       | ~233Mb   | ~0.073 s.        | ~0.207 s.                | ~0.447 s.                      | ~0.021 s.    | 90520            |
+| 1,000,000 UB    | ~233Mb   | ~0.162 s.        | ~0.271 s.                | ~0.609 s.                      | ~0.035 s.    | 179856           |
 
 * Items count - Products in index
 * Memory - RAM used for index
@@ -109,10 +89,34 @@ v2.1.5 Bench FixedArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension) ma
   List of common properties their values and count of found products (Aggregates)
 * Sort by field - time of sorting found results by field value
 * Results Found - count of found products (Find)
+* UB - unbalanced dataset
+
+### PHP 8.1.10
+v2.1.5 Bench ArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension).
+
+| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
+| 10,000          | ~6Mb     | ~0.0004 s.       | ~0.001 s.                | ~0.002 s.                      | ~0.0001 s.   | 907              |
+| 50,000          | ~40Mb    | ~0.001 s.        | ~0.005 s.                | ~0.010 s.                      | ~0.0005 s.   | 4550             |
+| 100,000         | ~80Mb    | ~0.003 s.        | ~0.016 s.                | ~0.029 s.                      | ~0.001 s.    | 8817             |
+| 300,000         | ~189Mb   | ~0.011 s.        | ~0.044 s.                | ~0.091 s                       | ~0.004 s.    | 26891            |
+| 1,000,000       | ~657Mb   | ~0.047 s.        | ~0.169 s.                | ~0.333 s.                      | ~0.018 s.    | 90520            |
+
+
+v2.1.5 Bench FixedArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension)
+
+| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
+|----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
+| 10,000          | ~2Mb     | ~0.0007 s.       | ~0.001 s.                | ~0.003 s.                      | ~0.0002 s.   | 907              |
+| 50,000          | ~12Mb    | ~0.003 s.        | ~0.007 s.                | ~0.018 s.                      | ~0.0009 s.   | 4550             |
+| 100,000         | ~23Mb    | ~0.006 s.        | ~0.017 s.                | ~0.040 s.                      | ~0.002 s.    | 8817             |
+| 300,000         | ~70Mb    | ~0.020 s.        | ~0.059 s.                | ~0.118 s.                      | ~0.006 s.    | 26891            |
+| 1,000,000       | ~233Mb   | ~0.079 s.        | ~0.206 s.                | ~0.448 s.                      | ~0.026 s.    | 90520            |
+
 
 Experimental Golang port bench https://github.com/k-samuel/go-faceted-search
 
-Bench v0.3.3 golang 1.19.4 with parallel aggregates
+Bench v0.3.3 golang 1.19.4 with parallel aggregates. UB - unbalanced dataset 
 
 | Items count     | Memory   | Find             | Get Filters (aggregates) | Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
@@ -121,7 +125,7 @@ Bench v0.3.3 golang 1.19.4 with parallel aggregates
 | 100,000         | ~21Mb    | ~0.003 s.        | ~0.025 s.                | ~0.002 s.    | 8817             |
 | 300,000         | ~47Mb    | ~0.010 s.        | ~0.082 s.                | ~0.006 s.    | 26891            |
 | 1,000,000       | ~140Mb   | ~0.037 s.        | ~0.285 s.                | ~0.026 s.    | 90520            |
-
+| 1,000,000 UB    | ~138Mb   | ~0.130 s.        | ~0.574 s.                | ~0.044 s.    | 179856           |
 
 *Since version 0.3.3, the index structures in PHP and Golang have diverged due to the peculiarities of the 
 implementation of hasMap in languages. In Go, hashMap had to be abandoned in favor of a more efficient storage 
@@ -144,7 +148,6 @@ use KSamuel\FacetedSearch\Index\ArrayIndex;
 $searchIndex = new ArrayIndex();
 /*
  * Getting products data from DB
- * Sort data by $recordId before using Index->addRecord it can improve performance 
  */
 $data = [
     ['id'=>7, 'color'=>'black', 'price'=>100, 'sale'=>true, 'size'=>36],   
@@ -157,6 +160,12 @@ foreach($data as $item){
    unset($item['id']);
    $searchIndex->addRecord($recordId, $item);
 }
+
+// You can optionally call index optimization before using (since v2.2.0). 
+// The procedure can be run once after changing the index data. 
+// Optimization takes a few seconds, you should not call it during the processing of user requests.
+$searchIndex->optimize();
+
 // save index data to some storage 
 $indexData = $searchIndex->getData();
 // We will use file for example
@@ -171,7 +180,9 @@ use KSamuel\FacetedSearch\Index\ArrayIndex;
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Filter\RangeFilter;
-use KSamuel\FacetedSearch\Sorter\ByField;
+use KSamuel\FacetedSearch\Query\SearchQuery;
+use KSamuel\FacetedSearch\Query\AggregationQuery;
+use KSamuel\FacetedSearch\Query\Order;
 
 // load index by product category (use request params)
 $indexData = json_decode(file_get_contents('./first-index.json'), true);
@@ -185,29 +196,33 @@ $filters = [
     // RangeFilter example for numeric property ranges (min - max)
     new RangeFilter('size', ['min'=>36, 'max'=>40])
 ];
+// create SearchQuery
+$query = (new SearchQuery())->filters($filters);
 // Find records using filters. Note, it doesn't guarantee sorted result
-$records = $search->find($filters);
+$records = $search->query($query);
 // Now we have filtered list of record identifiers.
 // Find records in your storage and send results into client application.
 
 // Also we can send acceptable filters values for current selection.
 // It can be used for updating client UI.
-$filterData = $search->findAcceptableFilters($filters);
+$query = (new AggregationQuery())->filters($filters);
+$filterData = $search->aggregate($query);
 
-// If you want to get acceptable filters values with items count use findAcceptableFiltersCount
+// If you want to get acceptable filters values with items count use $search->aggregate
 // note that filters is not applied for itself for counting
-// values count of a particular field depends only on filters imposed on other fields 
-$filterData = $search->findAcceptableFiltersCount($filters);
+// values count of a particular field depends only on filters imposed on other fields.
+// Sort results using $query->sort(direction,flags)
+$query = (new AggregationQuery())->filters($filters)->countItems()->sort();
+$filterData = $search->aggregate($query);
 
 
-// If $filters is an empty array [], all acceptable values will be returned
-$filterData = $search->findAcceptableFilters([]);
+// If $filters is an empty array [] or not passed into AggregationQuery, all acceptable values will be returned
+$query = (new AggregationQuery());
+$filterData = $search->aggregate($query);
 
-// Also you can sort results using FacetedIndex
-$sorter = new ByField($searchIndex);
-$records = $sorter->sort($records, 'price', ByField::SORT_DESC);
-
-
+// You can sort search query results by field using FacetedIndex
+$query = (new SearchQuery())->filters($filters)->sort('price', Order::SORT_DESC);
+$records = $search->query($query);
 
 
 ```
@@ -235,13 +250,13 @@ $index->addRecord(2,['price'=>100]);
 $index->addRecord(3,['price'=>150]);
 $index->addRecord(4,['price'=>200]);
 
-
 $filters = [
   new RangeFilter('price', ['min'=>100,'max'=>200])
 ];
 
 $search = new Search($index);
-$search->find($filters);
+$query = (new SearchQuery())->filters($filters);
+$search->query($query);
 
 // will return [2,3,4]
 ```
@@ -288,6 +303,11 @@ foreach($data as $item){
    unset($item['id']);
    $searchIndex->addRecord($recordId, $item);
 }
+// You can optionally call index optimization before using (since v2.2.0). 
+// The procedure can be run once after changing the index data. 
+// Optimization takes a few seconds, you should not call it during the processing of user requests.
+// Can be called only in write mode of FixedArrayIndex
+$searchIndex->optimize();
 // After the data is added, you need to commit the changes 
 $searchIndex->commitChanges();
 // save index data to some storage 

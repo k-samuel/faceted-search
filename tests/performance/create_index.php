@@ -11,7 +11,7 @@ while ($row = fgets($f)) {
         $indexData[] = json_decode($row, true);
     }
 }
-$index = new \KSamuel\FacetedSearch\Index();
+$index = new \KSamuel\FacetedSearch\Index\ArrayIndex();
 $rangeIndexer = new \KSamuel\FacetedSearch\Indexer\Number\RangeIndexer(250);
 $index->addIndexer('price', $rangeIndexer);
 

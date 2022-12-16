@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * MIT License
@@ -122,5 +123,28 @@ class FixedArrayIndex extends ArrayIndex
             }
         }
         return $intersectLen;
+    }
+
+    /**
+     * @inheritDoc
+     * Performance patch SplFixedArray index access is faster than iteration
+     */
+    protected function hasIntersectIntMap($a, array $b): bool
+    {
+        $intersectLen = 0;
+        $count = count($a);
+        for ($i = 0; $i < $count; $i++) {
+            if (isset($b[$a[$i]])) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public function optimize(): void
+    {
+        if ($this->isCompact) {
+            throw new \RuntimeException('FixedArray can by optimized only in write mode');
+        }
+        parent::optimize();
     }
 }

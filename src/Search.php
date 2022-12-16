@@ -25,16 +25,19 @@
  * SOFTWARE.
  *
  */
+
 declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch;
 
 use KSamuel\FacetedSearch\Filter\FilterInterface;
 use KSamuel\FacetedSearch\Index\IndexInterface;
+use KSamuel\FacetedSearch\Query\AggregationQuery;
+use KSamuel\FacetedSearch\Query\SearchQuery;
 
 /**
  * Class Search
- * Search in faceted index. Easily handles 100,000 products with 10 properties.
+ * Search in faceted index. Easily handles 300,000 products with 10 properties.
  * @package KSamuel\FacetedSearch
  */
 class Search
@@ -58,6 +61,7 @@ class Search
      * @param array<FilterInterface> $filters
      * @param array<int>|null $inputRecords - list of record id to search in. Use it for limit results
      * @return array<int>
+     * @deprecated use query
      */
     public function find(array $filters, ?array $inputRecords = null): array
     {
@@ -65,10 +69,40 @@ class Search
     }
 
     /**
+     * Find records using Query
+     * @param SearchQuery $query
+     * @return array<int>
+     */
+    public function query(SearchQuery $query): array
+    {
+        return $this->index->query($query);
+    }
+
+    /**
+     * Aggregation. Find acceptable filter values using AggregationQuery
+     *
+     * @param AggregationQuery $query
+     * @return array<string,array<int|string,int|true>>
+     * [
+     *   'field1' => [
+     *          'value1' => int count | true,  (Depending on AggregationQuery settings)
+     *          'value2' => int count | true, 
+     *          ...
+     *   ],
+     *   ...
+     * ]
+     */
+    public function aggregate(AggregationQuery $query): array
+    {
+        return $this->index->aggregation($query);
+    }
+
+    /**
      * Find acceptable filter values
      * @param array<FilterInterface> $filters
      * @param array<int> $inputRecords
      * @return array<string,array<int|string,int|string>>
+     * @deprecated use aggregate
      */
     public function findAcceptableFilters(array $filters = [], array $inputRecords = []): array
     {
@@ -80,6 +114,7 @@ class Search
      * @param array<FilterInterface> $filters
      * @param array<int> $inputRecords
      * @return array<string,array<int|string,int|string>>
+     * @deprecated use aggregate
      */
     public function findAcceptableFiltersCount(array $filters = [], array $inputRecords = []): array
     {
