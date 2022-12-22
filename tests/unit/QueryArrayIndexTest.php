@@ -415,6 +415,50 @@ class QueryArrayIndexTest extends TestCase
             $this->assertEquals(array_keys($expect[$field]), array_keys($values));
             $this->assertEquals(array_values($expect[$field]), array_values($values));
         }
+
+
+        $acceptableFilters = $facets->aggregate((new AggregationQuery())->countItems()->sort(AggregationSort::SORT_DESC));
+
+        $expect = [
+            'size' => [8 => 1, 7 => 4],
+            'group' => ['C' => 2, 'B' => 1, 'A' => 2],
+            'color' => ['yellow' => 1, 'white' => 1, 'black' => 3],
+        ];
+
+        $this->assertEquals(array_keys($expect), array_keys($acceptableFilters));
+        foreach ($expect as $field => $values) {
+            $this->assertEquals(array_keys($expect[$field]), array_keys($values));
+            $this->assertEquals(array_values($expect[$field]), array_values($values));
+        }
+    }
+
+    public function testNoInput(): void
+    {
+        $index = new ArrayIndex();
+        $records = [
+            ['id' => 1, 'color' => 'black', 'size' => 7, 'group' => 'A'],
+            ['id' => 2, 'color' => 'black', 'size' => 8, 'group' => 'A'],
+            ['id' => 3, 'color' => 'white', 'size' => 9, 'group' => 'B'],
+        ];
+        foreach ($records as $item) {
+            $id = $item['id'];
+            unset($item['id']);
+            $index->addRecord($id, $item);
+        }
+        $facets = new Search($index);
+        $acceptableFilters = $acceptableFilters = $facets->aggregate((new AggregationQuery())->sort());
+
+        $expect = [
+            'color' => ['black' => true,  'white' => true],
+            'group' => ['A' => true, 'B' => true],
+            'size' => [7 => true, 8 => true, 9 => true],
+        ];
+
+        $this->assertEquals(array_keys($expect), array_keys($acceptableFilters));
+        foreach ($expect as $field => $values) {
+            $this->assertEquals(array_keys($expect[$field]), array_keys($values));
+            $this->assertEquals(array_values($expect[$field]), array_values($values));
+        }
     }
 
     public function getTestData(): array
