@@ -143,4 +143,20 @@ interface IndexInterface
      * @return void
      */
     public function optimize(): void;
+
+
+    /**
+     * Delete record from index
+     * @param int $recordId
+     * @return bool - success flag
+     */
+    public function deleteRecord(int $recordId): bool;
+
+    /**
+     * Update record data
+     * @param int $recordId
+     * @param array<int|string,array<int,mixed>> $recordValues -  ['fieldName'=>'fieldValue','fieldName2'=>['val1','val2']]
+     * @return bool - success flag
+     */
+    public function replaceRecord(int $recordId, array $recordValues): bool;
 }
