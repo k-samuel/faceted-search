@@ -764,6 +764,7 @@ class ArrayIndex implements IndexInterface
      */
     public function deleteRecord(int $recordId): bool
     {
+        $this->resetLocalCache();
         foreach ($this->data as $fieldName => &$valueList) {
             foreach ($valueList as $fieldValue => &$list) {
                 $hasDeletion = false;
@@ -799,6 +800,8 @@ class ArrayIndex implements IndexInterface
      */
     public function replaceRecord(int $recordId, array $recordValues): bool
     {
+        $this->resetLocalCache();
+
         if (!$this->deleteRecord($recordId)) {
             return false;
         }
