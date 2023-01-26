@@ -756,4 +756,56 @@ class ArrayIndex implements IndexInterface
             }
         }
     }
+
+    /**
+     * Delete record from index
+     * @param int $recordId
+     * @return bool - success flag
+     */
+    public function deleteRecord(int $recordId): bool
+    {
+        $this->resetLocalCache();
+        foreach ($this->data as $fieldName => &$valueList) {
+            foreach ($valueList as $fieldValue => &$list) {
+                $hasDeletion = false;
+                foreach ($list as $index => $id) {
+                    if ($id === $recordId) {
+                        unset($list[$index]);
+                        $hasDeletion = true;
+                    }
+                }
+                // reset array numeration
+                if ($hasDeletion) {
+                    if (empty($list)) {
+                        // clean empty value
+                        unset($valueList[$fieldValue]);
+                    } else {
+                        $list = array_values($list);
+                    }
+                }
+            }
+            if (empty($valueList)) {
+                // clean empty field
+                unset($this->data[$fieldName]);
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Update record data
+     * @param int $recordId
+     * @param array<int|string,array<int,mixed>> $recordValues -  ['fieldName'=>'fieldValue','fieldName2'=>['val1','val2']]
+     * @return bool - success flag
+     */
+    public function replaceRecord(int $recordId, array $recordValues): bool
+    {
+        $this->resetLocalCache();
+
+        if (!$this->deleteRecord($recordId)) {
+            return false;
+        }
+
+        return $this->addRecord($recordId, $recordValues);
+    }
 }

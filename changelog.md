@@ -1,4 +1,33 @@
 # Changelog
+### v2.2.1 (26.01.2023)
+Added the ability to update index data without a complete rebuild.
+New methods added:
+```PHP
+use KSamuel\FacetedSearch\Index\ArrayIndex;
+
+$index = new ArrayIndex();
+$index->setData($dataFromStorage);
+
+// delete record from index
+$index->deleteRecord($recordId);
+// replace record data with new values
+$index->replaceRecord($recordId,['newField'=>'newValue'/* .... */]);
+
+```
+FixedArrayIndex also implements new methods
+```PHP
+use KSamuel\FacetedSearch\Index\FixedArrayIndex;
+
+$index = new ArrayIndex();
+$index->writeMode();
+$index->setData($dataFromStorage);
+
+// delete record from index
+$index->deleteRecord($recordId);
+// replace record data with new values
+$index->replaceRecord($recordId,['newField'=>'newValue'/* .... */]);
+
+$index->commitChanges();
 
 ### v2.2.0 (16.12.2022)
 

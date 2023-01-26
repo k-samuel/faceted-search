@@ -140,11 +140,38 @@ class FixedArrayIndex extends ArrayIndex
         }
         return false;
     }
+    /**
+     * @inheritDoc
+     */
     public function optimize(): void
     {
         if ($this->isCompact) {
             throw new \RuntimeException('FixedArray can by optimized only in write mode');
         }
         parent::optimize();
+    }
+
+    /**
+     * @inheritDoc
+     * @throws \RuntimeException
+     */
+    public function deleteRecord(int $recordId): bool
+    {
+        if ($this->isCompact) {
+            throw new \RuntimeException('FixedArray can by optimized only in write mode');
+        }
+        return parent::deleteRecord($recordId);
+    }
+
+    /**
+     * @inheritDoc
+     * @throws \RuntimeException
+     */
+    public function replaceRecord(int $recordId, array $recordValues): bool
+    {
+        if ($this->isCompact) {
+            throw new \RuntimeException('FixedArray can by optimized only in write mode');
+        }
+        return parent::replaceRecord($recordId, $recordValues);
     }
 }

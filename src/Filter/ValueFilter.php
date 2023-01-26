@@ -149,7 +149,6 @@ class ValueFilter extends AbstractFilter
                      * @var int $recId
                      */
                     $result[$recId] = true;
-                    continue;
                 }
             } else {
                 // Performance patch SplFixedArray index access is faster than iteration
