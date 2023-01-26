@@ -1,5 +1,5 @@
 # Changelog
-### v2.2.1 (22.01.2023)
+### v2.2.1 (26.01.2023)
 Added the ability to update index data without a complete rebuild.
 New methods added:
 ```PHP
