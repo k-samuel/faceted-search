@@ -28,6 +28,7 @@ $index->deleteRecord($recordId);
 $index->replaceRecord($recordId,['newField'=>'newValue'/* .... */]);
 
 $index->commitChanges();
+```
 
 ### v2.2.0 (16.12.2022)
 
