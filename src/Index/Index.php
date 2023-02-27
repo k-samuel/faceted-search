@@ -72,8 +72,6 @@ class Index implements IndexInterface
         $this->intersection = $intersection;
     }
 
-
-
     /**
      * Find records using Query
      * @param SearchQuery $query
@@ -142,7 +140,6 @@ class Index implements IndexInterface
             $input = $this->mapInputArray($input);
         }
 
-        $result = [];
         $filteredRecords = [];
         $resultCache = [];
 
@@ -163,8 +160,25 @@ class Index implements IndexInterface
             $filteredRecords = $this->scanner->findRecordsMap($this->storage, [], $input);
         }
 
-        $resultCacheCount = count($resultCache);
+        // intersect index values and filtered records
+        $result = $this->aggregationScan($resultCache, $filteredRecords, $countValues, $input);
 
+        if ($sort !== null) {
+            $this->aggregationSort->sort($sort, $result);
+        }
+        return $result;
+    }
+    /**
+     * @param array<int|string,array<int,bool>> $resultCache
+     * @param array<int,bool> $filteredRecords
+     * @param bool $countRecords
+     * @param array<int,bool> $input
+     * @return array<int|string,array<int|string,int|true>>
+     */
+    private function aggregationScan(array $resultCache, array $filteredRecords, bool $countRecords, array $input): array
+    {
+        $result = [];
+        $cacheCount = count($resultCache);
         /**
          * @var array<int|string,array<int>> $filterValues
          */
@@ -176,7 +190,7 @@ class Index implements IndexInterface
             // do not apply self filtering
             if (isset($resultCache[$filterName])) {
                 // count of cached filters must be > 1 (1 filter will be skipped by field name)
-                if ($resultCacheCount > 1) {
+                if ($cacheCount > 1) {
                     // optimization with cache of findRecordsMap
                     $recordIds = $this->mergeFilters($resultCache, $filterName);
                 } else {
@@ -187,24 +201,23 @@ class Index implements IndexInterface
             }
 
             foreach ($filterValues as $filterValue => $data) {
-                if ($countValues) {
-                    $intersect = $this->intersection->getIntersectMapCount($data, $recordIds);
 
+                if ($countRecords) {
+                    $intersect = $this->intersection->getIntersectMapCount($data, $recordIds);
                     if ($intersect === 0) {
                         continue;
                     }
                     $result[$filterName][$filterValue] = $intersect;
-                } elseif ($this->intersection->hasIntersectIntMap($data, $recordIds)) {
+                    continue;
+                }
+
+                if ($this->intersection->hasIntersectIntMap($data, $recordIds)) {
                     $result[$filterName][$filterValue] = true;
                 }
             }
         }
-        if ($sort !== null) {
-            $this->aggregationSort->sort($sort, $result);
-        }
         return $result;
     }
-
 
     /**
      * @return array<int|string,array<string|int,true>>
