@@ -13,7 +13,7 @@ while ($row = fgets($f)) {
         $indexData[] = json_decode($row, true);
     }
 }
-$index = Factory::create(Factory::ARRAY_STORAGE);
+$index = (new Factory)->create(Factory::ARRAY_STORAGE);
 $storage = $index->getStorage();
 $rangeIndexer = new \KSamuel\FacetedSearch\Indexer\Number\RangeIndexer(250);
 $storage->addIndexer('price', $rangeIndexer);

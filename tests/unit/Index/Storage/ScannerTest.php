@@ -9,7 +9,7 @@ class ScannerTest extends TestCase
 {
     public function testGetAllRecordId(): void
     {
-        $index = Factory::create(Factory::ARRAY_STORAGE);
+        $index = (new Factory)->create(Factory::ARRAY_STORAGE);
         $storage = $index->getStorage();
 
         $this->assertTrue($storage->addRecord(112, ['vendor' => 'Tester', 'price' => 100]));

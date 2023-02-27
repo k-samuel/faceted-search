@@ -76,7 +76,7 @@ if (isset($_POST['filters'])) {
 // Load index by product category
 // Use database to store index at your production
 $indexData = json_decode(file_get_contents('./data/' . $index . '-index.json'), true);
-$searchIndex = Factory::create(Factory::ARRAY_STORAGE);
+$searchIndex = (new Factory)->create(Factory::ARRAY_STORAGE);
 $searchIndex->setData($indexData);
 // create search instance
 $search = new Search($searchIndex);

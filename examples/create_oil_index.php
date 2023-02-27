@@ -7,7 +7,7 @@ use KSamuel\FacetedSearch\Index\Factory;
 
 include '../vendor/autoload.php';
 
-$searchIndex = Factory::create(Factory::ARRAY_STORAGE);
+$searchIndex = (new Factory)->create(Factory::ARRAY_STORAGE);
 $storage = $searchIndex->getStorage();
 /*
  * Getting products data from DB

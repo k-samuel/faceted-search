@@ -37,7 +37,7 @@ class DatasetFactory
         if (!file_exists($dataFile)) {
             $this->createDataset($size, $dataFile);
         }
-        $index = Factory::create(Factory::ARRAY_STORAGE);
+        $index = (new Factory)->create(Factory::ARRAY_STORAGE);
         $this->loadData($index, $dataFile);
         $index->optimize();
         return $index;
@@ -61,7 +61,7 @@ class DatasetFactory
                 $this->createUbDataset($size, $dataFile);
             }
         }
-        $index = Factory::create(Factory::FIXED_ARRAY_STORAGE);
+        $index = (new Factory)->create(Factory::FIXED_ARRAY_STORAGE);
 
         $this->loadData($index, $dataFile);
         $index->optimize();

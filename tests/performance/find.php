@@ -21,7 +21,7 @@ $m = memory_get_usage();
 $indexData = json_decode(file_get_contents($dataFile), true);
 $time = (microtime(true) - $t);
 
-$index = Factory::create(Factory::ARRAY_STORAGE);
+$index = (new Factory)->create(Factory::ARRAY_STORAGE);
 $profile = new Profile;
 $index->setProfiler($profile);
 

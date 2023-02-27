@@ -68,7 +68,7 @@ class ValueFilterTest extends TestCase
             ]
         ];
 
-        $index = Factory::create(Factory::ARRAY_STORAGE);
+        $index = (new Factory)->create(Factory::ARRAY_STORAGE);
         $storage = $index->getStorage();
 
 

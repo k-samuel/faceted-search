@@ -9,7 +9,7 @@ class RangeListIndexerTest extends TestCase
 {
     public function testAddRecord(): void
     {
-        $index = Factory::create(Factory::ARRAY_STORAGE);
+        $index = (new Factory)->create(Factory::ARRAY_STORAGE);
         $storage = $index->getStorage();
 
         $indexer = new RangeListIndexer([
@@ -33,7 +33,7 @@ class RangeListIndexerTest extends TestCase
 
     public function testFixedAddRecord(): void
     {
-        $index = Factory::create(Factory::ARRAY_STORAGE);
+        $index = (new Factory)->create(Factory::ARRAY_STORAGE);
         $storage = $index->getStorage();
 
         $indexer = new RangeListIndexer([100, 200, 150, 500]);

@@ -34,7 +34,7 @@ class RangeFilterTest extends TestCase
 
     public function testCombinationTest(): void
     {
-        $index = Factory::create(Factory::ARRAY_STORAGE);
+        $index = (new Factory)->create(Factory::ARRAY_STORAGE);
         $storage = $index->getStorage();
 
         $rangeIndexer = new RangeIndexer(100);

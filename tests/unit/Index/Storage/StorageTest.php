@@ -11,8 +11,8 @@ class StorageTest extends TestCase
     public function storeProvider(): array
     {
         return [
-            [Factory::create(Factory::ARRAY_STORAGE)],
-            [Factory::create(Factory::FIXED_ARRAY_STORAGE)]
+            [(new Factory)->create(Factory::ARRAY_STORAGE)],
+            [(new Factory)->create(Factory::FIXED_ARRAY_STORAGE)]
         ];
     }
 

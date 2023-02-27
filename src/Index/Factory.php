@@ -45,7 +45,7 @@ final class Factory
     const ARRAY_STORAGE = ArrayStorage::class;
     const FIXED_ARRAY_STORAGE = FixedArrayStorage::class;
 
-    public static function create(string $storage): IndexInterface
+    public function create(string $storage): IndexInterface
     {
         /**
          * @var StorageInterface $store

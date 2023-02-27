@@ -17,7 +17,7 @@ class IndexTest extends TestCase
 {
     public function testAggregate(): void
     {
-        $index = Factory::create(Factory::ARRAY_STORAGE);
+        $index = (new Factory)->create(Factory::ARRAY_STORAGE);
         $storage = $index->getStorage();
 
         $this->assertTrue($storage->addRecord(112, ['vendor' => 'Tester', 'price' => 100]));
@@ -42,8 +42,8 @@ class IndexTest extends TestCase
     public function storeProvider(): array
     {
         return [
-            [Factory::create(Factory::ARRAY_STORAGE)],
-            [Factory::create(Factory::FIXED_ARRAY_STORAGE)]
+            [(new Factory)->create(Factory::ARRAY_STORAGE)],
+            [(new Factory)->create(Factory::FIXED_ARRAY_STORAGE)]
         ];
     }
 
@@ -541,7 +541,7 @@ class IndexTest extends TestCase
 
     public function testGetCount(): void
     {
-        $index = Factory::create(Factory::ARRAY_STORAGE);
+        $index = (new Factory)->create(Factory::ARRAY_STORAGE);
         $storage = $index->getStorage();
         $storage->addRecord(1, ['col' => 2]);
         $storage->addRecord(2, ['col' => 2, 'pr' => 1, 'dr' => 2]);
@@ -551,7 +551,7 @@ class IndexTest extends TestCase
 
     public function testSetProfile(): void
     {
-        $index = Factory::create(Factory::ARRAY_STORAGE);
+        $index = (new Factory)->create(Factory::ARRAY_STORAGE);
         $profile = new Profile();
         $index->setProfiler($profile);
         $storage = $index->getStorage();
@@ -564,7 +564,7 @@ class IndexTest extends TestCase
 
     public function testSetData(): void
     {
-        $index = Factory::create(Factory::ARRAY_STORAGE);
+        $index = (new Factory)->create(Factory::ARRAY_STORAGE);
         $data = [
             'field1' => [
                 'val1' => [1, 2, 3],
@@ -582,7 +582,7 @@ class IndexTest extends TestCase
 
     public function testAggregationEmptySort(): void
     {
-        $index = Factory::create(Factory::ARRAY_STORAGE);
+        $index = (new Factory)->create(Factory::ARRAY_STORAGE);
         $data = [
             'field2' => [
                 'val2' => [1, 2, 3],

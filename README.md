@@ -122,7 +122,7 @@ Create index using console/crontab etc.
 <?php
 use KSamuel\FacetedSearch\Index\Factory;
 
-$searchIndex = Factory::create(Factory::ARRAY_STORAGE);
+$searchIndex = (new Factory)->create(Factory::ARRAY_STORAGE);
 $storage = $searchIndex->getStorage();
 /*
  * Getting products data from DB
@@ -164,7 +164,7 @@ use KSamuel\FacetedSearch\Query\Order;
 
 // load index by product category (use request params)
 $indexData = json_decode(file_get_contents('./first-index.json'), true);
-$searchIndex = Factory::create(Factory::ARRAY_STORAGE);
+$searchIndex = (new Factory)->create(Factory::ARRAY_STORAGE);
 $searchIndex->setData($indexData);
 // create search instance
 $search = new Search($searchIndex);
@@ -219,7 +219,7 @@ use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Indexer\Number\RangeIndexer;
 use KSamuel\FacetedSearch\Filter\RangeFilter;
 
-$index = Factory::create(Factory::ARRAY_STORAGE);
+$index = (new Factory)->create(Factory::ARRAY_STORAGE);
 $storage = $index->getStorage();
 $rangeIndexer = new RangeIndexer(100);
 $storage->addIndexer('price', $rangeIndexer);
@@ -245,7 +245,7 @@ RangeListIndexer allows you to use custom ranges list
 use KSamuel\FacetedSearch\Index\Factory;
 use KSamuel\FacetedSearch\Indexer\Number\RangeListIndexer;
 
-$index = Factory::create(Factory::ARRAY_STORAGE);
+$index = (new Factory)->create(Factory::ARRAY_STORAGE);
 $storage = $index->getStorage();
 $rangeIndexer = new RangeListIndexer([100,500,1000]); // (0-99)[0],(100-499)[100],(500-999)[500],(1000 & >)[1000] 
 $storage->addIndexer('price', $rangeIndexer);
@@ -263,7 +263,7 @@ The stored index data is compatible, you can transfer it from ArrayIndex to Fixe
 <?php
 use KSamuel\FacetedSearch\Index\Factory;
 
-$searchIndex = Factory::create(Factory::FIXED_ARRAY_STORAGE);
+$searchIndex = (new Factory)->create(Factory::FIXED_ARRAY_STORAGE);
 $storage = $searchIndex->getStorage();
 /*
  * Getting products data from DB
@@ -291,7 +291,7 @@ $indexData = $storage->export();
 file_put_contents('./first-index.json', json_encode($indexData));
 
 // Index data is fully compatible. You can create both indexes from the same data 
-$arrayIndex = Factory::create(Factory::ARRAY_STORAGE);
+$arrayIndex = (new Factory)->create(Factory::ARRAY_STORAGE);
 $arrayIndex->setData($indexData);
 
 
