@@ -15,10 +15,10 @@
 use KSamuel\FacetedSearch\Index\Factory;
 
 // Index creation moved to factory method
-$searchIndex = (new Factory)->create(Factory::ARRAY_STORAGE);
+$search = (new Factory)->create(Factory::ARRAY_STORAGE);
 
 // The data storage is moved to a separate object
-$storage = $searchIndex->getStorage();
+$storage = $search->getStorage();
 
 $data = [
     ['id'=>7, 'color'=>'black', 'price'=>100, 'sale'=>true, 'size'=>36],   

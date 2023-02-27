@@ -114,7 +114,7 @@ class Index implements IndexInterface
      * @param AggregationQuery $query
      * @return array<int|string,array<int|string,int|true>>
      */
-    public function aggregation(AggregationQuery $query): array
+    public function aggregate(AggregationQuery $query): array
     {
         $input = $query->getInRecords();
         $filters = $query->getFilters();

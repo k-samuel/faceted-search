@@ -56,7 +56,7 @@ interface IndexInterface
      *   ...
      * ]
      */
-    public function aggregation(AggregationQuery $query): array;
+    public function aggregate(AggregationQuery $query): array;
 
     /**
      * Find records using Query

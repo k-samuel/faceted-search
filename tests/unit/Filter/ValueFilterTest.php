@@ -75,12 +75,12 @@ class ValueFilterTest extends TestCase
         foreach ($records as $id => $item) {
             $storage->addRecord($id, $item);
         }
-        $facets = new Search($index);
+
         $filter = new ValueFilter('vendor');
         $filter->setValue(['Test']);
         $filter2 = new ValueFilter('color');
         $filter2->setValue(['white']);
-        $result = $facets->query((new SearchQuery)->filters([$filter, $filter2]));
+        $result = $index->query((new SearchQuery)->filters([$filter, $filter2]));
         $this->assertEmpty($result);
     }
 }

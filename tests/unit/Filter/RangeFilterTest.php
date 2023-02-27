@@ -2,7 +2,6 @@
 
 use PHPUnit\Framework\TestCase;
 use KSamuel\FacetedSearch\Filter\RangeFilter;
-use KSamuel\FacetedSearch\Index\ArrayIndex;
 use KSamuel\FacetedSearch\Index\Factory;
 use KSamuel\FacetedSearch\Indexer\Number\RangeIndexer;
 use KSamuel\FacetedSearch\Query\SearchQuery;
@@ -49,8 +48,7 @@ class RangeFilterTest extends TestCase
             new RangeFilter('price', ['min' => 100, 'max' => 200])
         ];
 
-        $search = new Search($index);
-        $result = $search->query((new SearchQuery)->filters($filters));
+        $result = $index->query((new SearchQuery)->filters($filters));
         $this->assertEquals([2, 3, 4], $result);
     }
 }

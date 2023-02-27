@@ -35,7 +35,7 @@ class IndexTest extends TestCase
                     101 => 2
                 ]
             ],
-            $index->aggregation((new AggregationQuery())->countItems())
+            $index->aggregate((new AggregationQuery())->countItems())
         );
     }
 
@@ -59,8 +59,6 @@ class IndexTest extends TestCase
             $storage->addRecord($id, $item);
         }
 
-        $facet = new Search($index);
-
         $filter = new ValueFilter('vendor');
         $filter->setValue(['Samsung', 'Apple']);
 
@@ -80,19 +78,19 @@ class IndexTest extends TestCase
             $filter4
         ];
 
-        $result = $facet->query((new SearchQuery())->filters($filters));
+        $result = $index->query((new SearchQuery())->filters($filters));
         sort($result);
         $this->assertEquals([3, 4], $result);
 
         $filter = new ValueFilter('vendor');
         $filter->setValue(['Google']);
-        $result = $facet->query((new SearchQuery())->filters([$filter]));
+        $result = $index->query((new SearchQuery())->filters([$filter]));
         $this->assertEquals([], $result);
 
         $storage->setData($storage->getData());
         $filter = new ValueFilter('vendor_field');
         $filter->setValue(['Google']);
-        $result = $facet->query((new SearchQuery())->filter($filter)->inRecords([3, 4]));
+        $result = $index->query((new SearchQuery())->filter($filter)->inRecords([3, 4]));
         $this->assertEquals([], $result);
     }
 
@@ -107,11 +105,9 @@ class IndexTest extends TestCase
         foreach ($records as $id => $item) {
             $storage->addRecord($id, $item);
         }
-
-        $facets = new Search($index);
         $filter = new ValueFilter('vendor');
         $filter->setValue(['Samsung', 'Apple']);
-        $result = $facets->query((new SearchQuery())->filters([$filter])->inRecords([1, 3]));
+        $result = $index->query((new SearchQuery())->filters([$filter])->inRecords([1, 3]));
         $result = array_flip($result);
         $this->assertArrayHasKey(1, $result);
         $this->assertArrayHasKey(3, $result);
@@ -128,10 +124,10 @@ class IndexTest extends TestCase
         foreach ($records as $id => $item) {
             $storage->addRecord($id, $item);
         }
-        $facets = new Search($index);
+
         $filter = new ValueFilter('color', 'black');
 
-        $acceptableFilters = $facets->aggregate((new AggregationQuery())->filter($filter));
+        $acceptableFilters = $index->aggregate((new AggregationQuery())->filter($filter));
 
         $expect = [
             'vendor' => ['Apple' => true, 'Samsung' => true, 'Xiaomi' => true],
@@ -175,9 +171,8 @@ class IndexTest extends TestCase
         foreach ($records as $id => $item) {
             $storage->addRecord($id, $item);
         }
-        $facets = new Search($index);
 
-        $acceptableFilters = $facets->aggregate((new AggregationQuery())->countItems());
+        $acceptableFilters = $index->aggregate((new AggregationQuery())->countItems());
 
         $expect = [
             'color' => ['black' => 3, 'white' => 1, 'yellow' => 1],
@@ -217,9 +212,9 @@ class IndexTest extends TestCase
         foreach ($records as  $item) {
             $storage->addRecord($item['id'], $item);
         }
-        $facets = new Search($index);
 
-        $acceptableFilters = $facets->aggregate((new AggregationQuery())->inRecords([1, 2])->countItems());
+
+        $acceptableFilters = $index->aggregate((new AggregationQuery())->inRecords([1, 2])->countItems());
 
         $expect = [
             'color' => ['black' => 2],
@@ -252,10 +247,10 @@ class IndexTest extends TestCase
         foreach ($records as $id => $item) {
             $storage->addRecord($id, $item);
         }
-        $facets = new Search($index);
+
         $filter = new ValueFilter('color', 'black');
 
-        $acceptableFilters = $facets->aggregate((new AggregationQuery())->filter($filter)->countItems());
+        $acceptableFilters = $index->aggregate((new AggregationQuery())->filter($filter)->countItems());
 
 
         $expect = [
@@ -301,11 +296,11 @@ class IndexTest extends TestCase
         foreach ($records as $id => $item) {
             $storage->addRecord($id, $item);
         }
-        $facets = new Search($index);
+
         $filter = new ValueFilter('color', 'black');
         $filter2 = new ValueFilter('size', 7);
 
-        $acceptableFilters = $facets->aggregate((new AggregationQuery())->filters([$filter, $filter2])->countItems());
+        $acceptableFilters = $index->aggregate((new AggregationQuery())->filters([$filter, $filter2])->countItems());
 
         $expect = [
             'color' => ['black' => 2, 'white' => 1, 'yellow' => 1],
@@ -343,18 +338,18 @@ class IndexTest extends TestCase
             unset($item['id']);
             $storage->addRecord($id, $item);
         }
-        $facets = new Search($index);
+
         $filter = new ValueFilter(2, 7.11);
-        $result = $facets->query((new SearchQuery())->filters([$filter]));
+        $result = $index->query((new SearchQuery())->filters([$filter]));
         $this->assertEquals(3, $result[0]);
 
         $filter = new ValueFilter(1, 'black');
         $filter2 = new ValueFilter('group', 'A');
-        $result = $facets->query((new SearchQuery())->filters([$filter, $filter2]));
+        $result = $index->query((new SearchQuery())->filters([$filter, $filter2]));
         $this->assertEquals(1, $result[0]);
         $this->assertEquals(2, $result[1]);
 
-        $acceptableFilters =  $facets->aggregate((new AggregationQuery())->filters([$filter, $filter2])->countItems());
+        $acceptableFilters = $index->aggregate((new AggregationQuery())->filters([$filter, $filter2])->countItems());
 
         $expect = [
             1 => ['black' => 2],
@@ -393,18 +388,17 @@ class IndexTest extends TestCase
             unset($item['id']);
             $storage->addRecord($id, $item);
         }
-        $facets = new Search($index);
 
         $filter = new ValueFilter('size', 7.11);
-        $result = $facets->query((new SearchQuery())->filters([$filter]));
+        $result = $index->query((new SearchQuery())->filters([$filter]));
         $this->assertEquals(3, $result[0]);
 
         $filter = new ValueFilter('size', '8.9');
-        $result = $facets->query((new SearchQuery())->filters([$filter]));
+        $result = $index->query((new SearchQuery())->filters([$filter]));
         $this->assertEquals(2, $result[0]);
 
 
-        $acceptableFilters =  $facets->aggregate((new AggregationQuery())->filters([$filter])->countItems());
+        $acceptableFilters = $index->aggregate((new AggregationQuery())->filters([$filter])->countItems());
 
         $expect = [
             'color' => ['black' => 1],
@@ -445,17 +439,17 @@ class IndexTest extends TestCase
             unset($item['id']);
             $storage->addRecord($id, $item);
         }
-        $facets = new Search($index);
+
         $query = (new SearchQuery())->order('size', Order::SORT_DESC);
-        $results = $facets->query($query);
+        $results = $index->query($query);
 
         $this->assertEquals([4, 2, 1, 3, 5], $results);
 
-        $facets = new Search($index);
+
         $query = (new SearchQuery())
             ->filter(new ValueFilter('group', 'C'))
             ->order('size', Order::SORT_ASC);
-        $results = $facets->query($query);
+        $results = $index->query($query);
 
         $this->assertEquals([5, 4], $results);
     }
@@ -476,9 +470,8 @@ class IndexTest extends TestCase
         foreach ($records as $id => $item) {
             $storage->addRecord($id, $item);
         }
-        $facets = new Search($index);
 
-        $acceptableFilters = $facets->aggregate((new AggregationQuery())->countItems()->sort());
+        $acceptableFilters = $index->aggregate((new AggregationQuery())->countItems()->sort());
 
         $expect = [
             'color' => ['black' => 3,  'white' => 1, 'yellow' => 1],
@@ -492,8 +485,7 @@ class IndexTest extends TestCase
             $this->assertEquals(array_values($expect[$field]), array_values($values));
         }
 
-
-        $acceptableFilters = $facets->aggregate((new AggregationQuery())->countItems()->sort(AggregationSort::SORT_DESC));
+        $acceptableFilters = $index->aggregate((new AggregationQuery())->countItems()->sort(AggregationSort::SORT_DESC));
 
         $expect = [
             'size' => [8 => 1, 7 => 4],
@@ -523,8 +515,8 @@ class IndexTest extends TestCase
             unset($item['id']);
             $storage->addRecord($id, $item);
         }
-        $facets = new Search($index);
-        $acceptableFilters = $acceptableFilters = $facets->aggregate((new AggregationQuery())->sort());
+
+        $acceptableFilters = $acceptableFilters = $index->aggregate((new AggregationQuery())->sort());
 
         $expect = [
             'color' => ['black' => true,  'white' => true],
@@ -558,7 +550,7 @@ class IndexTest extends TestCase
         $storage->addRecord(1, ['col' => 2]);
         $storage->addRecord(2, ['col' => 2, 'pr' => 1, 'dr' => 2]);
         $storage->addRecord(3, ['col' => 2, 'pr' => 1, 'dr' => 3]);
-        (new Search($index))->query((new SearchQuery())->order('col'));
+        $index->query((new SearchQuery())->order('col'));
         $this->assertTrue($profile->getSortingTime() > 0);
     }
 
@@ -595,8 +587,7 @@ class IndexTest extends TestCase
         ];
 
         $index->setData($data);
-        $search = new Search($index);
-        $result = $search->aggregate((new AggregationQuery())->sort()->countItems());
+        $result = $index->aggregate((new AggregationQuery())->sort()->countItems());
         $expected = [
             'field1' => [
                 'val1' => 2,
