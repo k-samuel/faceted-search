@@ -62,7 +62,7 @@ class Index implements IndexInterface
         AggregationResults $aggregationSort,
         QueryResultsInterface $querySort,
         Scanner $scanner,
-        IntersectionInterface $intersection,
+        IntersectionInterface $intersection
     ) {
         $this->storage = $storage;
         $this->filterSort = $filterSort;
