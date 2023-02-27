@@ -256,18 +256,15 @@ Also, you can create your own indexers with range detection method
 ### FixedArrayIndex
 
 FixedArrayIndex is much slower but requires significant less memory.
-Working with an FixedArrayIndex is slightly different from ArrayIndex
 
 The stored index data is compatible, you can transfer it from ArrayIndex to FixedArrayIndex
 
 ```php
 <?php
-use KSamuel\FacetedSearch\Index\ArrayIndex;
-use KSamuel\FacetedSearch\Index\FixedArrayIndex;
+use KSamuel\FacetedSearch\Index\Factory;
 
-$searchIndex = new FixedArrayIndex();
-// Switch index into write mode
-$searchIndex->writeMode();
+$searchIndex = Factory::create(Factory::FIXED_ARRAY_STORAGE);
+$storage = $searchIndex->getStorage();
 /*
  * Getting products data from DB
  * Sort data by $recordId before using Index->addRecord it can improve performance 
@@ -281,22 +278,20 @@ foreach($data as $item){
    $recordId = $item['id'];
    // no need to add faceted index by id
    unset($item['id']);
-   $searchIndex->addRecord($recordId, $item);
+   $storage->addRecord($recordId, $item);
 }
 // You can optionally call index optimization before using (since v2.2.0). 
 // The procedure can be run once after changing the index data. 
 // Optimization takes a few seconds, you should not call it during the processing of user requests.
 // Can be called only in write mode of FixedArrayIndex
-$searchIndex->optimize();
-// After the data is added, you need to commit the changes 
-$searchIndex->commitChanges();
+$storage->optimize();
 // save index data to some storage 
-$indexData = $searchIndex->export();
+$indexData = $storage->export();
 // We will use file for example
 file_put_contents('./first-index.json', json_encode($indexData));
 
 // Index data is fully compatible. You can create both indexes from the same data 
-$arrayIndex = new ArrayIndex();
+$arrayIndex = Factory::create(Factory::ARRAY_STORAGE);
 $arrayIndex->setData($indexData);
 
 
