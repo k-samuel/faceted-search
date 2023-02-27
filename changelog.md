@@ -1,4 +1,49 @@
 # Changelog
+
+### v3.0.0 (xx.03.2023)
+- Removed deprecated methods.
+- The code has been refactored, the complexity has been reduced.
+- The library API has been slightly changed.
+- Documentation and demo updated according to the new API.
+- Improved performance of FixedArrayStorage.
+- The new version fully supports data exported from 2.2.x indexes.
+
+
+#### Api changes
+```php
+<?php
+use KSamuel\FacetedSearch\Index\Factory;
+
+// Index creation moved to factory method
+$searchIndex = (new Factory)->create(Factory::ARRAY_STORAGE);
+
+// The data storage is moved to a separate object
+$storage = $searchIndex->getStorage();
+
+$data = [
+    ['id'=>7, 'color'=>'black', 'price'=>100, 'sale'=>true, 'size'=>36],   
+    ['id'=>9, 'color'=>'green', 'price'=>100, 'sale'=>true, 'size'=>40], 
+    // ....
+];
+
+foreach($data as $item){ 
+   $recordId = $item['id'];
+   unset($item['id']);
+
+   // Data and indexers are now passed to the storage
+   $storage->addRecord($recordId, $item);
+}
+$storage->optimize();
+
+// Data export is now performed by a separate method
+$indexData = $storage->export();
+
+file_put_contents('./first-index.json', json_encode($indexData));
+```
+
+
+
+
 ### v2.2.1 (26.01.2023)
 Added the ability to update index data without a complete rebuild.
 New methods added:

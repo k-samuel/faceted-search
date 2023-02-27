@@ -38,7 +38,7 @@ for new results.
 This is easy enough. Even if the goods have a different structure of properties.
 ```php
 <?php
-  $query =  (new AggregationQuery())->filters($filters);
+  $query = (new AggregationQuery())->filters($filters);
   $filterData = $search->aggregate($query);
 ```
 
@@ -122,16 +122,18 @@ Create index using console/crontab etc.
 <?php
 use KSamuel\FacetedSearch\Index\Factory;
 
+// Create search index with ArrayStorage using Factory method
 $searchIndex = (new Factory)->create(Factory::ARRAY_STORAGE);
 $storage = $searchIndex->getStorage();
 /*
- * Getting products data from DB
+ * Get products data from DB
  */
 $data = [
     ['id'=>7, 'color'=>'black', 'price'=>100, 'sale'=>true, 'size'=>36],   
     ['id'=>9, 'color'=>'green', 'price'=>100, 'sale'=>true, 'size'=>40], 
     // ....
 ];
+
 foreach($data as $item){ 
    $recordId = $item['id'];
    // no need to add faceted index by id

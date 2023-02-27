@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace KSamuel\FacetedSearch\Tests\Benchmark;
 
 use KSamuel\FacetedSearch\Filter\FilterInterface;
-use KSamuel\FacetedSearch\Index;
+
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Index\IndexInterface;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
 use KSamuel\FacetedSearch\Query\Order;
 use KSamuel\FacetedSearch\Query\SearchQuery;
-use KSamuel\FacetedSearch\Sorter\ByField;
+
 use KSamuel\FacetedSearch\Tests\Benchmark\DatasetFactory;
 use PhpBench\Benchmark\Metadata\Annotations\BeforeMethods;
 use PhpBench\Benchmark\Metadata\Annotations\Iterations;
@@ -38,7 +38,6 @@ class ArrayIndexBench
      * @var array<int,int>
      */
     protected $firstResults;
-
 
     protected SearchQuery $searchQuery;
     protected SearchQuery $searchQuerySorted;

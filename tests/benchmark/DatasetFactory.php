@@ -148,6 +148,7 @@ class DatasetFactory
         if (empty($f)) {
             throw new \RuntimeException('Cannot open file ' . $file);
         }
+        $storage = $index->getStorage();
         while ($line = fgets($f)) {
             if (empty($line)) {
                 continue;
@@ -155,7 +156,7 @@ class DatasetFactory
             $row = \json_decode($line, true);
             $id = $row['id'];
             unset($row['id']);
-            $index->addRecord((int)$id, $row);
+            $storage->addRecord((int)$id, $row);
         }
     }
 
