@@ -5,6 +5,7 @@ include '../vendor/autoload.php';
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Index\ArrayIndex;
+use KSamuel\FacetedSearch\Index\Factory;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
 use KSamuel\FacetedSearch\Query\SearchQuery;
 
@@ -75,7 +76,7 @@ if (isset($_POST['filters'])) {
 // Load index by product category
 // Use database to store index at your production
 $indexData = json_decode(file_get_contents('./data/' . $index . '-index.json'), true);
-$searchIndex = new ArrayIndex();
+$searchIndex = Factory::create(Factory::ARRAY_STORAGE);
 $searchIndex->setData($indexData);
 // create search instance
 $search = new Search($searchIndex);

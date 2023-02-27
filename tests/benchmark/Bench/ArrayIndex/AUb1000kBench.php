@@ -11,10 +11,11 @@ use KSamuel\FacetedSearch\Tests\Benchmark\ArrayIndexBench;
  * @Revs(10)
  * @BeforeMethods({"before"})
  */
-class A_10kBench extends ArrayIndexBench
+class AUb1000kBench extends ArrayIndexBench
 {
+    protected bool $isBalanced = false;
     /**
      * @var int
      */
-    protected $dataSize = 10000;
+    protected int $dataSize = 1000000;
 }

@@ -34,17 +34,17 @@ interface IntersectionInterface
 {
     /**
      * Get intersection count
-     * @param array<int,int> $a
+     * @param array<int>|\SplFixedArray<int> $a
      * @param array<int,bool> $b
      * @return int
      */
-    public function getIntersectMapCount(array $a, array $b): int;
+    public function getIntersectMapCount($a, array $b): int;
 
     /**
      * Check if arrays has intersection
-     * @param array<int,int> $a
+     * @param array<int>|\SplFixedArray<int> $a
      * @param array<int,bool> $b
      * @return bool
      */
-    public function hasIntersectIntMap(array $a, array $b): bool;
+    public function hasIntersectIntMap($a, array $b): bool;
 }

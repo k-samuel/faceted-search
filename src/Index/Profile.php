@@ -28,47 +28,22 @@
 
 declare(strict_types=1);
 
-namespace KSamuel\FacetedSearch\Index\Intersection;
+namespace KSamuel\FacetedSearch\Index;
 
 /**
- *  Performance patch SplFixedArray index access is faster than iteration
+ * Profile Index metrics (debug and bench)
  */
-class FixedArrayIntersection implements IntersectionInterface
+class Profile
 {
-    /**
-     * Get intersection count
-     * @param array<int>|\SplFixedArray<int> $a
-     * @param array<int,bool> $b
-     * @return int
-     */
-    public function getIntersectMapCount($a, array $b): int
+    private float $sortTime = 0;
+
+    public function setSortingTime(float $time): void
     {
-        $intersectLen = 0;
-
-        foreach ($a as $key) {
-            if (isset($b[$key])) {
-                $intersectLen++;
-            }
-        }
-
-        return $intersectLen;
+        $this->sortTime = $time;
     }
 
-    /**
-     * Check if arrays has intersection
-     * @param array<int>|\SplFixedArray<int> $a
-     * @param array<int,bool> $b
-     * @return bool
-     */
-    public function hasIntersectIntMap($a, array $b): bool
+    public function getSortingTime(): float
     {
-        $intersectLen = 0;
-        $count = count($a);
-        for ($i = 0; $i < $count; $i++) {
-            if (isset($b[$a[$i]])) {
-                return true;
-            }
-        }
-        return false;
+        return $this->sortTime;
     }
 }

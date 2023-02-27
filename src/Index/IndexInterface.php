@@ -31,6 +31,8 @@ declare(strict_types=1);
 namespace KSamuel\FacetedSearch\Index;
 
 use KSamuel\FacetedSearch\Filter\FilterInterface;
+use KSamuel\FacetedSearch\Index\Storage\Scanner;
+use KSamuel\FacetedSearch\Index\Storage\StorageInterface;
 use KSamuel\FacetedSearch\Indexer\IndexerInterface;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
 use KSamuel\FacetedSearch\Query\SearchQuery;
@@ -41,41 +43,6 @@ use KSamuel\FacetedSearch\Query\SearchQuery;
  */
 interface IndexInterface
 {
-    /**
-     * Add record to index
-     * @param int $recordId
-     * @param array<int|string,array<int,mixed>> $recordValues -  ['fieldName'=>'fieldValue','fieldName2'=>['val1','val2']]
-     * @return bool
-     */
-    public function addRecord(int $recordId, array $recordValues): bool;
-
-    /**
-     * Add specialized indexer for field
-     * @param string $fieldName
-     * @param IndexerInterface $indexer
-     */
-    public function addIndexer(string $fieldName, IndexerInterface $indexer): void;
-
-    /**
-     * Check if field exists
-     * @param string $fieldName
-     * @return bool
-     */
-    public function hasField(string $fieldName): bool;
-
-    /**
-     * Get facet data.
-     * @return array<int|string,array<int|string,array<int>>>
-     */
-    public function export(): array;
-
-    /**
-     * Load saved data
-     * @param array<mixed> $data
-     * @return void
-     */
-    public function load(array $data);
-
     /**
      * Find acceptable filter values. Note that the format of the result has changed compared to the "aggregate" method
      * @param AggregationQuery $query
@@ -98,32 +65,44 @@ interface IndexInterface
      */
     public function query(SearchQuery $query): array;
 
+    /**
+     * Set time profiler (debug and bench)
+     * @param Profile $profile
+     * @return void
+     */
+    public function setProfiler(Profile $profile): void;
 
+    /**
+     * Get index storage
+     * @return StorageInterface
+     */
+    public function getStorage(): StorageInterface;
+
+    /**
+     * Get index scanner
+     * @return Scanner
+     */
+    public function getScanner(): Scanner;
+
+    /**
+     * Get records count
+     * @return integer
+     */
+    public function getCount(): int;
+    /**
+     * Load saved data
+     * @param array<mixed> $data
+     * @return void
+     */
+    public function setData(array $data);
+    /**
+     * Export facet index data.
+     * @return array<int|string,array<int|string,array<int>>>
+     */
+    public function export(): array;
     /**
      * Optimize index structure
      * @return void
      */
     public function optimize(): void;
-
-
-    /**
-     * Delete record from index
-     * @param int $recordId
-     * @return bool - success flag
-     */
-    public function deleteRecord(int $recordId): bool;
-
-    /**
-     * Update record data
-     * @param int $recordId
-     * @param array<int|string,array<int,mixed>> $recordValues -  ['fieldName'=>'fieldValue','fieldName2'=>['val1','val2']]
-     * @return bool - success flag
-     */
-    public function replaceRecord(int $recordId, array $recordValues): bool;
-
-    /**
-     * Get count of unique records (ids)
-     * @return int
-     */
-    public function getRecordsCount(): int;
 }

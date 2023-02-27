@@ -28,47 +28,19 @@
 
 declare(strict_types=1);
 
-namespace KSamuel\FacetedSearch\Index\Intersection;
+namespace KSamuel\FacetedSearch\Index\Sort;
 
-/**
- *  Performance patch SplFixedArray index access is faster than iteration
- */
-class FixedArrayIntersection implements IntersectionInterface
+use KSamuel\FacetedSearch\Index\Storage\StorageInterface;
+use KSamuel\FacetedSearch\Query\Order;
+
+interface QueryResultsInterface
 {
     /**
-     * Get intersection count
-     * @param array<int>|\SplFixedArray<int> $a
-     * @param array<int,bool> $b
-     * @return int
+     * Sort results by field value
+     * @param StorageInterface $storage
+     * @param array<int,bool> $resultsMap
+     * @param Order $order
+     * @return array<int>
      */
-    public function getIntersectMapCount($a, array $b): int
-    {
-        $intersectLen = 0;
-
-        foreach ($a as $key) {
-            if (isset($b[$key])) {
-                $intersectLen++;
-            }
-        }
-
-        return $intersectLen;
-    }
-
-    /**
-     * Check if arrays has intersection
-     * @param array<int>|\SplFixedArray<int> $a
-     * @param array<int,bool> $b
-     * @return bool
-     */
-    public function hasIntersectIntMap($a, array $b): bool
-    {
-        $intersectLen = 0;
-        $count = count($a);
-        for ($i = 0; $i < $count; $i++) {
-            if (isset($b[$a[$i]])) {
-                return true;
-            }
-        }
-        return false;
-    }
+    public function sort(StorageInterface $storage, array $resultsMap, Order $order): array;
 }

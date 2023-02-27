@@ -3,17 +3,17 @@
 ![Build and Test](https://github.com/k-samuel/faceted-search/workflows/Build%20and%20Test/badge.svg?branch=master&event=push)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/b9d174969c1b457fa8a6c3b753266698)](https://www.codacy.com/gh/k-samuel/faceted-search/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=k-samuel/faceted-search&amp;utm_campaign=Badge_Grade)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/b9d174969c1b457fa8a6c3b753266698)](https://www.codacy.com/gh/k-samuel/faceted-search/dashboard?utm_source=github.com&utm_medium=referral&utm_content=k-samuel/faceted-search&utm_campaign=Badge_Coverage)
-# PHP Faceted search library
+# PHP Faceted search library 3.x
 
 Simple and fast faceted search without external servers like ElasticSearch and others.
 
-Easily handles 300,000 products with 10 properties. If you divide the indexes into product groups or categories,
+Easily handles 500,000 products with 10 properties. If you divide the indexes into product groups or categories,
 then for a long time you will not need scaling and more serious tools. Especially in conjunction with
 RoadRunner or Swoole.
 
 The library is optimized for performance at the expense of RAM consumption.
 
-[Changelog](./changelog.md)
+[Changelog](./changelog.md) | [2.x version](https://github.com/k-samuel/faceted-search/tree/2.x)
 
 ## Install
 
@@ -91,29 +91,6 @@ v2.2.0 Bench FixedArrayIndex PHP 8.2 + JIT + opcache (no xdebug extension).
 * Results Found - count of found products (Find)
 * UB - unbalanced dataset
 
-### PHP 8.1.10
-v2.1.5 Bench ArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension).
-
-| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
-| 10,000          | ~6Mb     | ~0.0004 s.       | ~0.001 s.                | ~0.002 s.                      | ~0.0001 s.   | 907              |
-| 50,000          | ~40Mb    | ~0.001 s.        | ~0.005 s.                | ~0.010 s.                      | ~0.0005 s.   | 4550             |
-| 100,000         | ~80Mb    | ~0.003 s.        | ~0.016 s.                | ~0.029 s.                      | ~0.001 s.    | 8817             |
-| 300,000         | ~189Mb   | ~0.011 s.        | ~0.044 s.                | ~0.091 s                       | ~0.004 s.    | 26891            |
-| 1,000,000       | ~657Mb   | ~0.047 s.        | ~0.169 s.                | ~0.333 s.                      | ~0.018 s.    | 90520            |
-
-
-v2.1.5 Bench FixedArrayIndex PHP 8.1.10 + JIT + opcache (no xdebug extension)
-
-| Items count     | Memory   | Find             | Get Filters (aggregate)  | Get Filters & Count (aggregate)| Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------------------------:|-------------:|-----------------:|
-| 10,000          | ~2Mb     | ~0.0007 s.       | ~0.001 s.                | ~0.003 s.                      | ~0.0002 s.   | 907              |
-| 50,000          | ~12Mb    | ~0.003 s.        | ~0.007 s.                | ~0.018 s.                      | ~0.0009 s.   | 4550             |
-| 100,000         | ~23Mb    | ~0.006 s.        | ~0.017 s.                | ~0.040 s.                      | ~0.002 s.    | 8817             |
-| 300,000         | ~70Mb    | ~0.020 s.        | ~0.059 s.                | ~0.118 s.                      | ~0.006 s.    | 26891            |
-| 1,000,000       | ~233Mb   | ~0.079 s.        | ~0.206 s.                | ~0.448 s.                      | ~0.026 s.    | 90520            |
-
-
 Experimental Golang port bench https://github.com/k-samuel/go-faceted-search
 
 Bench v0.3.3 golang 1.19.4 with parallel aggregates. UB - unbalanced dataset 
@@ -143,9 +120,10 @@ It allows make intersection using iteration through sorted slices.*
 Create index using console/crontab etc.
 ```php
 <?php
-use KSamuel\FacetedSearch\Index\ArrayIndex;
+use KSamuel\FacetedSearch\Index\Factory;
 
-$searchIndex = new ArrayIndex();
+$searchIndex = Factory::create(Factory::ARRAY_STORAGE);
+$storage = $searchIndex->getStorage();
 /*
  * Getting products data from DB
  */
@@ -158,16 +136,16 @@ foreach($data as $item){
    $recordId = $item['id'];
    // no need to add faceted index by id
    unset($item['id']);
-   $searchIndex->addRecord($recordId, $item);
+   $storage->addRecord($recordId, $item);
 }
 
 // You can optionally call index optimization before using (since v2.2.0). 
 // The procedure can be run once after changing the index data. 
 // Optimization takes a few seconds, you should not call it during the processing of user requests.
-$searchIndex->optimize();
+$storage->optimize();
 
 // save index data to some storage 
-$indexData = $searchIndex->getData();
+$indexData = $storage->export();
 // We will use file for example
 file_put_contents('./first-index.json', json_encode($indexData));
 ```
@@ -176,7 +154,7 @@ Using in application
 
 ```php
 <?php
-use KSamuel\FacetedSearch\Index\ArrayIndex;
+use KSamuel\FacetedSearch\Index\Factory;
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Filter\RangeFilter;
@@ -186,7 +164,7 @@ use KSamuel\FacetedSearch\Query\Order;
 
 // load index by product category (use request params)
 $indexData = json_decode(file_get_contents('./first-index.json'), true);
-$searchIndex = new ArrayIndex();
+$searchIndex = Factory::create(Factory::ARRAY_STORAGE);
 $searchIndex->setData($indexData);
 // create search instance
 $search = new Search($searchIndex);
@@ -236,19 +214,20 @@ Note that RangeFilter is slow solution, it is better to avoid facets for highly 
 
 ```php
 <?php
-use KSamuel\FacetedSearch\Index\ArrayIndex;
+use KSamuel\FacetedSearch\Index\Factory;
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Indexer\Number\RangeIndexer;
 use KSamuel\FacetedSearch\Filter\RangeFilter;
 
-$index = new ArrayIndex();
+$index = Factory::create(Factory::ARRAY_STORAGE);
+$storage = $index->getStorage();
 $rangeIndexer = new RangeIndexer(100);
-$index->addIndexer('price', $rangeIndexer);
+$storage->addIndexer('price', $rangeIndexer);
 
-$index->addRecord(1,['price'=>90]);
-$index->addRecord(2,['price'=>100]);
-$index->addRecord(3,['price'=>150]);
-$index->addRecord(4,['price'=>200]);
+$storage->addRecord(1,['price'=>90]);
+$storage->addRecord(2,['price'=>100]);
+$storage->addRecord(3,['price'=>150]);
+$storage->addRecord(4,['price'=>200]);
 
 $filters = [
   new RangeFilter('price', ['min'=>100,'max'=>200])
@@ -263,12 +242,13 @@ $search->query($query);
 RangeListIndexer allows you to use custom ranges list
 ```php
 <?php
-use KSamuel\FacetedSearch\ArrayIndex;
+use KSamuel\FacetedSearch\Index\Factory;
 use KSamuel\FacetedSearch\Indexer\Number\RangeListIndexer;
 
-$index = new ArrayIndex();
+$index = Factory::create(Factory::ARRAY_STORAGE);
+$storage = $index->getStorage();
 $rangeIndexer = new RangeListIndexer([100,500,1000]); // (0-99)[0],(100-499)[100],(500-999)[500],(1000 & >)[1000] 
-$index->addIndexer('price', $rangeIndexer);
+$storage->addIndexer('price', $rangeIndexer);
 ```
 Also, you can create your own indexers with range detection method
 

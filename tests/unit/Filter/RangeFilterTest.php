@@ -3,7 +3,9 @@
 use PHPUnit\Framework\TestCase;
 use KSamuel\FacetedSearch\Filter\RangeFilter;
 use KSamuel\FacetedSearch\Index\ArrayIndex;
+use KSamuel\FacetedSearch\Index\Factory;
 use KSamuel\FacetedSearch\Indexer\Number\RangeIndexer;
+use KSamuel\FacetedSearch\Query\SearchQuery;
 use KSamuel\FacetedSearch\Search;
 
 class RangeFilterTest extends TestCase
@@ -32,21 +34,23 @@ class RangeFilterTest extends TestCase
 
     public function testCombinationTest(): void
     {
-        $index = new ArrayIndex();
-        $rangeIndexer = new RangeIndexer(100);
-        $index->addIndexer('price', $rangeIndexer);
+        $index = Factory::create(Factory::ARRAY_STORAGE);
+        $storage = $index->getStorage();
 
-        $index->addRecord(1, ['price' => 90]);
-        $index->addRecord(2, ['price' => 100]);
-        $index->addRecord(3, ['price' => 150]);
-        $index->addRecord(4, ['price' => 200]);
+        $rangeIndexer = new RangeIndexer(100);
+        $storage->addIndexer('price', $rangeIndexer);
+
+        $storage->addRecord(1, ['price' => 90]);
+        $storage->addRecord(2, ['price' => 100]);
+        $storage->addRecord(3, ['price' => 150]);
+        $storage->addRecord(4, ['price' => 200]);
 
         $filters = [
             new RangeFilter('price', ['min' => 100, 'max' => 200])
         ];
 
         $search = new Search($index);
-        $result = $search->find($filters);
+        $result = $search->query((new SearchQuery)->filters($filters));
         $this->assertEquals([2, 3, 4], $result);
     }
 }

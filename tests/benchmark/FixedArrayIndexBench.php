@@ -21,8 +21,6 @@ use KSamuel\FacetedSearch\Query\SearchQuery;
  */
 class FixedArrayIndexBench extends ArrayIndexBench
 {
-    protected $sorter;
-
     public function before(): void
     {
         $index = (new DatasetFactory('tests/data/'))->getFixedFacetedIndex($this->dataSize, $this->isBalanced);
@@ -36,6 +34,5 @@ class FixedArrayIndexBench extends ArrayIndexBench
         $this->aggregationQuery = (new AggregationQuery())->filters($this->filters);
         $this->aggregationQueryCount = (new AggregationQuery())->filters($this->filters)->countItems();
         $this->firstResults = $this->search->query($this->searchQuery);
-        $this->sorter = new ByField($index);
     }
 }

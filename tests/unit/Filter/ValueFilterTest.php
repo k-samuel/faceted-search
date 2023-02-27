@@ -3,6 +3,8 @@
 use PHPUnit\Framework\TestCase;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Index\ArrayIndex;
+use KSamuel\FacetedSearch\Index\Factory;
+use KSamuel\FacetedSearch\Query\SearchQuery;
 use KSamuel\FacetedSearch\Search;
 
 class ValueFilterTest extends TestCase
@@ -65,17 +67,20 @@ class ValueFilterTest extends TestCase
                 'sale' => false,
             ]
         ];
-        $index = new ArrayIndex();
+
+        $index = Factory::create(Factory::ARRAY_STORAGE);
+        $storage = $index->getStorage();
+
 
         foreach ($records as $id => $item) {
-            $index->addRecord($id, $item);
+            $storage->addRecord($id, $item);
         }
         $facets = new Search($index);
         $filter = new ValueFilter('vendor');
         $filter->setValue(['Test']);
         $filter2 = new ValueFilter('color');
         $filter2->setValue(['white']);
-        $result = $facets->find([$filter, $filter2]);
+        $result = $facets->query((new SearchQuery)->filters([$filter, $filter2]));
         $this->assertEmpty($result);
     }
 }

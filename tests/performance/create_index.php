@@ -1,5 +1,7 @@
 <?php
 
+use KSamuel\FacetedSearch\Index\Factory;
+
 require '../../vendor/autoload.php';
 
 $dataDir = './';
@@ -11,17 +13,18 @@ while ($row = fgets($f)) {
         $indexData[] = json_decode($row, true);
     }
 }
-$index = new \KSamuel\FacetedSearch\Index\ArrayIndex();
+$index = Factory::create(Factory::ARRAY_STORAGE);
+$storage = $index->getStorage();
 $rangeIndexer = new \KSamuel\FacetedSearch\Indexer\Number\RangeIndexer(250);
-$index->addIndexer('price', $rangeIndexer);
+$storage->addIndexer('price', $rangeIndexer);
 
 foreach ($indexData as $rec) {
     $id = $rec['id'];
     unset($rec['id']);
 
-    $index->addRecord($id, $rec);
+    $storage->addRecord($id, $rec);
 }
 
-file_put_contents($dataDir . 'facet.json', json_encode($index->getData()));
+file_put_contents($dataDir . 'facet.json', json_encode($storage->export()));
 
 echo 'total time: ' . number_format(microtime(true) - $t, 3) . PHP_EOL;

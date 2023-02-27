@@ -30,6 +30,7 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Index\Storage;
 
+use Generator;
 use KSamuel\FacetedSearch\Indexer\IndexerInterface;
 
 /**
@@ -113,4 +114,10 @@ interface StorageInterface
      * @return int
      */
     public function getRecordsCount(string $field, $value): int;
+
+    /**
+     * List data
+     * @return Generator
+     */
+    public function scan(): Generator;
 }

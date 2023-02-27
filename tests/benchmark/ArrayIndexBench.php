@@ -8,7 +8,9 @@ use KSamuel\FacetedSearch\Filter\FilterInterface;
 use KSamuel\FacetedSearch\Index;
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
+use KSamuel\FacetedSearch\Index\IndexInterface;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
+use KSamuel\FacetedSearch\Query\Order;
 use KSamuel\FacetedSearch\Query\SearchQuery;
 use KSamuel\FacetedSearch\Sorter\ByField;
 use KSamuel\FacetedSearch\Tests\Benchmark\DatasetFactory;
@@ -23,41 +25,24 @@ use PhpBench\Benchmark\Metadata\Annotations\Revs;
  */
 class ArrayIndexBench
 {
+
+    protected IndexInterface $index;
+    protected Search $search;
+
+    protected int $dataSize = 1000000;
     /**
-     * @var Index
+     * @var array<FilterInterface> $filters
      */
-    protected $index;
-    /**
-     * @var Search
-     */
-    protected $search;
-    /**
-     * @var int
-     */
-    protected $dataSize = 1000000;
-    /**
-     * @var FilterInterface[]
-     */
-    protected $filters;
+    protected array $filters;
     /**
      * @var array<int,int>
      */
     protected $firstResults;
-    /**
-     * @var ByField
-     */
-    protected $sorter;
-    /**
-     * @var SearchQuery
-     */
+
+
     protected SearchQuery $searchQuery;
-    /**
-     * @var AggregationQuery
-     */
+    protected SearchQuery $searchQuerySorted;
     protected AggregationQuery $aggregationQuery;
-    /**
-     * @var AggregationQuery
-     */
     protected AggregationQuery $aggregationQueryCount;
 
     protected bool $isBalanced = true;
@@ -72,15 +57,22 @@ class ArrayIndexBench
             new ValueFilter('type', ["normal", "middle"])
         ];
         $this->searchQuery = (new SearchQuery())->filters($this->filters);
+        $this->searchQuerySorted = clone $this->searchQuery;
+        $this->searchQuerySorted->order('quantity', Order::SORT_DESC);
+
         $this->aggregationQuery = (new AggregationQuery())->filters($this->filters);
         $this->aggregationQueryCount = (new AggregationQuery())->filters($this->filters)->countItems();
         $this->firstResults = $this->search->query($this->searchQuery);
-        $this->sorter = new ByField($this->index);
     }
 
     public function benchFind(): void
     {
         $result = $this->search->query($this->searchQuery);
+    }
+
+    public function benchFindAndSort(): void
+    {
+        $result = $this->search->query($this->searchQuerySorted);
     }
 
     public function benchAggregations(): void
@@ -91,10 +83,5 @@ class ArrayIndexBench
     public function benchAggregationsAndCount(): void
     {
         $result = $this->search->aggregate($this->aggregationQueryCount);
-    }
-
-    public function benchSort(): void
-    {
-        $result = $this->sorter->sort($this->firstResults, 'quantity');
     }
 }

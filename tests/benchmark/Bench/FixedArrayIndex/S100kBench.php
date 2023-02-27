@@ -17,5 +17,5 @@ class S100kBench extends FixedArrayIndexBench
     /**
      * @var int
      */
-    protected $dataSize = 100000;
+    protected int $dataSize = 100000;
 }

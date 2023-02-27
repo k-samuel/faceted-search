@@ -28,7 +28,7 @@
 
 declare(strict_types=1);
 
-namespace KSamuel\FacetedSearch\Index;
+namespace KSamuel\FacetedSearch\Index\Storage;
 
 use KSamuel\FacetedSearch\Index\Storage\ArrayStorage;
 
@@ -81,7 +81,7 @@ class FixedArrayStorage extends ArrayStorage
     /**
      * Apply index updates (convert into \SplFixedArray)
      */
-    public function commitChanges(): void
+    public function convert(): void
     {
         foreach ($this->data as &$value) {
             /**
@@ -106,7 +106,7 @@ class FixedArrayStorage extends ArrayStorage
     {
         $this->isCompact = false;
         $this->data = $data;
-        $this->commitChanges();
+        $this->convert();
     }
 
 
@@ -116,9 +116,10 @@ class FixedArrayStorage extends ArrayStorage
     public function optimize(): void
     {
         if ($this->isCompact) {
-            throw new \RuntimeException('FixedArray can by optimized only in write mode');
+            $this->writeMode();
         }
         parent::optimize();
+        $this->convert();
     }
 
     /**
@@ -128,7 +129,7 @@ class FixedArrayStorage extends ArrayStorage
     public function deleteRecord(int $recordId): bool
     {
         if ($this->isCompact) {
-            throw new \RuntimeException('FixedArray can by optimized only in write mode');
+            $this->writeMode();
         }
         return parent::deleteRecord($recordId);
     }
@@ -140,8 +141,22 @@ class FixedArrayStorage extends ArrayStorage
     public function replaceRecord(int $recordId, array $recordValues): bool
     {
         if ($this->isCompact) {
-            throw new \RuntimeException('FixedArray can by optimized only in write mode');
+            $this->writeMode();
         }
         return parent::replaceRecord($recordId, $recordValues);
+    }
+
+    /**
+     * Add record to index
+     * @param int $recordId
+     * @param array<int|string,array<int,mixed>> $recordValues -  ['fieldName'=>'fieldValue','fieldName2'=>['val1','val2']]
+     * @return bool
+     */
+    public function addRecord(int $recordId, array $recordValues): bool
+    {
+        if ($this->isCompact) {
+            $this->writeMode();
+        }
+        return parent::addRecord($recordId, $recordValues);
     }
 }

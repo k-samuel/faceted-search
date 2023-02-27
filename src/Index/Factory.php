@@ -37,6 +37,8 @@ use KSamuel\FacetedSearch\Index\Storage\StorageInterface;
 use KSamuel\FacetedSearch\Index\Storage\Scanner;
 use KSamuel\FacetedSearch\Index\Intersection\ArrayIntersection;
 use KSamuel\FacetedSearch\Index\Intersection\FixedArrayIntersection;
+use KSamuel\FacetedSearch\Index\Sort\ArrayResults;
+use KSamuel\FacetedSearch\Index\Sort\FixedArrayResults;
 
 final class Factory
 {
@@ -56,15 +58,17 @@ final class Factory
 
         if ($storage === self::FIXED_ARRAY_STORAGE) {
             $intersection = new FixedArrayIntersection;
+            $resultSort = new FixedArrayResults;
         } else {
             $intersection = new ArrayIntersection;
+            $resultSort = new ArrayResults;
         }
 
         return new Index(
             $store,
             new Sort\Filters,
             new Sort\AggregationResults,
-            new Sort\QueryResults,
+            $resultSort,
             new Scanner,
             $intersection
         );

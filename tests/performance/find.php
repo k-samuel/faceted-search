@@ -6,10 +6,11 @@ use KSamuel\FacetedSearch\Filter\RangeFilter;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 
 use KSamuel\FacetedSearch\Index\Factory;
+use KSamuel\FacetedSearch\Index\Profile;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
+use KSamuel\FacetedSearch\Query\Order;
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Query\SearchQuery;
-use KSamuel\FacetedSearch\Sorter\ByField;
 
 
 $dataFile = './facet.json';
@@ -21,9 +22,10 @@ $indexData = json_decode(file_get_contents($dataFile), true);
 $time = (microtime(true) - $t);
 
 $index = Factory::create(Factory::ARRAY_STORAGE);
-//$index = new Index\FixedArrayIndex();
+$profile = new Profile;
+$index->setProfiler($profile);
 
-$index->load($indexData);
+$index->setData($indexData);
 unset($indexData);
 gc_collect_cycles();
 $memUse = (int)((memory_get_usage() - $m) / 1024 / 1024);
@@ -31,9 +33,7 @@ $resultData[] = ['Index memory usage', (string) $memUse . "Mb", ''];
 $resultData[] = ['Loading time', number_format($time, 6) . 's', ''];
 
 $t = microtime(true);
-//$index->writeMode();
 $index->optimize();
-//$index->commitChanges();
 $time = microtime(true) - $t;
 $resultData[] = ['Optimize time', number_format($time, 6) . 's', ''];
 
@@ -55,7 +55,13 @@ $filters2 = [
 $t = microtime(true);
 $results = $search->query((new SearchQuery())->filters($filters));
 $time = microtime(true) - $t;
-$resultData[] = ['Find Results', number_format($time, 6) . "s", count($results)];
+$resultData[] = ['Find', number_format($time, 6) . "s", count($results)];
+
+//test find & sort
+$t = microtime(true);
+$results = $search->query((new SearchQuery())->filters($filters)->order('quantity', Order::SORT_DESC));
+$time = microtime(true) - $t;
+$resultData[] = ['Find & Sort', number_format($time, 6) . "s", count($results)];
 
 //test acceptable
 $t = microtime(true);
@@ -71,9 +77,13 @@ $query = (new AggregationQuery())
 $t = microtime(true);
 $filtersData = $search->aggregate($query);
 $time = microtime(true) - $t;
-$resultData[] = ['Filters with count', number_format($time, 6) . "s", count($filters)];
+$resultData[] = ['Filters & count', number_format($time, 6) . "s", count($filters)];
 
 
+
+//test sort
+$results = $search->query((new SearchQuery())->filters($filters)->order('quantity', Order::SORT_DESC));
+$resultData[] = ['Sort', number_format($profile->getSortingTime(), 6) . "s", count($filters)];
 
 /*
 // find and sorter
@@ -105,7 +115,7 @@ $resultData[] = ['Find Results (ranges)', number_format($time, 6) . "s", count($
 
 */
 
-$count = $index->getRecordsCount();
+$count = $index->getCount();
 array_unshift($resultData, ['Records', number_format($count), '']);
 
 $colLen = [25, 14, 10];

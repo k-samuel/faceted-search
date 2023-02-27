@@ -38,7 +38,7 @@ class ArrayIntersection implements IntersectionInterface
      * @param array<int,bool> $b
      * @return int
      */
-    public function getIntersectMapCount(array $a, array $b): int
+    public function getIntersectMapCount($a, array $b): int
     {
         $intersectLen = 0;
 
@@ -57,7 +57,7 @@ class ArrayIntersection implements IntersectionInterface
      * @param array<int,bool> $b
      * @return bool
      */
-    public function hasIntersectIntMap(array $a, array $b): bool
+    public function hasIntersectIntMap($a, array $b): bool
     {
         foreach ($a as $key) {
             if (isset($b[$key])) {

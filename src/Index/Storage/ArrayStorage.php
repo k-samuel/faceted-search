@@ -31,6 +31,7 @@ declare(strict_types=1);
 namespace KSamuel\FacetedSearch\Index\Storage;
 
 use KSamuel\FacetedSearch\Indexer\IndexerInterface;
+use Generator;
 
 /**
  * Simple faceted index
@@ -249,5 +250,16 @@ class ArrayStorage implements StorageInterface
         }
 
         return $this->addRecord($recordId, $recordValues);
+    }
+
+    /**
+     * List data
+     * @return Generator
+     */
+    public function scan(): Generator
+    {
+        foreach ($this->data as $k => $v) {
+            yield $k => $v;
+        }
     }
 }

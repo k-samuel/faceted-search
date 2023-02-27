@@ -82,7 +82,6 @@ class ValueFilter extends AbstractFilter
             return;
         }
 
-
         // collect list for different values of one property
         foreach ($this->value as $item) {
 
@@ -163,6 +162,14 @@ class ValueFilter extends AbstractFilter
                     $result[$recId] = true;
                 }
             } else {
+                // fast fill unique records (memory allocation optimization)
+                if (empty($result)) {
+                    /**
+                     * @var array<int,bool> $result
+                     */
+                    $result = array_fill_keys($facetedData[$item]->toArray(), true);
+                    continue;
+                }
                 // Performance patch SplFixedArray index access is faster than iteration
                 $count = count($facetedData[$item]);
                 for ($i = 0; $i < $count; $i++) {

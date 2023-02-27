@@ -48,15 +48,14 @@ class Scanner
             return $this->findInput($storage, $inputRecords);
         }
 
-        $data = $storage->getData();
-
         foreach ($filters as $filter) {
-            $indexData = $data[$filter->getFieldName()] ?? [];
-            if (empty($indexData)) {
+
+            $fieldName = $filter->getFieldName();
+            if (!$storage->hasField($fieldName)) {
                 return [];
             }
 
-            $filter->filterInput($indexData, $inputRecords);
+            $filter->filterInput($storage->getFieldData($fieldName), $inputRecords);
 
             if (empty($inputRecords)) {
                 return [];
@@ -92,8 +91,10 @@ class Scanner
     public function getAllRecordIdMap(StorageInterface $storage): array
     {
         $result = [];
-        $data = $storage->getData();
-        foreach ($data as $values) {
+        /**
+         * @var array<int|string,array<int>>$values
+         */
+        foreach ($storage->scan() as $values) {
             foreach ($values as $list) {
                 foreach ($list as $v) {
                     $result[$v] = true;
@@ -106,12 +107,12 @@ class Scanner
 
         return $result;
     }
-
+    /**
+     * List data
+     * @return Generator
+     */
     public function scan(StorageInterface $storage): Generator
     {
-        $data = $storage->getData();
-        foreach ($data as $k => $v) {
-            yield $k => $v;
-        }
+        return $storage->scan();
     }
 }

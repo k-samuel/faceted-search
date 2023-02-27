@@ -30,17 +30,14 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Index;
 
-use KSamuel\FacetedSearch\Filter\FilterInterface;
-
 use KSamuel\FacetedSearch\Index\Sort\AggregationResults;
 use KSamuel\FacetedSearch\Index\Sort\Filters;
-use KSamuel\FacetedSearch\Index\Sort\QueryResults;
+
 use KSamuel\FacetedSearch\Index\Storage\StorageInterface;
 use KSamuel\FacetedSearch\Index\Storage\Scanner;
-use KSamuel\FacetedSearch\Indexer\IndexerInterface;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
 use KSamuel\FacetedSearch\Index\Intersection\IntersectionInterface;
-
+use KSamuel\FacetedSearch\Index\Sort\QueryResultsInterface;
 use KSamuel\FacetedSearch\Query\SearchQuery;
 
 
@@ -53,15 +50,17 @@ class Index implements IndexInterface
     private StorageInterface $storage;
     private Filters $filterSort;
     private AggregationResults $aggregationSort;
-    private QueryResults $querySort;
+    private QueryResultsInterface $querySort;
     private Scanner $scanner;
     private IntersectionInterface $intersection;
+
+    private ?Profile $profiler = null;
 
     public function __construct(
         StorageInterface $storage,
         Filters $filterSort,
         AggregationResults $aggregationSort,
-        QueryResults $querySort,
+        QueryResultsInterface $querySort,
         Scanner $scanner,
         IntersectionInterface $intersection,
     ) {
@@ -73,65 +72,7 @@ class Index implements IndexInterface
         $this->intersection = $intersection;
     }
 
-    /**
-     * Add record to index
-     * @param int $recordId
-     * @param array<int|string,array<int,mixed>> $recordValues -  ['fieldName'=>'fieldValue','fieldName2'=>['val1','val2']]
-     * @return bool
-     */
-    public function addRecord(int $recordId, array $recordValues): bool
-    {
-        return $this->storage->addRecord($recordId, $recordValues);
-    }
 
-    /**
-     * Get facet data.
-     * @return array<int|string,array<int|string,array<int>>>>
-     */
-    public function export(): array
-    {
-        return $this->storage->export();
-    }
-
-    /**
-     * Set index data. Can be used for restoring from DB
-     * @param array<mixed> $data
-     */
-    public function load(array $data): void
-    {
-        $this->storage->setData($data);
-    }
-
-    // /**
-    //  * Get all records from index
-    //  * @return array<int>
-    //  */
-    // public function getAllRecordId(): array
-    // {
-    //     return array_keys($this->getAllREcordIdMap());
-    // }
-
-
-
-    /**
-     * Add specialized indexer for field
-     * @param string $fieldName
-     * @param IndexerInterface $indexer
-     */
-    public function addIndexer(string $fieldName, IndexerInterface $indexer): void
-    {
-        $this->storage->addIndexer($fieldName, $indexer);
-    }
-
-    /**
-     * Check if field exists
-     * @param string $fieldName
-     * @return bool
-     */
-    public function hasField(string $fieldName): bool
-    {
-        return $this->storage->hasField($fieldName);
-    }
 
     /**
      * Find records using Query
@@ -157,7 +98,14 @@ class Index implements IndexInterface
         $map = $this->scanner->findRecordsMap($this->storage, $filters, $inputRecords);
 
         if (!empty($order)) {
-            return $this->querySort->sort($this->storage, $map, $order);
+            if ($this->profiler != null) {
+                $t = microtime(true);
+                $result = $this->querySort->sort($this->storage, $map, $order);
+                $this->profiler->setSortingTime(microtime(true) - $t);
+                return $result;
+            } else {
+                return $this->querySort->sort($this->storage, $map, $order);
+            }
         }
 
         return array_keys($map);
@@ -217,6 +165,9 @@ class Index implements IndexInterface
 
         $resultCacheCount = count($resultCache);
 
+        /**
+         * @var array<int|string,array<int>> $filterValues
+         */
         foreach ($this->scanner->scan($this->storage) as $filterName => $filterValues) {
             /**
              * @var string $filterName
@@ -319,41 +270,6 @@ class Index implements IndexInterface
     }
 
     /**
-     * Find records by filters as array map [$id1=>true, $id2=>true, ...]
-     * @param array<FilterInterface> $filters
-     * @param array<int,bool> $inputRecords
-     * @return array<int,bool>
-     */
-    private function findRecordsMap(array $filters, array $inputRecords): array
-    {
-
-        // if no filters passed
-        if (empty($filters)) {
-            return $this->findInput($inputRecords);
-        }
-
-        /**
-         * @var FilterInterface $filter
-         */
-        foreach ($filters as $filter) {
-            $indexData = $this->data[$filter->getFieldName()] ?? [];
-            if (empty($indexData)) {
-                return [];
-            }
-
-            $filter->filterInput($indexData, $inputRecords);
-
-            if (empty($inputRecords)) {
-                return [];
-            }
-        }
-
-        return $inputRecords;
-    }
-
-
-
-    /**
      * @param array<int> $inputRecords
      * @return array<int,bool>
      */
@@ -367,41 +283,67 @@ class Index implements IndexInterface
     }
 
     /**
-     * Optimize index data
+     * Get count of unique records (ids)
+     * @return int
+     */
+    public function getCount(): int
+    {
+        return count($this->scanner->getAllRecordIdMap($this->storage));
+    }
+
+    /**
+     * Set time profiler (debug and bench)
+     * @param Profile $profile
+     * @return void
+     */
+    public function setProfiler(Profile $profile): void
+    {
+        $this->profiler = $profile;
+    }
+
+    /**
+     * Get index storage
+     * @return StorageInterface
+     */
+    public function getStorage(): StorageInterface
+    {
+        return $this->storage;
+    }
+
+    /**
+     * Get index scanner
+     * @return Scanner
+     */
+    public function getScanner(): Scanner
+    {
+        return $this->scanner;
+    }
+
+    /**
+     * Load saved data
+     * @param array<mixed> $data
+     * @return void
+     */
+    public function setData(array $data): void
+    {
+        $this->storage->setData($data);
+    }
+
+    /**
+     * Export facet index data.
+     * @return array<int|string,array<int|string,array<int>>>
+     */
+    public function export(): array
+    {
+        return $this->storage->export();
+    }
+
+    /**
+     * Optimize index structure
      * @return void
      */
     public function optimize(): void
     {
         $this->storage->optimize();
-    }
-
-    /**
-     * Delete record from index
-     * @param int $recordId
-     * @return bool - success flag
-     */
-    public function deleteRecord(int $recordId): bool
-    {
-        return $this->storage->deleteRecord($recordId);
-    }
-
-    /**
-     * Update record data
-     * @param int $recordId
-     * @param array<int|string,array<int,mixed>> $recordValues -  ['fieldName'=>'fieldValue','fieldName2'=>['val1','val2']]
-     * @return bool - success flag
-     */
-    public function replaceRecord(int $recordId, array $recordValues): bool
-    {
-        return $this->storage->replaceRecord($recordId, $recordValues);
-    }
-
-    /**
-     * Get count of unique records (ids)
-     * @return int
-     */
-    public function getRecordsCount(): int
-    {
-        return count($this->scanner->getAllRecordIdMap($this->storage));
     }
 }

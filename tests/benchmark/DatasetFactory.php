@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace KSamuel\FacetedSearch\Tests\Benchmark;
 
 use KSamuel\FacetedSearch\Index;
-use KSamuel\FacetedSearch\Indexer\IndexerInterface;
+use KSamuel\FacetedSearch\Index\Factory;
+use KSamuel\FacetedSearch\Index\IndexInterface;
 
 class DatasetFactory
 {
@@ -25,7 +26,7 @@ class DatasetFactory
     /**
      * @param int $size
      */
-    public function getFacetedIndex(int $size, bool $balanced): Index\ArrayIndex
+    public function getFacetedIndex(int $size, bool $balanced): IndexInterface
     {
         if ($balanced) {
             $dataFile = $this->dataDir . $size . '/data.json';
@@ -36,7 +37,7 @@ class DatasetFactory
         if (!file_exists($dataFile)) {
             $this->createDataset($size, $dataFile);
         }
-        $index = new Index\ArrayIndex();
+        $index = Factory::create(Factory::ARRAY_STORAGE);
         $this->loadData($index, $dataFile);
         $index->optimize();
         return $index;
@@ -45,7 +46,7 @@ class DatasetFactory
     /**
      * @param int $size
      */
-    public function getFixedFacetedIndex(int $size, bool $balanced): Index\FixedArrayIndex
+    public function getFixedFacetedIndex(int $size, bool $balanced): IndexInterface
     {
         if ($balanced) {
             $dataFile = $this->dataDir . $size . '/data.json';
@@ -60,11 +61,11 @@ class DatasetFactory
                 $this->createUbDataset($size, $dataFile);
             }
         }
-        $index = new Index\FixedArrayIndex();
-        $index->writeMode();
+        $index = Factory::create(Factory::FIXED_ARRAY_STORAGE);
+
         $this->loadData($index, $dataFile);
         $index->optimize();
-        $index->commitChanges();
+
         return $index;
     }
 

@@ -30,10 +30,10 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Index\Sort;
 
-use KSamuel\FacetedSearch\Index\StorageInterface;
+use KSamuel\FacetedSearch\Index\Storage\StorageInterface;
 use KSamuel\FacetedSearch\Query\Order;
 
-class QueryResults
+class ArrayResults implements QueryResultsInterface
 {
     /**
      * Sort results by field value
@@ -62,35 +62,15 @@ class QueryResults
         $sorted = [];
         foreach ($values as $value) {
             $records = $fieldData[$value];
-
             // inline intersection - intersectIntMap
-            /**
-             * @var array<int>|\SplFixedArray<int> $records
-             */
-            if (is_array($records)) {
-                foreach ($records as $key) {
-                    /**
-                     * @var int $key
-                     */
-                    if (isset($resultsMap[$key])) {
-                        $sorted[] = $key;
-                        // already sorted
-                        unset($resultsMap[$key]);
-                    }
-                }
-            } else {
-                // Performance patch SplFixedArray index access is faster than iteration
-                $count = count($records);
-                for ($i = 0; $i < $count; $i++) {
-                    /**
-                     * @var int $key
-                     */
-                    $key = $records[$i];
-                    if (isset($resultsMap[$key])) {
-                        $sorted[] = $key;
-                        // already sorted
-                        unset($resultsMap[$key]);
-                    }
+            foreach ($records as $key) {
+                /**
+                 * @var int $key
+                 */
+                if (isset($resultsMap[$key])) {
+                    $sorted[] = $key;
+                    // already sorted
+                    unset($resultsMap[$key]);
                 }
             }
         }
