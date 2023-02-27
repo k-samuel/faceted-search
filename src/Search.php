@@ -57,18 +57,6 @@ class Search
     }
 
     /**
-     * Find records by filters as list of int
-     * @param array<FilterInterface> $filters
-     * @param array<int>|null $inputRecords - list of record id to search in. Use it for limit results
-     * @return array<int>
-     * @deprecated use query
-     */
-    public function find(array $filters, ?array $inputRecords = null): array
-    {
-        return $this->index->find($filters, $inputRecords);
-    }
-
-    /**
      * Find records using Query
      * @param SearchQuery $query
      * @return array<int>
@@ -95,29 +83,5 @@ class Search
     public function aggregate(AggregationQuery $query): array
     {
         return $this->index->aggregation($query);
-    }
-
-    /**
-     * Find acceptable filter values
-     * @param array<FilterInterface> $filters
-     * @param array<int> $inputRecords
-     * @return array<string,array<int|string,int|string>>
-     * @deprecated use aggregate
-     */
-    public function findAcceptableFilters(array $filters = [], array $inputRecords = []): array
-    {
-        return $this->index->aggregate($filters, $inputRecords, false);
-    }
-
-    /**
-     * Find acceptable filters with values count
-     * @param array<FilterInterface> $filters
-     * @param array<int> $inputRecords
-     * @return array<string,array<int|string,int|string>>
-     * @deprecated use aggregate
-     */
-    public function findAcceptableFiltersCount(array $filters = [], array $inputRecords = []): array
-    {
-        return $this->index->aggregate($filters, $inputRecords, true);
     }
 }

@@ -4,7 +4,8 @@ require '../../vendor/autoload.php';
 
 use KSamuel\FacetedSearch\Filter\RangeFilter;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
-use KSamuel\FacetedSearch\Index;
+
+use KSamuel\FacetedSearch\Index\Factory;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Query\SearchQuery;
@@ -19,10 +20,10 @@ $m = memory_get_usage();
 $indexData = json_decode(file_get_contents($dataFile), true);
 $time = (microtime(true) - $t);
 
-$index = new Index\ArrayIndex();
+$index = Factory::create(Factory::ARRAY_STORAGE);
 //$index = new Index\FixedArrayIndex();
 
-$index->setData($indexData);
+$index->load($indexData);
 unset($indexData);
 gc_collect_cycles();
 $memUse = (int)((memory_get_usage() - $m) / 1024 / 1024);
@@ -104,20 +105,8 @@ $resultData[] = ['Find Results (ranges)', number_format($time, 6) . "s", count($
 
 */
 
-//test sort
-$sorter = new ByField($index);
-$sortField = 'quantity';
-$results = $search->query((new SearchQuery())->filters($filters));
-$t = microtime(true);
-$results = $sorter->sort($results, $sortField, ByField::SORT_DESC);
-$time = microtime(true) - $t;
-$resultData[] = ['Sort by quantity DESC', number_format($time, 6) . "s", count($results)];
-
-
-$count = count($index->getAllRecordIdMap());
-$index->resetLocalCache();
+$count = $index->getRecordsCount();
 array_unshift($resultData, ['Records', number_format($count), '']);
-
 
 $colLen = [25, 14, 10];
 echo str_repeat("-", 56) . PHP_EOL;

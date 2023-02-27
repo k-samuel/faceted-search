@@ -4,7 +4,7 @@
  *
  * MIT License
  *
- * Copyright (C) 2020  Kirill Yegorov https://github.com/k-samuel
+ * Copyright (C) 2020-2023  Kirill Yegorov https://github.com/k-samuel
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,62 +28,41 @@
 
 declare(strict_types=1);
 
-namespace KSamuel\FacetedSearch\Sorter;
+namespace KSamuel\FacetedSearch\Index\Sort;
 
-use KSamuel\FacetedSearch\Index;
+use KSamuel\FacetedSearch\Index\StorageInterface;
+use KSamuel\FacetedSearch\Query\Order;
 
-/**
- * @deprecated use SearchQuery for sorting
- */
-class ByField
+class QueryResults
 {
-    public const SORT_ASC = 0;
-    public const SORT_DESC = 1;
-
     /**
-     * @var Index\IndexInterface
+     * Sort results by field value
+     * @param StorageInterface $storage
+     * @param array<int,bool> $resultsMap
+     * @param Order $order
+     * @return array<int>
      */
-    private Index\IndexInterface $index;
-
-    public function __construct(Index\IndexInterface $index)
+    public function sort(StorageInterface $storage, array $resultsMap, Order $order): array
     {
-        $this->index = $index;
-    }
+        $field = $order->getField();
 
-    /**
-     * Note. Result will contains only records with defined field data.
-     * If your data structure is not normalized, records without sorting field will be ignored
-     * @param int[] $results
-     * @param string $field
-     * @param int $direction
-     * @param int $sortFlags
-     *  Sorting type flags:
-     *     SORT_REGULAR - compare items normally; the details are described in the comparison operators section
-     *     SORT_NUMERIC - compare items numerically
-     *     SORT_STRING - compare items as strings
-     *     SORT_LOCALE_STRING - compare items as strings, based on the current locale. It uses the locale, which can be changed using setlocale()
-     *     SORT_NATURAL - compare items as strings using "natural ordering" like natsort()
-     *     SORT_FLAG_CASE - can be combined (bitwise OR) with SORT_STRING or SORT_NATURAL to sort strings case-insensitively
-     *
-     * @return int[]
-     */
-    public function sort(
-        array $results,
-        string $field,
-        int $direction = self::SORT_ASC,
-        int $sortFlags = SORT_REGULAR
-    ): array {
-        $data = $this->index->getFieldData($field);
-        if ($direction === self::SORT_ASC) {
-            ksort($data, $sortFlags);
-        } else {
-            krsort($data, $sortFlags);
+        if (!$storage->hasField($field)) {
+            return [];
         }
 
-        $results = array_flip($results);
+        $fieldData = $storage->getFieldData($field);
+        $values = array_keys($fieldData);
+
+        if ($order->getDirection() === Order::SORT_ASC) {
+            sort($values, $order->getSortFlags());
+        } else {
+            rsort($values, $order->getSortFlags());
+        }
 
         $sorted = [];
-        foreach ($data as $records) {
+        foreach ($values as $value) {
+            $records = $fieldData[$value];
+
             // inline intersection - intersectIntMap
             /**
              * @var array<int>|\SplFixedArray<int> $records
@@ -93,10 +72,10 @@ class ByField
                     /**
                      * @var int $key
                      */
-                    if (isset($results[$key])) {
+                    if (isset($resultsMap[$key])) {
                         $sorted[] = $key;
                         // already sorted
-                        unset($results[$key]);
+                        unset($resultsMap[$key]);
                     }
                 }
             } else {
@@ -107,10 +86,10 @@ class ByField
                      * @var int $key
                      */
                     $key = $records[$i];
-                    if (isset($results[$key])) {
+                    if (isset($resultsMap[$key])) {
                         $sorted[] = $key;
                         // already sorted
-                        unset($results[$key]);
+                        unset($resultsMap[$key]);
                     }
                 }
             }

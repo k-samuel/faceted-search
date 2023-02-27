@@ -4,7 +4,7 @@
  *
  * MIT License
  *
- * Copyright (C) 2021-2022 Kirill Yegorov https://github.com/k-samuel
+ * Copyright (C) 2021-2023 Kirill Yegorov https://github.com/k-samuel
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,13 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Index;
 
+use KSamuel\FacetedSearch\Index\Storage\ArrayStorage;
+
 /**
  * Simple faceted index
  * @package KSamuel\FacetedSearch
  */
-class FixedArrayIndex extends ArrayIndex
+class FixedArrayStorage extends ArrayStorage
 {
     /**
      * @var bool
@@ -104,42 +106,10 @@ class FixedArrayIndex extends ArrayIndex
     {
         $this->isCompact = false;
         $this->data = $data;
-        $this->resetLocalCache();
         $this->commitChanges();
     }
 
 
-    /**
-     * @inheritDoc
-     * Performance patch SplFixedArray index access is faster than iteration
-     */
-    protected function getIntersectMapCount($a, array $b): int
-    {
-        $intersectLen = 0;
-        $count = count($a);
-        for ($i = 0; $i < $count; $i++) {
-            if (isset($b[$a[$i]])) {
-                $intersectLen++;
-            }
-        }
-        return $intersectLen;
-    }
-
-    /**
-     * @inheritDoc
-     * Performance patch SplFixedArray index access is faster than iteration
-     */
-    protected function hasIntersectIntMap($a, array $b): bool
-    {
-        $intersectLen = 0;
-        $count = count($a);
-        for ($i = 0; $i < $count; $i++) {
-            if (isset($b[$a[$i]])) {
-                return true;
-            }
-        }
-        return false;
-    }
     /**
      * @inheritDoc
      */

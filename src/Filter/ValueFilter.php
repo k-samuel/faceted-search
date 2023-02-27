@@ -82,8 +82,10 @@ class ValueFilter extends AbstractFilter
             return;
         }
 
+
         // collect list for different values of one property
         foreach ($this->value as $item) {
+
             if (!isset($facetedData[$item])) {
                 continue;
             }
@@ -94,6 +96,10 @@ class ValueFilter extends AbstractFilter
                      * @var int $recId
                      */
                     if (isset($inputIdKeys[$recId])) {
+                        /*
+                         Memory optimization.
+                         Flag matching entries with value "2" instead of allocating an additional results array.
+                         */
                         $inputIdKeys[$recId] = 2;
                     }
                 }
@@ -106,12 +112,17 @@ class ValueFilter extends AbstractFilter
                      * @var int $recId
                      */
                     if (isset($inputIdKeys[$recId])) {
+                        /*
+                         Memory optimization.
+                         Flag matching entries with value "2" instead of allocating an additional results array.
+                         */
                         $inputIdKeys[$recId] = 2;
                     }
                 }
             }
         }
 
+        // Remove filtered records, reset matching flag
         foreach ($inputIdKeys as $index => &$value) {
             if ($value === 2) {
                 $value = true;
@@ -132,6 +143,7 @@ class ValueFilter extends AbstractFilter
 
         // collect list for different values of one property
         foreach ($this->value as $item) {
+
             if (!isset($facetedData[$item])) {
                 continue;
             }

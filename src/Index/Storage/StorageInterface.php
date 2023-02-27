@@ -4,7 +4,7 @@
  *
  * MIT License
  *
- * Copyright (C) 2020  Kirill Yegorov https://github.com/k-samuel
+ * Copyright (C) 2020-2023  Kirill Yegorov https://github.com/k-samuel
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,18 +28,15 @@
 
 declare(strict_types=1);
 
-namespace KSamuel\FacetedSearch\Index;
+namespace KSamuel\FacetedSearch\Index\Storage;
 
-use KSamuel\FacetedSearch\Filter\FilterInterface;
 use KSamuel\FacetedSearch\Indexer\IndexerInterface;
-use KSamuel\FacetedSearch\Query\AggregationQuery;
-use KSamuel\FacetedSearch\Query\SearchQuery;
 
 /**
  * Simple faceted index
  * @package KSamuel\FacetedSearch
  */
-interface IndexInterface
+interface StorageInterface
 {
     /**
      * Add record to index
@@ -50,11 +47,11 @@ interface IndexInterface
     public function addRecord(int $recordId, array $recordValues): bool;
 
     /**
-     * Add specialized indexer for field
+     * Get field data section from index
      * @param string $fieldName
-     * @param IndexerInterface $indexer
+     * @return array<int|string,array<int>>
      */
-    public function addIndexer(string $fieldName, IndexerInterface $indexer): void;
+    public function getFieldData(string $fieldName): array;
 
     /**
      * Check if field exists
@@ -65,6 +62,12 @@ interface IndexInterface
 
     /**
      * Get facet data.
+     * @return array<int|string,array<int|string,array<int>|\SplFixedArray<int>>>
+     */
+    public function getData(): array;
+
+    /**
+     * Export facet index data.
      * @return array<int|string,array<int|string,array<int>>>
      */
     public function export(): array;
@@ -74,37 +77,13 @@ interface IndexInterface
      * @param array<mixed> $data
      * @return void
      */
-    public function load(array $data);
-
-    /**
-     * Find acceptable filter values. Note that the format of the result has changed compared to the "aggregate" method
-     * @param AggregationQuery $query
-     * @return array<string,array<int|string,int|true>>
-     * [
-     *   'field1' => [
-     *          'value1' => int count | true,  (Depending on AggregationQuery settings)
-     *          'value2' => int count | true, 
-     *          ...
-     *   ],
-     *   ...
-     * ]
-     */
-    public function aggregation(AggregationQuery $query): array;
-
-    /**
-     * Find records using Query
-     * @param SearchQuery $query
-     * @return array<int>
-     */
-    public function query(SearchQuery $query): array;
-
+    public function setData(array $data);
 
     /**
      * Optimize index structure
      * @return void
      */
     public function optimize(): void;
-
 
     /**
      * Delete record from index
@@ -122,8 +101,16 @@ interface IndexInterface
     public function replaceRecord(int $recordId, array $recordValues): bool;
 
     /**
-     * Get count of unique records (ids)
+     * Add specialized indexer for field
+     * @param string $fieldName
+     * @param IndexerInterface $indexer
+     */
+    public function addIndexer(string $fieldName, IndexerInterface $indexer): void;
+
+    /**
+     * @param string $field
+     * @param mixed $value
      * @return int
      */
-    public function getRecordsCount(): int;
+    public function getRecordsCount(string $field, $value): int;
 }
