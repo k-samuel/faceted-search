@@ -96,8 +96,8 @@ class ValueFilter extends AbstractFilter
                      */
                     if (isset($inputIdKeys[$recId])) {
                         /*
-                         Memory optimization.
-                         Flag matching entries with value "2" instead of allocating an additional results array.
+                         * Memory optimization.
+                         * Flag matching entries with value "2" instead of allocating an additional results array.
                          */
                         $inputIdKeys[$recId] = 2;
                     }

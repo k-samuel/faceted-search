@@ -61,9 +61,8 @@ class ArrayResults implements QueryResultsInterface
 
         $sorted = [];
         foreach ($values as $value) {
-            $records = $fieldData[$value];
             // inline intersection - intersectIntMap
-            foreach ($records as $key) {
+            foreach ($fieldData[$value] as $key) {
                 /**
                  * @var int $key
                  */

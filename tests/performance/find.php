@@ -9,7 +9,7 @@ use KSamuel\FacetedSearch\Index\Factory;
 use KSamuel\FacetedSearch\Index\Profile;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
 use KSamuel\FacetedSearch\Query\Order;
-use KSamuel\FacetedSearch\Search;
+
 use KSamuel\FacetedSearch\Query\SearchQuery;
 
 
@@ -56,10 +56,12 @@ $time = microtime(true) - $t;
 $resultData[] = ['Find', number_format($time, 6) . "s", count($results)];
 
 //test find & sort
+/*
 $t = microtime(true);
 $results = $search->query((new SearchQuery())->filters($filters)->order('quantity', Order::SORT_DESC));
 $time = microtime(true) - $t;
 $resultData[] = ['Find & Sort', number_format($time, 6) . "s", count($results)];
+*/
 
 //test acceptable
 $t = microtime(true);
