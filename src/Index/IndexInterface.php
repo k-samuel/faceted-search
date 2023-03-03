@@ -31,6 +31,8 @@ declare(strict_types=1);
 namespace KSamuel\FacetedSearch\Index;
 
 use KSamuel\FacetedSearch\Filter\FilterInterface;
+use KSamuel\FacetedSearch\Index\Storage\Scanner;
+use KSamuel\FacetedSearch\Index\Storage\StorageInterface;
 use KSamuel\FacetedSearch\Indexer\IndexerInterface;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
 use KSamuel\FacetedSearch\Query\SearchQuery;
@@ -41,71 +43,6 @@ use KSamuel\FacetedSearch\Query\SearchQuery;
  */
 interface IndexInterface
 {
-    /**
-     * Add record to index
-     * @param int $recordId
-     * @param array<int|string,array<int,mixed>> $recordValues -  ['fieldName'=>'fieldValue','fieldName2'=>['val1','val2']]
-     * @return bool
-     */
-    public function addRecord(int $recordId, array $recordValues): bool;
-
-
-    /**
-     * Get field data section from index
-     * @param string $fieldName
-     * @return array<int|string,array<int>>
-     */
-    public function getFieldData(string $fieldName): array;
-
-    /**
-     * Get all records from index
-     * @return array<int>
-     */
-    public function getAllRecordId(): array;
-
-    /**
-     * Get all records from index as map [$id1=>true,...]
-     * @return array<int,bool>
-     */
-    public function getAllRecordIdMap(): array;
-
-    /**
-     * Add specialized indexer for field
-     * @param string $fieldName
-     * @param IndexerInterface $indexer
-     */
-    public function addIndexer(string $fieldName, IndexerInterface $indexer): void;
-
-    /**
-     * @param string $field
-     * @param mixed $value
-     * @return int
-     */
-    public function getRecordsCount(string $field, $value): int;
-
-    /**
-     * Check if field exists
-     * @param string $fieldName
-     * @return bool
-     */
-    public function hasField(string $fieldName): bool;
-
-    /**
-     * Get facet data.
-     * @return array<int|string,array<int|string,array<int>|\SplFixedArray<int>>>
-     */
-    public function getData(): array;
-
-    /**
-     * Find acceptable filter values
-     * @param array<FilterInterface> $filters
-     * @param array<int> $inputRecords
-     * @param bool $countValues
-     * @return array<string,array<int|string,int|string>>
-     * @deprecated use aggregation
-     */
-    public function aggregate(array $filters = [], array $inputRecords = [], bool $countValues = false): array;
-
     /**
      * Find acceptable filter values. Note that the format of the result has changed compared to the "aggregate" method
      * @param AggregationQuery $query
@@ -119,16 +56,7 @@ interface IndexInterface
      *   ...
      * ]
      */
-    public function aggregation(AggregationQuery $query): array;
-
-    /**
-     * Find records by filters as list of int
-     * @param array<FilterInterface> $filters
-     * @param array<int>|null $inputRecords - list of record id to search in. Use it for limit results
-     * @return array<int>
-     * @deprecated use query
-     */
-    public function find(array $filters, ?array $inputRecords = null): array;
+    public function aggregate(AggregationQuery $query): array;
 
     /**
      * Find records using Query
@@ -137,26 +65,44 @@ interface IndexInterface
      */
     public function query(SearchQuery $query): array;
 
+    /**
+     * Set time profiler (debug and bench)
+     * @param Profile $profile
+     * @return void
+     */
+    public function setProfiler(Profile $profile): void;
 
+    /**
+     * Get index storage
+     * @return StorageInterface
+     */
+    public function getStorage(): StorageInterface;
+
+    /**
+     * Get index scanner
+     * @return Scanner
+     */
+    public function getScanner(): Scanner;
+
+    /**
+     * Get records count
+     * @return integer
+     */
+    public function getCount(): int;
+    /**
+     * Load saved data
+     * @param array<mixed> $data
+     * @return void
+     */
+    public function setData(array $data);
+    /**
+     * Export facet index data.
+     * @return array<int|string,array<int|string,array<int>>>
+     */
+    public function export(): array;
     /**
      * Optimize index structure
      * @return void
      */
     public function optimize(): void;
-
-
-    /**
-     * Delete record from index
-     * @param int $recordId
-     * @return bool - success flag
-     */
-    public function deleteRecord(int $recordId): bool;
-
-    /**
-     * Update record data
-     * @param int $recordId
-     * @param array<int|string,array<int,mixed>> $recordValues -  ['fieldName'=>'fieldValue','fieldName2'=>['val1','val2']]
-     * @return bool - success flag
-     */
-    public function replaceRecord(int $recordId, array $recordValues): bool;
 }

@@ -1,9 +1,10 @@
 <?php
+
 /**
  *
  * MIT License
  *
- * Copyright (C) 2020  Kirill Yegorov https://github.com/k-samuel
+ * Copyright (C) 2020-2023  Kirill Yegorov https://github.com/k-samuel
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,16 +28,19 @@
 
 declare(strict_types=1);
 
-namespace KSamuel\FacetedSearch;
+namespace KSamuel\FacetedSearch\Index\Sort;
 
-use KSamuel\FacetedSearch\Index\ArrayIndex;
+use KSamuel\FacetedSearch\Index\Storage\StorageInterface;
+use KSamuel\FacetedSearch\Query\Order;
 
-/**
- * Simple faceted index
- * @package KSamuel\FacetedSearch
- * @deprecated  backward compatibility, use ArrayIndex
- */
-class Index extends ArrayIndex
+interface QueryResultsInterface
 {
-
+    /**
+     * Sort results by field value
+     * @param StorageInterface $storage
+     * @param array<int,bool> $resultsMap
+     * @param Order $order
+     * @return array<int>
+     */
+    public function sort(StorageInterface $storage, array $resultsMap, Order $order): array;
 }

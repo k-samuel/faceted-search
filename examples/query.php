@@ -3,18 +3,20 @@
 include '../vendor/autoload.php';
 
 use KSamuel\FacetedSearch\Search;
+use KSamuel\FacetedSearch\Filter\FilterInterface;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
-use KSamuel\FacetedSearch\Index\ArrayIndex;
+use KSamuel\FacetedSearch\Index\Factory;
+use KSamuel\FacetedSearch\Index\IndexInterface;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
 use KSamuel\FacetedSearch\Query\SearchQuery;
 
 /**
  * Find acceptable filters
  * @param Search $search
- * @param array $filters
+ * @param array<FilterInterface> $filters
  * @return array
  */
-function findFilters(Search $search, array $filters): array
+function findFilters(IndexInterface $search, array $filters): array
 {
     $query = (new AggregationQuery())->filters($filters)->countItems();
     $data =  $search->aggregate($query);
@@ -29,13 +31,13 @@ function findFilters(Search $search, array $filters): array
 
 /**
  * Find products using filters
- * @param Search $search
- * @param array $filters
+ * @param IndexInterface $search
+ * @param array<FilterInterface> $filters
  * @param string $index
  * @param int $pageLimit
  * @return array
  */
-function findProducts(Search $search, array $filters, string $index, int $pageLimit): array
+function findProducts(IndexInterface $search, array $filters, string $index, int $pageLimit): array
 {
     // find product id
     $data = $search->query((new SearchQuery())->filters($filters));
@@ -75,10 +77,9 @@ if (isset($_POST['filters'])) {
 // Load index by product category
 // Use database to store index at your production
 $indexData = json_decode(file_get_contents('./data/' . $index . '-index.json'), true);
-$searchIndex = new ArrayIndex();
-$searchIndex->setData($indexData);
-// create search instance
-$search = new Search($searchIndex);
+$search = (new Factory)->create(Factory::ARRAY_STORAGE);
+$search->setData($indexData);
+
 $result = [
     'filters' => findFilters($search, $filters),
     'results' => findProducts($search, $filters, $index, $pageLimit),

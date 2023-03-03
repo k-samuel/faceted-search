@@ -3,11 +3,12 @@
  * Create faceted index from data base
  */
 
-use KSamuel\FacetedSearch\Index\ArrayIndex;
+use KSamuel\FacetedSearch\Index\Factory;
 
 include '../vendor/autoload.php';
 
-$searchIndex = new ArrayIndex();
+$searchIndex = (new Factory)->create(Factory::ARRAY_STORAGE);
+$storage = $searchIndex->getStorage();
 /*
  * Getting products data from DB
  */
@@ -20,11 +21,11 @@ foreach ($data as $item) {
         'viscosity' => $item['fields']['viscosity'],
         'volume' => $item['fields']['volume'],
     ];
-    $searchIndex->addRecord($recordId, $itemData);
+    $storage->addRecord($recordId, $itemData);
 }
-$searchIndex->optimize();
+$storage->optimize();
 // save index data to some storage
-$indexData = $searchIndex->getData();
+$indexData = $storage->export();
 // We will use file for example
 file_put_contents('./data/oils-index.json', json_encode($indexData));
 echo 'Index created' . PHP_EOL;

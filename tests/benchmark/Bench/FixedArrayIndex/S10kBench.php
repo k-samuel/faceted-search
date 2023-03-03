@@ -16,5 +16,5 @@ class S10kBench extends FixedArrayIndexBench
     /**
      * @var int
      */
-    protected $dataSize = 10000;
+    protected int $dataSize = 10000;
 }

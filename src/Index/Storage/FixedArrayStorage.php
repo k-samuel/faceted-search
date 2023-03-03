@@ -4,7 +4,7 @@
  *
  * MIT License
  *
- * Copyright (C) 2021-2022 Kirill Yegorov https://github.com/k-samuel
+ * Copyright (C) 2021-2023 Kirill Yegorov https://github.com/k-samuel
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,13 +28,15 @@
 
 declare(strict_types=1);
 
-namespace KSamuel\FacetedSearch\Index;
+namespace KSamuel\FacetedSearch\Index\Storage;
+
+use KSamuel\FacetedSearch\Index\Storage\ArrayStorage;
 
 /**
  * Simple faceted index
  * @package KSamuel\FacetedSearch
  */
-class FixedArrayIndex extends ArrayIndex
+class FixedArrayStorage extends ArrayStorage
 {
     /**
      * @var bool
@@ -79,7 +81,7 @@ class FixedArrayIndex extends ArrayIndex
     /**
      * Apply index updates (convert into \SplFixedArray)
      */
-    public function commitChanges(): void
+    public function convert(): void
     {
         foreach ($this->data as &$value) {
             /**
@@ -104,51 +106,20 @@ class FixedArrayIndex extends ArrayIndex
     {
         $this->isCompact = false;
         $this->data = $data;
-        $this->resetLocalCache();
-        $this->commitChanges();
+        $this->convert();
     }
 
 
-    /**
-     * @inheritDoc
-     * Performance patch SplFixedArray index access is faster than iteration
-     */
-    protected function getIntersectMapCount($a, array $b): int
-    {
-        $intersectLen = 0;
-        $count = count($a);
-        for ($i = 0; $i < $count; $i++) {
-            if (isset($b[$a[$i]])) {
-                $intersectLen++;
-            }
-        }
-        return $intersectLen;
-    }
-
-    /**
-     * @inheritDoc
-     * Performance patch SplFixedArray index access is faster than iteration
-     */
-    protected function hasIntersectIntMap($a, array $b): bool
-    {
-        $intersectLen = 0;
-        $count = count($a);
-        for ($i = 0; $i < $count; $i++) {
-            if (isset($b[$a[$i]])) {
-                return true;
-            }
-        }
-        return false;
-    }
     /**
      * @inheritDoc
      */
     public function optimize(): void
     {
         if ($this->isCompact) {
-            throw new \RuntimeException('FixedArray can by optimized only in write mode');
+            $this->writeMode();
         }
         parent::optimize();
+        $this->convert();
     }
 
     /**
@@ -158,7 +129,7 @@ class FixedArrayIndex extends ArrayIndex
     public function deleteRecord(int $recordId): bool
     {
         if ($this->isCompact) {
-            throw new \RuntimeException('FixedArray can by optimized only in write mode');
+            $this->writeMode();
         }
         return parent::deleteRecord($recordId);
     }
@@ -170,8 +141,22 @@ class FixedArrayIndex extends ArrayIndex
     public function replaceRecord(int $recordId, array $recordValues): bool
     {
         if ($this->isCompact) {
-            throw new \RuntimeException('FixedArray can by optimized only in write mode');
+            $this->writeMode();
         }
         return parent::replaceRecord($recordId, $recordValues);
+    }
+
+    /**
+     * Add record to index
+     * @param int $recordId
+     * @param array<int|string,array<int,mixed>> $recordValues -  ['fieldName'=>'fieldValue','fieldName2'=>['val1','val2']]
+     * @return bool
+     */
+    public function addRecord(int $recordId, array $recordValues): bool
+    {
+        if ($this->isCompact) {
+            $this->writeMode();
+        }
+        return parent::addRecord($recordId, $recordValues);
     }
 }

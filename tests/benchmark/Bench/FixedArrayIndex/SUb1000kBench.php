@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Tests\Benchmark\Bench\ArrayIndex;
 
-use KSamuel\FacetedSearch\Tests\Benchmark\ArrayIndexBench;
+use KSamuel\FacetedSearch\Tests\Benchmark\FixedArrayIndexBench;
 
 /**
  * @Iterations(5)
  * @Revs(10)
  * @BeforeMethods({"before"})
  */
-class A_1000kBench extends ArrayIndexBench
+class UB_1000kBench extends FixedArrayIndexBench
 {
+    protected bool $isBalanced = false;
     /**
      * @var int
      */
-    protected $dataSize = 1000000;
+    protected int $dataSize = 1000000;
 }

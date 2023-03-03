@@ -4,11 +4,13 @@ require '../../vendor/autoload.php';
 
 use KSamuel\FacetedSearch\Filter\RangeFilter;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
-use KSamuel\FacetedSearch\Index;
+
+use KSamuel\FacetedSearch\Index\Factory;
+use KSamuel\FacetedSearch\Index\Profile;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
-use KSamuel\FacetedSearch\Search;
+use KSamuel\FacetedSearch\Query\Order;
+
 use KSamuel\FacetedSearch\Query\SearchQuery;
-use KSamuel\FacetedSearch\Sorter\ByField;
 
 
 $dataFile = './facet.json';
@@ -19,10 +21,11 @@ $m = memory_get_usage();
 $indexData = json_decode(file_get_contents($dataFile), true);
 $time = (microtime(true) - $t);
 
-$index = new Index\ArrayIndex();
-//$index = new Index\FixedArrayIndex();
+$search = (new Factory)->create(Factory::ARRAY_STORAGE);
+$profile = new Profile;
+$search->setProfiler($profile);
 
-$index->setData($indexData);
+$search->setData($indexData);
 unset($indexData);
 gc_collect_cycles();
 $memUse = (int)((memory_get_usage() - $m) / 1024 / 1024);
@@ -30,13 +33,9 @@ $resultData[] = ['Index memory usage', (string) $memUse . "Mb", ''];
 $resultData[] = ['Loading time', number_format($time, 6) . 's', ''];
 
 $t = microtime(true);
-//$index->writeMode();
-$index->optimize();
-//$index->commitChanges();
+$search->optimize();
 $time = microtime(true) - $t;
 $resultData[] = ['Optimize time', number_format($time, 6) . 's', ''];
-
-$search = new Search($index);
 
 $filters = [
     new ValueFilter('color', 'black'),
@@ -54,7 +53,15 @@ $filters2 = [
 $t = microtime(true);
 $results = $search->query((new SearchQuery())->filters($filters));
 $time = microtime(true) - $t;
-$resultData[] = ['Find Results', number_format($time, 6) . "s", count($results)];
+$resultData[] = ['Find', number_format($time, 6) . "s", count($results)];
+
+//test find & sort
+/*
+$t = microtime(true);
+$results = $search->query((new SearchQuery())->filters($filters)->order('quantity', Order::SORT_DESC));
+$time = microtime(true) - $t;
+$resultData[] = ['Find & Sort', number_format($time, 6) . "s", count($results)];
+*/
 
 //test acceptable
 $t = microtime(true);
@@ -70,9 +77,13 @@ $query = (new AggregationQuery())
 $t = microtime(true);
 $filtersData = $search->aggregate($query);
 $time = microtime(true) - $t;
-$resultData[] = ['Filters with count', number_format($time, 6) . "s", count($filters)];
+$resultData[] = ['Filters & count', number_format($time, 6) . "s", count($filters)];
 
 
+
+//test sort
+$results = $search->query((new SearchQuery())->filters($filters)->order('quantity', Order::SORT_DESC));
+$resultData[] = ['Sort', number_format($profile->getSortingTime(), 6) . "s", count($filters)];
 
 /*
 // find and sorter
@@ -104,20 +115,8 @@ $resultData[] = ['Find Results (ranges)', number_format($time, 6) . "s", count($
 
 */
 
-//test sort
-$sorter = new ByField($index);
-$sortField = 'quantity';
-$results = $search->query((new SearchQuery())->filters($filters));
-$t = microtime(true);
-$results = $sorter->sort($results, $sortField, ByField::SORT_DESC);
-$time = microtime(true) - $t;
-$resultData[] = ['Sort by quantity DESC', number_format($time, 6) . "s", count($results)];
-
-
-$count = count($index->getAllRecordIdMap());
-$index->resetLocalCache();
+$count = $search->getCount();
 array_unshift($resultData, ['Records', number_format($count), '']);
-
 
 $colLen = [25, 14, 10];
 echo str_repeat("-", 56) . PHP_EOL;

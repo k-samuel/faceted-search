@@ -11,10 +11,10 @@ use KSamuel\FacetedSearch\Tests\Benchmark\ArrayIndexBench;
  * @Revs(10)
  * @BeforeMethods({"before"})
  */
-class A_50kBench extends ArrayIndexBench
+class A10kBench extends ArrayIndexBench
 {
     /**
      * @var int
      */
-    protected $dataSize = 50000;
+    protected int $dataSize = 10000;
 }

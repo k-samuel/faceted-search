@@ -1,4 +1,71 @@
 # Changelog
+
+### v3.0.0 (04.03.2023)
+- Removed deprecated methods.
+- The code has been refactored, the complexity has been reduced.
+- The library API has been slightly changed.
+- Documentation and demo updated according to the new API.
+- Improved performance of FixedArrayStorage.
+- The new version fully supports data exported from 2.2.x indexes.
+
+
+#### Api changes
+```php
+<?php
+use KSamuel\FacetedSearch\Index\Factory;
+
+// Index creation moved to factory method
+$search = (new Factory)->create(Factory::ARRAY_STORAGE);
+
+// The data storage is moved to a separate object
+$storage = $search->getStorage();
+
+$data = [
+    ['id'=>7, 'color'=>'black', 'price'=>100, 'sale'=>true, 'size'=>36],   
+    ['id'=>9, 'color'=>'green', 'price'=>100, 'sale'=>true, 'size'=>40], 
+    // ....
+];
+
+foreach($data as $item){ 
+   $recordId = $item['id'];
+   unset($item['id']);
+
+   // Data and indexers are now passed to the storage
+   $storage->addRecord($recordId, $item);
+}
+$storage->optimize();
+
+// Data export is now performed by a separate method
+$indexData = $storage->export();
+
+file_put_contents('./first-index.json', json_encode($indexData));
+```
+
+v3.0.0 Bench ArrayIndex  PHP 8.2.3 + JIT + opcache (no xdebug extension)
+
+|  Items count | Memory |       Find | Get Filters (aggregate) | Get Filters & Count (aggregate) | Sort by field | Results Found |
+| -----------: | -----: | ---------: | ----------------------: | ------------------------------: | ------------: | ------------: |
+|       10,000 |   ~3Mb | ~0.0008 s. |               ~0.001 s. |                       ~0.002 s. |    ~0.0001 s. |           907 |
+|       50,000 |  ~20Mb |  ~0.002 s. |               ~0.005 s. |                       ~0.010 s. |    ~0.0006 s. |          4550 |
+|      100,000 |  ~40Mb |  ~0.004 s. |               ~0.012 s. |                       ~0.023 s. |    ~0.0012 s. |          8817 |
+|      300,000 |  ~95Mb |  ~0.010 s. |               ~0.036 s. |                       ~0.079 s  |     ~0.004 s. |         26891 |
+|    1,000,000 | ~329Mb |  ~0.039 s. |               ~0.134 s. |                       ~0.287 s. |     ~0.015 s. |         90520 |
+| 1,000,000 UB | ~324Mb |  ~0.103 s. |               ~0.225 s. |                       ~0.406 s. |     ~0.032 s. |        179856 |
+
+v3.0.0 Bench FixedArrayIndex PHP 8.2 + JIT + opcache (no xdebug extension) 
+
+|  Items count | Memory |       Find | Get Filters (aggregate) | Get Filters & Count (aggregate) | Sort by field | Results Found |
+| -----------: | -----: | ---------: | ----------------------: | ------------------------------: | ------------: | ------------: |
+|       10,000 |   ~2Mb | ~0.0012 s. |               ~0.001 s. |                       ~0.005 s. |    ~0.0004 s. |           907 |
+|       50,000 |  ~12Mb |  ~0.004 s. |               ~0.006 s. |                       ~0.022 s. |     ~0.001 s. |          4550 |
+|      100,000 |  ~23Mb |  ~0.007 s. |               ~0.015 s. |                       ~0.048 s. |     ~0.002 s. |          8817 |
+|      300,000 |  ~70Mb |  ~0.020 s. |               ~0.046 s. |                       ~0.142 s. |     ~0.005 s. |         26891 |
+|    1,000,000 | ~233Mb |  ~0.081 s. |               ~0.172 s. |                       ~0.517 s. |     ~0.021 s. |         90520 |
+| 1,000,000 UB | ~233Mb |  ~0.149 s. |               ~0.260 s. |                       ~0.682 s. |     ~0.039 s. |        179856 |
+
+
+
+
 ### v2.2.1 (26.01.2023)
 Added the ability to update index data without a complete rebuild.
 New methods added:
