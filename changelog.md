@@ -1,6 +1,6 @@
 # Changelog
 
-### v3.0.0 (xx.03.2023)
+### v3.0.0 (04.03.2023)
 - Removed deprecated methods.
 - The code has been refactored, the complexity has been reduced.
 - The library API has been slightly changed.
