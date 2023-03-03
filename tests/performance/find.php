@@ -21,11 +21,11 @@ $m = memory_get_usage();
 $indexData = json_decode(file_get_contents($dataFile), true);
 $time = (microtime(true) - $t);
 
-$index = (new Factory)->create(Factory::ARRAY_STORAGE);
+$search = (new Factory)->create(Factory::ARRAY_STORAGE);
 $profile = new Profile;
-$index->setProfiler($profile);
+$search->setProfiler($profile);
 
-$index->setData($indexData);
+$search->setData($indexData);
 unset($indexData);
 gc_collect_cycles();
 $memUse = (int)((memory_get_usage() - $m) / 1024 / 1024);
@@ -33,11 +33,9 @@ $resultData[] = ['Index memory usage', (string) $memUse . "Mb", ''];
 $resultData[] = ['Loading time', number_format($time, 6) . 's', ''];
 
 $t = microtime(true);
-$index->optimize();
+$search->optimize();
 $time = microtime(true) - $t;
 $resultData[] = ['Optimize time', number_format($time, 6) . 's', ''];
-
-$search = new Search($index);
 
 $filters = [
     new ValueFilter('color', 'black'),
@@ -115,7 +113,7 @@ $resultData[] = ['Find Results (ranges)', number_format($time, 6) . "s", count($
 
 */
 
-$count = $index->getCount();
+$count = $search->getCount();
 array_unshift($resultData, ['Records', number_format($count), '']);
 
 $colLen = [25, 14, 10];

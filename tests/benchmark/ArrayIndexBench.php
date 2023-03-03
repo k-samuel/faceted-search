@@ -49,7 +49,6 @@ class ArrayIndexBench
     public function before(): void
     {
         $this->index = (new DatasetFactory('tests/data/'))->getFacetedIndex($this->dataSize, $this->isBalanced);
-        $this->search = new Search($this->index);
         $this->filters = [
             new ValueFilter('color', 'black'),
             new ValueFilter('warehouse', [789, 45, 65, 1, 10]),
@@ -61,26 +60,26 @@ class ArrayIndexBench
 
         $this->aggregationQuery = (new AggregationQuery())->filters($this->filters);
         $this->aggregationQueryCount = (new AggregationQuery())->filters($this->filters)->countItems();
-        $this->firstResults = $this->search->query($this->searchQuery);
+        $this->firstResults = $this->index->query($this->searchQuery);
     }
 
     public function benchFind(): void
     {
-        $result = $this->search->query($this->searchQuery);
+        $result = $this->index->query($this->searchQuery);
     }
 
     public function benchFindAndSort(): void
     {
-        $result = $this->search->query($this->searchQuerySorted);
+        $result = $this->index->query($this->searchQuerySorted);
     }
 
     public function benchAggregations(): void
     {
-        $result = $this->search->aggregate($this->aggregationQuery);
+        $result = $this->index->aggregate($this->aggregationQuery);
     }
 
     public function benchAggregationsAndCount(): void
     {
-        $result = $this->search->aggregate($this->aggregationQueryCount);
+        $result = $this->index->aggregate($this->aggregationQueryCount);
     }
 }
