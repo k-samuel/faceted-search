@@ -48,14 +48,16 @@ class Scanner
             return $this->findInput($storage, $inputRecords);
         }
 
+        $data = $storage->getData();
+
         foreach ($filters as $filter) {
 
             $fieldName = $filter->getFieldName();
-            if (!$storage->hasField($fieldName)) {
+            if (!isset($data[$fieldName])) {
                 return [];
             }
 
-            $filter->filterInput($storage->getFieldData($fieldName), $inputRecords);
+            $filter->filterInput($data[$fieldName], $inputRecords);
 
             if (empty($inputRecords)) {
                 return [];
