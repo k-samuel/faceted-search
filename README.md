@@ -81,10 +81,10 @@ v3.0.0 Bench FixedArrayIndex PHP 8.2 + JIT + opcache (no xdebug extension)
 
 * Items count - Products in index
 * Memory - RAM used for index
-* Find - time of getting list of products filtered by 3 fields
-* Get Filters - find acceptable filter values for found products.
+* Query - time of getting list of products filtered by 3 fields
+* Aggregate - find acceptable filter values for found products.
   List of common properties and their values for found products (Aggregates)
-* Get Filters & Count - find acceptable filter values for found products.
+* Aggregate & Count - find acceptable filter values for found products.
   List of common properties their values and count of found products (Aggregates)
 * Sort by field - time of sorting found results by field value
 * Results Found - count of found products (Find)
