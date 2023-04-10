@@ -6,7 +6,6 @@ namespace KSamuel\FacetedSearch\Tests\Benchmark;
 
 use KSamuel\FacetedSearch\Filter\FilterInterface;
 
-use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Index\IndexInterface;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
@@ -27,7 +26,6 @@ class ArrayIndexBench
 {
 
     protected IndexInterface $index;
-    protected Search $search;
 
     protected int $dataSize = 1000000;
     /**
