@@ -13,6 +13,7 @@ use PhpBench\Benchmark\Metadata\Annotations\BeforeMethods;
 use PhpBench\Benchmark\Metadata\Annotations\Iterations;
 use PhpBench\Benchmark\Metadata\Annotations\Revs;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
+use KSamuel\FacetedSearch\Query\Order;
 use KSamuel\FacetedSearch\Query\SearchQuery;
 
 /**
@@ -24,7 +25,7 @@ class FixedArrayIndexBench extends ArrayIndexBench
 {
     public function before(): void
     {
-        $search = (new DatasetFactory('tests/data/'))->getFixedFacetedIndex($this->dataSize, $this->isBalanced);
+        $this->index = (new DatasetFactory('tests/data/'))->getFixedFacetedIndex($this->dataSize, $this->isBalanced);
 
         $this->filters = [
             new ValueFilter('color', 'black'),
@@ -32,8 +33,11 @@ class FixedArrayIndexBench extends ArrayIndexBench
             new ValueFilter('type', ["normal", "middle"])
         ];
         $this->searchQuery = (new SearchQuery())->filters($this->filters);
+        $this->searchQuerySorted = clone $this->searchQuery;
+        $this->searchQuerySorted->order('quantity', Order::SORT_DESC);
+
         $this->aggregationQuery = (new AggregationQuery())->filters($this->filters);
         $this->aggregationQueryCount = (new AggregationQuery())->filters($this->filters)->countItems();
-        $this->firstResults = $search->query($this->searchQuery);
+        $this->firstResults = $this->index->query($this->searchQuery);
     }
 }
