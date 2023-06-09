@@ -30,60 +30,27 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Filter;
 
-
-abstract class AbstractFilter implements FilterInterface
+/**
+ * Simple filter for faceted index. Filter item by value
+ * @package KSamuel\FacetedSearch\Filter
+ */
+class ExcludeValueFilter extends ValueFilter implements ExcludeFilterInterface
 {
     /**
-     * @var string
+     * @inheritDoc
      */
-    protected string $fieldName;
-    /**
-     * @var mixed
-     */
-    protected $value;
-
-    /**
-     * AbstractFilter constructor.
-     * @param string $fieldName
-     * @param mixed $value
-     */
-    public function __construct(string $fieldName, $value = null)
+    public function addExcluded(array $facetedData,  array &$excludeRecords): void
     {
-        $this->fieldName = $fieldName;
-        if ($value !== null) {
-            $this->setValue($value);
+        // collect list for different values of one property
+        foreach ($this->value as $item) {
+
+            if (!isset($facetedData[$item])) {
+                continue;
+            }
+
+            foreach ($facetedData[$item] as $recId) {
+                $excludeRecords[$recId] = true;
+            }
         }
     }
-
-    /**
-     * @inheritDoc
-     */
-    public function getFieldName(): string
-    {
-        return $this->fieldName;
-    }
-
-    /**
-     * Set filter value
-     * @param mixed $value
-     * @return void
-     */
-    public function setValue($value): void
-    {
-        $this->value = $value;
-    }
-
-    /**
-     * Get filter value
-     * @return mixed
-     */
-    public function getValue()
-    {
-        return $this->value;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    abstract public function filterInput(array $facetedData,  array &$inputIdKeys, array $excludeRecords): void;
 }

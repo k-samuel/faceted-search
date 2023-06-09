@@ -54,7 +54,7 @@ class RangeFilter extends AbstractFilter
     /**
      * @inheritDoc
      */
-    public function filterInput(array $facetedData,  array &$inputIdKeys): void
+    public function filterInput(array $facetedData,  array &$inputIdKeys, array $excludeRecords): void
     {
         /**
          * @var array{min:int|float|null,max:int|float|null} $value

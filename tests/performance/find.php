@@ -2,6 +2,7 @@
 
 require '../../vendor/autoload.php';
 
+use KSamuel\FacetedSearch\Filter\ExcludeValueFilter;
 use KSamuel\FacetedSearch\Filter\RangeFilter;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 
@@ -47,6 +48,13 @@ $filters2 = [
     new ValueFilter('color', 'black'),
     new ValueFilter('warehouse', [789, 45, 65, 1, 10]),
     new RangeFilter('price', ['min' => 1000, 'max' => 5000])
+];
+
+$filters3 = [
+    new ValueFilter('color', 'black'),
+    new ValueFilter('warehouse', [789, 45, 65, 1, 10]),
+    // new ValueFilter('type', ["normal", "middle"]),
+    new ExcludeValueFilter('type', ['good'])
 ];
 
 //test find
@@ -106,14 +114,22 @@ $t = microtime(true);
 $results = $search->query($query);
 $time = microtime(true) - $t;
 $resultData[] = ['Query + Sort', number_format($time, 6) . "s", count($filters)];
+*/
 
 /// test find with Range
 $t = microtime(true);
 $results2 = $search->query((new SearchQuery())->filters($filters2));
 $time = microtime(true) - $t;
-$resultData[] = ['Find Results (ranges)', number_format($time, 6) . "s", count($results2)];
+$resultData[] = ['Find (ranges)', number_format($time, 6) . "s", count($results2)];
 
-*/
+/// test find with UNSET
+$t = microtime(true);
+$results2 = $search->query((new SearchQuery())->filters($filters3));
+$time = microtime(true) - $t;
+$resultData[] = ['Find (unsets)', number_format($time, 6) . "s", count($results2)];
+
+
+
 
 $count = $search->getCount();
 array_unshift($resultData, ['Records', number_format($count), '']);

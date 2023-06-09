@@ -30,60 +30,39 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Filter;
 
-
-abstract class AbstractFilter implements FilterInterface
+/**
+ * Range filter for faceted index. Filter item by range (min,max)
+ * @package KSamuel\FacetedSearch\Filter
+ */
+class ExcludeRangeFilter extends RangeFilter implements ExcludeFilterInterface
 {
     /**
-     * @var string
+     * @inheritDoc
      */
-    protected string $fieldName;
-    /**
-     * @var mixed
-     */
-    protected $value;
-
-    /**
-     * AbstractFilter constructor.
-     * @param string $fieldName
-     * @param mixed $value
-     */
-    public function __construct(string $fieldName, $value = null)
+    public function addExcluded(array $facetedData,  array &$excludeRecords): void
     {
-        $this->fieldName = $fieldName;
-        if ($value !== null) {
-            $this->setValue($value);
+        /**
+         * @var array{min:int|float|null,max:int|float|null} $value
+         */
+        $value = $this->getValue();
+
+        $min = $value['min'] ?? null;
+        $max = $value['max'] ?? null;
+
+        if ($min === null && $max === null) {
+            return;
+        }
+
+        foreach ($facetedData as $value => $records) {
+            if ($min !== null && (float)$value < (float)$min) {
+                continue;
+            }
+            if ($max !== null && (float)$value > (float)$max) {
+                continue;
+            }
+            foreach ($records as $item) {
+                $excludeRecords[$item] = true;
+            }
         }
     }
-
-    /**
-     * @inheritDoc
-     */
-    public function getFieldName(): string
-    {
-        return $this->fieldName;
-    }
-
-    /**
-     * Set filter value
-     * @param mixed $value
-     * @return void
-     */
-    public function setValue($value): void
-    {
-        $this->value = $value;
-    }
-
-    /**
-     * Get filter value
-     * @return mixed
-     */
-    public function getValue()
-    {
-        return $this->value;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    abstract public function filterInput(array $facetedData,  array &$inputIdKeys, array $excludeRecords): void;
 }

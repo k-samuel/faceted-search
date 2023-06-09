@@ -11,6 +11,8 @@ Easily handles 500,000 products with 10 properties. If you divide the indexes in
 then for a long time you will not need scaling and more serious tools. Especially in conjunction with
 RoadRunner or Swoole.
 
+In addition to faceted filters, the library also supports exclusion filters.
+
 The library is optimized for performance at the expense of RAM consumption.
 
 [Changelog](./changelog.md) | [2.x version](https://github.com/k-samuel/faceted-search/tree/2.x)
@@ -158,6 +160,7 @@ Using in application
 use KSamuel\FacetedSearch\Index\Factory;
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
+use KSamuel\FacetedSearch\Filter\ExcludeValueFilter;
 use KSamuel\FacetedSearch\Filter\RangeFilter;
 use KSamuel\FacetedSearch\Query\SearchQuery;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
@@ -171,6 +174,8 @@ $search->setData($indexData);
 // get request params and create search filters
 $filters = [
     new ValueFilter('color', ['black']),
+    // Also you can exclude records with specific values using ExcludeValueFilter / ExcludeRangeFilter
+    new ExcludeValueFilter('type', ['used']),
     // RangeFilter example for numeric property ranges (min - max)
     new RangeFilter('size', ['min'=>36, 'max'=>40])
 ];

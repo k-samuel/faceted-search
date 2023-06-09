@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <link rel="stylesheet" type="text/css" href="static/style.css"/>
+    <title>Faceted Search example</title>
+    <script src="static/js_with_unset.js"></script>
+</head>
+<body>
+<h1>Structured test Dataset width unset option</h1>
+<div class="catBox">
+    Category:
+    <ul class="menu">
+        <li><a href="./oils.html">Oils Catalog</a></li>
+        <li><a href="./clothing.html">Clothing Catalog</a></li>
+        <li class="selected">Mobile Catalog (with unset)</li>
+    </ul>
+</div>
+<div class="clear"></div>
+<hr>
+<div id="content" class="content">
+    <div>
+        <div class="boxLabel">Filters</div>
+        <div class="treePanel">
+            <div align="center"><a id="resetFiltersButton" href="#" >[Reset Filters]</a></div>
+            <div id="filters" class="shoe"></div>
+        </div>
+    </div>
+    <div style="width: 100%">
+        <div id="contentLoader" style="width:100%; display: none" align="center"><img src="static/ajax-loader.gif">
+        </div>
+        <div id="results"></div>
+    </div>
+</div>
+<script language="JavaScript">
+
+    var initialFilters = {};
+    /**
+     * Show product cards
+     * @param containerId
+     * @param result
+     */
+    function showResults(containerId, result) {
+        let s = '';
+        s += '<div style="clear: both; text-align: center;">' + result.data.length + ' items from <b>' + result.count + '</b> results.</div>';
+        result.data.forEach(function (value) {
+
+            s += '<div class="card mobile">';
+            s +=    '<div class="title">' + value.brand + '</div>';
+            s +=    '<div class="title">' + value.model + '</div>';
+            s +=    '<div class="properties"><img src="static/mobile.png" align="center" width="150" hspace="4"/>'
+            s +=        '<div class="mobileProperty">';   
+            s +=            '<span>Color: ' + value.color + '<br>';
+            s +=            '<span>Cam: ' + value.cam + '<br>';
+            s +=            '<span>Diagonal: ' + value.diagonal + '<br>';
+            s +=            '<span>Battery: ' + value.battery + '<br>';
+            s +=            '<span>State: ' + value.state + '<br>';
+            s +=            '<span>Price: ' + value.price + '<br>';
+            s +=        '</div>';
+            s +=    '</div>';
+            s += '</div>'
+        });
+        document.getElementById(containerId).innerHTML = s;
+    }
+
+    function filterChange(cmp) {
+
+        if(cmp){
+            let itemName = cmp.name;
+            let itemValue = cmp.value;
+            let itemChecked = cmp.checked;
+            let itemType = cmp.dataset.type;
+
+            if (itemType == "exclude"){
+                if (itemChecked){
+                    cmp.parentNode.parentNode.querySelectorAll('input[type="checkbox"][name="' + itemName + '"][value="' + itemValue + '"][data-type="include"]').forEach(function (el) {
+                        el.checked = false;
+                        el.disabled = true;
+                        el.parentNode.classList.add("crossed");
+                    });
+                }else{
+                    cmp.parentNode.parentNode.querySelectorAll('input[type="checkbox"][name="' + itemName + '"][value="' + itemValue + '"][data-type="include"]').forEach(function (el) {
+                        el.disabled = false;
+                        el.parentNode.classList.remove("crossed");
+                    });
+                }
+
+            }
+        }
+    
+        let filters = JSON.stringify(getChecked('content'));
+        showLoader('contentLoader');
+        ajax.post('./query_unset.php', {'filters': filters}, function (data) {
+            let result = JSON.parse(data);
+            updateFilters('filters', result.filters, initialFilters);
+            showResults('results', result.results);
+            hideLoader('contentLoader');
+        });
+    }
+
+    function loadFilters() {
+        showLoader('contentLoader');
+        ajax.post('./query_unset.php', {'filters': []}, function (data) {
+            let result = JSON.parse(data);
+            initialFilters = result.filters.data;
+            showFilters('filters', result.filters);
+            showResults('results', result.results);
+            hideLoader('contentLoader');
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        loadFilters();
+    });
+
+    document.getElementById('resetFiltersButton').onclick = loadFilters;
+
+</script>
+</body>
+</html>

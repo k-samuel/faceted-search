@@ -1,5 +1,38 @@
 # Changelog
 
+
+
+### v3.1.0 (04.03.2023)
+
+#### Exclude Filters or "UNSETS"
+
+[Feature Request](https://github.com/k-samuel/faceted-search/issues/26)
+
+- ExcludeValueFilter and ExcludeRageFilter added
+- Example added "Mobile Catalog with exclude filters"
+
+New filters allow the user to select values ​​and ranges to exclude from search results. 
+In some cases, such functionality is convenient for users, especially when their search comes from 
+understanding what they definitely do not want to see.
+
+Usage is similar to regular filters:
+```php
+// ....
+<?php
+$query = (new AggregationQuery())
+          ->filters([
+                new ExcludeValueFilter('color', ['green']), // remove products with green color from results
+                new ValueFilter('size', [41,42]),
+          ])
+          // Count items for each acceptable filter value (slower)
+          ->countItems()
+          // Sort results by fields and values
+          ->sort();
+// ...
+```
+
+Demo can be found (here)[examples/readme.md]. Star local server and open "Mobile Catalog" page.
+
 ### v3.0.0 (04.03.2023)
 - Removed deprecated methods.
 - The code has been refactored, the complexity has been reduced.

@@ -1,5 +1,5 @@
 .catBox {
-    width: 400px;
+    width: 500px;
     margin: 5px;
 }
 
@@ -7,6 +7,10 @@
     width: 100%;
     list-style: none;
     padding: 0;
+}
+
+.crossed{
+    text-decoration: line-through;
 }
 
 .clear {
@@ -93,6 +97,13 @@ li.selected {
 .card.shoe {
     width: 170px;
     height: 300px;
+}
+.card.mobile{
+    width: 170px;
+    height: 320px;
+}
+.mobileProperty{
+    padding: 10px 4px 10px 4px;
 }
 
 div.img {

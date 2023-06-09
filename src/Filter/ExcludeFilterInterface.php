@@ -30,60 +30,13 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Filter;
 
-
-abstract class AbstractFilter implements FilterInterface
+interface ExcludeFilterInterface extends FilterInterface
 {
     /**
-     * @var string
-     */
-    protected string $fieldName;
-    /**
-     * @var mixed
-     */
-    protected $value;
-
-    /**
-     * AbstractFilter constructor.
-     * @param string $fieldName
-     * @param mixed $value
-     */
-    public function __construct(string $fieldName, $value = null)
-    {
-        $this->fieldName = $fieldName;
-        if ($value !== null) {
-            $this->setValue($value);
-        }
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getFieldName(): string
-    {
-        return $this->fieldName;
-    }
-
-    /**
-     * Set filter value
-     * @param mixed $value
+     * Add records into exclude list
+     * @param array<int|string,array<int>|\SplFixedArray<int>> $facetedData
+     * @param array<int,bool|int> & $excludeRecords - RecordId passed into keys of an array (performance issue)
      * @return void
      */
-    public function setValue($value): void
-    {
-        $this->value = $value;
-    }
-
-    /**
-     * Get filter value
-     * @return mixed
-     */
-    public function getValue()
-    {
-        return $this->value;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    abstract public function filterInput(array $facetedData,  array &$inputIdKeys, array $excludeRecords): void;
+    public function addExcluded(array $facetedData,  array &$excludeRecords): void;
 }
