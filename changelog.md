@@ -2,9 +2,9 @@
 
 
 
-### v3.1.0 (04.03.2023)
+### v3.1.0
 
-#### Exclude Filters or "UNSETS"
+#### Exclude Filters
 
 [Feature Request](https://github.com/k-samuel/faceted-search/issues/26)
 
