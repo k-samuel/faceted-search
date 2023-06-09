@@ -71,10 +71,11 @@ class Scanner
     /**
      * Find records by exclude filters as array map [$id1=>true, $id2=>true, ...]
      * @param StorageInterface $storage
-     * @param array<\KSamuel\FacetedSearch\Filter\ExceptFilterInterface> $filters
+     * @param array<\KSamuel\FacetedSearch\Filter\ExcludeFilterInterface,> $filters
      * @param array<int,bool> & $excludeRecords
+     * @return void
      */
-    public function findExcludeRecordsMop(StorageInterface $storage, array $filters, array &$excludeRecords)
+    public function findExcludeRecordsMop(StorageInterface $storage, array $filters, array &$excludeRecords): void
     {
         // if no filters passed
         if (empty($filters)) {
