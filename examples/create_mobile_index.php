@@ -16,12 +16,13 @@ $storage = $searchIndex->getStorage();
 $data =  include './data/mobile-db.php';
 
 $rangeIndexer = new RangeIndexer(200);
-$storage->addIndexer('price', $rangeIndexer);
+$storage->addIndexer('price_range', $rangeIndexer);
 
 foreach ($data as $item) {
     $recordId = $item['id'];
     unset($item['id']);
     unset($item['model']);
+    $item['price_range'] = $item['price'];
     $itemData = $item;
     $storage->addRecord($recordId, $itemData);
 }

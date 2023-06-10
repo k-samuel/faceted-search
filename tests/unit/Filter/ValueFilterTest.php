@@ -4,12 +4,22 @@ use PHPUnit\Framework\TestCase;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Index\ArrayIndex;
 use KSamuel\FacetedSearch\Index\Factory;
+use KSamuel\FacetedSearch\Index\IndexInterface;
+use KSamuel\FacetedSearch\Index\Storage\FixedArrayStorage;
+use KSamuel\FacetedSearch\Query\AggregationQuery;
 use KSamuel\FacetedSearch\Query\SearchQuery;
 use KSamuel\FacetedSearch\Search;
 
 class ValueFilterTest extends TestCase
 {
+
     public function testSetValue(): void
+    {
+        $this->setValueTest((new Factory)->create(Factory::ARRAY_STORAGE));
+        $this->setValueTest((new Factory)->create(Factory::FIXED_ARRAY_STORAGE));
+    }
+
+    private function setValueTest(IndexInterface $index): void
     {
         $records = [
             1 => [
@@ -68,13 +78,12 @@ class ValueFilterTest extends TestCase
             ]
         ];
 
-        $index = (new Factory)->create(Factory::ARRAY_STORAGE);
         $storage = $index->getStorage();
-
 
         foreach ($records as $id => $item) {
             $storage->addRecord($id, $item);
         }
+        $storage->optimize();
 
         $filter = new ValueFilter('vendor');
         $filter->setValue(['Test']);
@@ -82,5 +91,7 @@ class ValueFilterTest extends TestCase
         $filter2->setValue(['white']);
         $result = $index->query((new SearchQuery)->filters([$filter, $filter2]));
         $this->assertEmpty($result);
+        $result = $index->aggregate((new AggregationQuery)->filters([$filter, $filter2]));
+        $this->assertEquals($result, ['vendor' => ['Apple' => true]]);
     }
 }

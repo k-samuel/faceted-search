@@ -1,5 +1,6 @@
 <?php
 
+use KSamuel\FacetedSearch\Filter\ExcludeValueFilter;
 use KSamuel\FacetedSearch\Filter\RangeFilter;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 use PHPUnit\Framework\TestCase;
@@ -7,6 +8,7 @@ use KSamuel\FacetedSearch\Index\Factory;
 
 use KSamuel\FacetedSearch\Index\IndexInterface;
 use KSamuel\FacetedSearch\Index\Profile;
+use KSamuel\FacetedSearch\Indexer\Number\RangeIndexer;
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
 use KSamuel\FacetedSearch\Query\AggregationSort;
@@ -601,6 +603,59 @@ class IndexTest extends TestCase
             ],
         ];
         $this->assertEquals($expected, $result);
+    }
+
+    public function testFilterCombination(): void
+    {
+        $this->filterCombination((new Factory)->create(Factory::ARRAY_STORAGE));
+        $this->filterCombination((new Factory)->create(Factory::FIXED_ARRAY_STORAGE));
+    }
+
+    private function filterCombination(IndexInterface $index): void
+    {
+        $records = $this->getTestData();
+        $storage = $index->getStorage();
+
+        $storage->addIndexer('price_range', new RangeIndexer(50000));
+
+        foreach ($records as $id => $item) {
+            $item['price_range'] = $item['price'];
+            $storage->addRecord($id, $item);
+        }
+        $storage->optimize();
+
+        $filters = [
+            new ValueFilter('color', 'black'),
+            new ExcludeValueFilter('vendor', 'Xiaomi'),
+            new ValueFilter('price_range',  50000)
+        ];
+
+        $acceptableFilters = $index->aggregate((new AggregationQuery())->filters($filters)->countItems());
+
+        $expect = [
+            'vendor' => ['Apple' => 1, 'Samsung' => 1],
+            'model' => ['Iphone X Pro Max' => 1, 'Galaxy S20' => 1],
+            'price' => [80999 => 1, 70599 => 1],
+            // self filtering is not using by facets logic
+            'color' => ['black' => 2, 'white' => 1, 'yellow' => 1],
+            'has_phones' => [1 => 2],
+            'cam_mp' => [40 => 1, 105 => 1],
+            'sale' => [1 => 2],
+            'price_range' => [0 => 1, 50000 => 2]
+        ];
+        foreach ($expect as $field => &$values) {
+            asort($values);
+        }
+        unset($values);
+        foreach ($acceptableFilters as $field => &$values) {
+            asort($values);
+        }
+        unset($values);
+
+        foreach ($expect as $filter => $values) {
+            $this->assertArrayHasKey($filter, $acceptableFilters);
+            $this->assertEquals($values, $acceptableFilters[$filter]);
+        }
     }
 
     public function getTestData(): array

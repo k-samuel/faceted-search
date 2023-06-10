@@ -21,7 +21,7 @@ foreach ($brands as $name) {
     }
 }
 
-$hd = ['32Gb', '64Gb', '128Gb', '256Gb', '512Gb', '1Tb'];
+$hd = ['32', '64', '128', '256', '512'];
 $ram = ['4Gb', '6Gb', '8Gb', '12Gb'];
 $color = ['Red', 'Black', 'White', 'Blue', 'Yellow', 'Green', 'Gray', 'Gold', 'Silver'];
 $camMp = ['8', '12', '40', '50', '100'];
@@ -47,6 +47,7 @@ for ($i = 0; $i < $setSize; $i++) {
         'state' => $st[rand(0, count($st) - 1)],
         'price' => rand(100, 1000),
         'ram' => $ram[rand(0, count($ram) - 1)],
+        'hd' =>  $hd[rand(0, count($hd) - 1)],
     ];
 }
 

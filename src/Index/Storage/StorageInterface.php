@@ -103,10 +103,10 @@ interface StorageInterface
 
     /**
      * Add specialized indexer for field
-     * @param string $fieldName
+     * @param int|string $fieldName
      * @param IndexerInterface $indexer
      */
-    public function addIndexer(string $fieldName, IndexerInterface $indexer): void;
+    public function addIndexer($fieldName, IndexerInterface $indexer): void;
 
     /**
      * @param string $field

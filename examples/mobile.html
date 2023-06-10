@@ -8,13 +8,13 @@
     <script src="static/js_with_unset.js"></script>
 </head>
 <body>
-<h1>Structured test Dataset width unset option</h1>
+<h1>Structured test Dataset width exclude option</h1>
 <div class="catBox">
     Category:
     <ul class="menu">
         <li><a href="./oils.html">Oils Catalog</a></li>
         <li><a href="./clothing.html">Clothing Catalog</a></li>
-        <li class="selected">Mobile Catalog (with unset)</li>
+        <li class="selected">Mobile Catalog (with exclude)</li>
     </ul>
 </div>
 <div class="clear"></div>
@@ -23,11 +23,29 @@
     <div>
         <div class="boxLabel">Filters</div>
         <div class="treePanel">
-            <div align="center"><a id="resetFiltersButton" href="#" >[Reset Filters]</a></div>
+            <div>
+                <a id="resetFiltersButton" href="#" >[Reset Filters]</a>
+            </div>
+            <div style="width: 250px;">
+                <div class="filterLabel">Price</div>
+                <div class="filterGrid">
+                    <div>
+                        from <input id="price_from" type="number" value="" size="4" min="0" max="10000" autocomplete="off" step="50"/>
+                        to <input id="price_to" type="number" value="" size="4"  min="0" max="10000" autocomplete="off" step="50"/>
+                    </div>
+                </div>
+            </div>
             <div id="filters" class="shoe"></div>
         </div>
     </div>
     <div style="width: 100%">
+        <div align="center">
+            Order By:<select id="sortSelect"></select> 
+            Direction: <select id="sortDir">
+                <option value="asc" selected>ASC</option>
+                <option value="desc">DESC</option>
+            </select>
+        </div>
         <div id="contentLoader" style="width:100%; display: none" align="center"><img src="static/ajax-loader.gif">
         </div>
         <div id="results"></div>
@@ -73,25 +91,33 @@
             let itemType = cmp.dataset.type;
 
             if (itemType == "exclude"){
-                if (itemChecked){
                     cmp.parentNode.parentNode.querySelectorAll('input[type="checkbox"][name="' + itemName + '"][value="' + itemValue + '"][data-type="include"]').forEach(function (el) {
+                        if (itemChecked){
                         el.checked = false;
                         el.disabled = true;
                         el.parentNode.classList.add("crossed");
-                    });
-                }else{
-                    cmp.parentNode.parentNode.querySelectorAll('input[type="checkbox"][name="' + itemName + '"][value="' + itemValue + '"][data-type="include"]').forEach(function (el) {
+                    }else{
                         el.disabled = false;
                         el.parentNode.classList.remove("crossed");
+                    }
                     });
-                }
-
             }
         }
     
         let filters = JSON.stringify(getChecked('content'));
+        let sort = document.getElementById('sortSelect').value
+        let sortDir = document.getElementById('sortDir').value
+        let priceFrom = document.getElementById('price_from').value
+        let priceTo = document.getElementById('price_to').value
+
         showLoader('contentLoader');
-        ajax.post('./query_unset.php', {'filters': filters}, function (data) {
+        ajax.post('./query_unset.php', {
+            'filters': filters,
+            'order': sort,
+            'dir':sortDir,
+            'price_from': priceFrom,
+            'price_to': priceTo
+        }, function (data) {
             let result = JSON.parse(data);
             updateFilters('filters', result.filters, initialFilters);
             showResults('results', result.results);
@@ -104,17 +130,34 @@
         ajax.post('./query_unset.php', {'filters': []}, function (data) {
             let result = JSON.parse(data);
             initialFilters = result.filters.data;
-            showFilters('filters', result.filters);
+            showFilters('filters', result.filters, result.titles);
             showResults('results', result.results);
+            showSort('sortSelect', result.filters.data, result.titles);
             hideLoader('contentLoader');
         });
+        document.getElementById('price_from').value ="";
+        document.getElementById('price_to').value = "";
     }
+
+
 
     document.addEventListener('DOMContentLoaded', function () {
         loadFilters();
+       
     });
-
     document.getElementById('resetFiltersButton').onclick = loadFilters;
+    document.getElementById('sortSelect').addEventListener("change", function(ev){
+             filterChange(null);
+    });
+    document.getElementById('sortDir').addEventListener("change", function(ev){
+             filterChange(null);
+    });
+    document.getElementById('price_from').addEventListener("change", function(ev){
+             filterChange(null);
+    });
+    document.getElementById('price_to').addEventListener("change", function(ev){
+             filterChange(null);
+    });
 
 </script>
 </body>

@@ -60,14 +60,20 @@ ajax.post = function (url, data, callback, async) {
 /**
  * Show product filters
  */
-function showFilters(containerId, result) {
+function showFilters(containerId, result, titles) {
     var s = '';
 
     let stepSize = parseInt(result.price_step);
 
     for (var field in result.data) {
-        s += '<div class="filterLabel">' + field + ' :</div><div class="filterGrid">';
-        s += '<div style="width:100%">' + 
+        let fieldLabel= field;
+        
+        if(titles[field] !=undefined){
+            fieldLabel = titles[field];
+        }
+
+        s += '<div class="filterLabel">' + fieldLabel + '</div><div class="filterGrid">' +
+             '<div style="width:100%">' + 
                  '<div style="float:left;font-size:10px;">include</div>' +
                  '<div style="float:right;font-size:10px;padding-right:15px;">exclude</div>' +
              '</div>' +
@@ -79,7 +85,7 @@ function showFilters(containerId, result) {
             let valueLabel = value;
 
             // customization for price ranges
-            if(field === 'price'){
+            if(field === 'price_range'){
                 valueLabel =  value + ' - ' + (parseInt(value) + stepSize - 1);
             }
 
@@ -111,7 +117,7 @@ function updateFilters(containerId, result, initialFilters) {
 
             let valueLabel = value;
             // customization for price ranges
-            if(field === 'price'){
+            if(field === 'price_range'){
                 valueLabel =  value + ' - ' + (parseInt(value) + stepSize - 1);
             }
 
@@ -143,6 +149,26 @@ function updateFilters(containerId, result, initialFilters) {
             }
 
         }
+    }
+}
+
+function showSort(containerId, result, titles){
+    let selectBox = document.getElementById(containerId);
+    if(!selectBox){
+        return;
+    } 
+    while (selectBox.options.length > 0) {
+        selectBox.remove(0);
+    }
+
+    selectBox.add(new Option('---', '', true));
+    selectBox.add(new Option('Price', 'price', true));
+
+    for (let field in result) {
+        if(field === 'price_range'){
+            continue;
+        }
+        selectBox.add(new Option(titles[field],field));
     }
 }
 

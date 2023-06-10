@@ -9,7 +9,8 @@
 [Feature Request](https://github.com/k-samuel/faceted-search/issues/26)
 
 - ExcludeValueFilter and ExcludeRageFilter added
-- Example added "Mobile Catalog with exclude filters"
+- New example added "Mobile Catalog with exclude filters". Example show maximum of library functions
+- Added sorting inside RangeIndexer's sets
 
 New filters allow the user to select values ​​and ranges to exclude from search results. 
 In some cases, such functionality is convenient for users, especially when their search comes from 
@@ -31,7 +32,7 @@ $query = (new AggregationQuery())
 // ...
 ```
 
-Demo can be found (here)[examples/readme.md]. Star local server and open "Mobile Catalog" page.
+Demo can be found [here](./examples). Start local server and open "Mobile Catalog" page.
 
 ### v3.0.0 (04.03.2023)
 - Removed deprecated methods.

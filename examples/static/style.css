@@ -102,6 +102,11 @@ li.selected {
     width: 170px;
     height: 320px;
 }
+.card.mobile:hover{
+   background-color: #e4e2e2f6;
+}
+
+
 .mobileProperty{
     padding: 10px 4px 10px 4px;
 }

@@ -108,7 +108,7 @@ class Index implements IndexInterface
 
         $excludeMap = [];
         if (!empty($exceptFilters)) {
-            $this->scanner->findExcludeRecordsMop($this->storage, $exceptFilters, $excludeMap);
+            $this->scanner->findExcludeRecordsMap($this->storage, $exceptFilters, $excludeMap);
         }
 
         $map = $this->scanner->findRecordsMap($this->storage, $filters, $inputRecords, $excludeMap);
@@ -154,7 +154,7 @@ class Index implements IndexInterface
 
         $excludeMap = [];
         if (!empty($exceptFilters)) {
-            $this->scanner->findExcludeRecordsMop($this->storage, $exceptFilters, $excludeMap);
+            $this->scanner->findExcludeRecordsMap($this->storage, $exceptFilters, $excludeMap);
         }
 
         // Return all values from index if filters and input is not set
