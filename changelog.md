@@ -9,7 +9,7 @@
 [Feature Request](https://github.com/k-samuel/faceted-search/issues/26)
 
 - ExcludeValueFilter and ExcludeRageFilter added
-- New example added "Mobile Catalog with exclude filters". Example show maximum of library functions
+- Updated examples demonstrates the use of most of the library's functions
 - Added sorting inside RangeIndexer's sets
 
 New filters allow the user to select values ​​and ranges to exclude from search results. 

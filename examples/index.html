@@ -1,31 +1,156 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <link rel="stylesheet" type="text/css" href="static/style.css"/>
     <title>Faceted Search example</title>
+    <script src="static/js.js"></script>
 </head>
 <body>
-<div class="catBox" style="text-align: center">
-    <div style="border: 1px solid red; margin: 6px 2px 2px 2px; padding: 2px; color: red;" > &darr; select category &darr;</div>
-    <div style="text-align: left;">
-        <p>
-            <a href="./mobile.html">Mobile Catalog</a> 
-            An example built on a structured dataset. Demonstrates the maximum number of library features, including exclusion filters. 
-        </p>
-
-        <p>
-            <a href="./oils.html">Oils Catalog</a>
-            A simplified example of the basic functionality of the library. Built on a structured dataset.
-        </p>
-
-        <p>
-            <a href="./clothing.html">Clothing Catalog</a>
-            A simplified example of the basic functionality of the library. 
-            Built on an unstructured dataset, when products have completely different attributes that are not related to each other.
-        </p>
+<div id="content" class="content">
+    <div>
+        <div class="treePanel">
+            <div>
+                <a id="resetFiltersButton" href="#" >[Reset Filters]</a>
+            </div>
+            <div style="width: 250px;">
+                <div class="filterBox">
+                    <div>
+                        <div class="filterLabel">Price</div>
+                    </div>
+                    <div class="clear"></div>
+                    
+                    <div class="filterGrid">
+                        <div>
+                            from <input id="price_from" type="number" value="" size="4" min="0" max="10000" autocomplete="off" step="50"/>
+                            to <input id="price_to" type="number" value="" size="4"  min="0" max="10000" autocomplete="off" step="50"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="filters" class="shoe"></div>
+        </div>
+    </div>
+    <div style="width: 100%">
+        <div align="center">
+            Order By: <select id="sortSelect"></select> 
+            Direction: <select id="sortDir">
+                <option value="asc" selected>ASC</option>
+                <option value="desc">DESC</option>
+            </select>
+        </div>
+        <div id="contentLoader" style="width:100%; display: none" align="center"><img src="static/ajax-loader.gif">
+        </div>
+        <div id="results"></div>
     </div>
 </div>
+<script language="JavaScript">
+
+    var initialFilters = {};
+    /**
+     * Show product cards
+     * @param containerId
+     * @param result
+     */
+    function showResults(containerId, result) {
+        let s = '';
+        s += '<div style="clear: both; text-align: center;">' + result.data.length + ' items from <b>' + result.count + '</b> results.</div>';
+        result.data.forEach(function (value) {
+
+            s += '<div class="card mobile">';
+            s +=    '<div class="title">' + value.brand + '</div>';
+            s +=    '<div class="title">' + value.model + '</div>';
+            s +=    '<div class="properties"><img src="static/mobile.png" align="center" width="150" hspace="4"/>'
+            s +=        '<div class="mobileProperty">';   
+            s +=            '<span>Color: ' + value.color + '<br>';
+            s +=            '<span>Cam: ' + value.cam + '<br>';
+            s +=            '<span>Diagonal: ' + value.diagonal + '<br>';
+            s +=            '<span>Battery: ' + value.battery + '<br>';
+            s +=            '<span>State: ' + value.state + '<br>';
+            s +=            '<span>Price: ' + value.price + '<br>';
+            s +=        '</div>';
+            s +=    '</div>';
+            s += '</div>'
+        });
+        document.getElementById(containerId).innerHTML = s;
+    }
+
+    function filterChange(cmp) {
+
+        if(cmp){
+            let itemName = cmp.name;
+            let itemValue = cmp.value;
+            let itemChecked = cmp.checked;
+            let itemType = cmp.dataset.type;
+
+            if (itemType == "exclude"){
+                    cmp.parentNode.parentNode.querySelectorAll('input[type="checkbox"][name="' + itemName + '"][value="' + itemValue + '"][data-type="include"]').forEach(function (el) {
+                        if (itemChecked){
+                        el.checked = false;
+                        el.disabled = true;
+                        el.parentNode.classList.add("crossed");
+                    }else{
+                        el.disabled = false;
+                        el.parentNode.classList.remove("crossed");
+                    }
+                    });
+            }
+        }
+    
+        let filters = JSON.stringify(getChecked('content'));
+        let sort = document.getElementById('sortSelect').value
+        let sortDir = document.getElementById('sortDir').value
+        let priceFrom = document.getElementById('price_from').value
+        let priceTo = document.getElementById('price_to').value
+
+        showLoader('contentLoader');
+        ajax.post('./query.php?cat=mobile', {
+            'filters': filters,
+            'order': sort,
+            'dir':sortDir,
+            'price_from': priceFrom,
+            'price_to': priceTo
+        }, function (data) {
+            let result = JSON.parse(data);
+            updateFilters('filters', result.filters, initialFilters);
+            showResults('results', result.results);
+            hideLoader('contentLoader');
+        });
+    }
+
+    function loadFilters() {
+        showLoader('contentLoader');
+        ajax.post('./query.php?cat=mobile', {'filters': []}, function (data) {
+            let result = JSON.parse(data);
+            initialFilters = result.filters.data;
+            showFilters('filters', result.filters, result.titles);
+            showResults('results', result.results);
+            showSort('sortSelect', result.filters.data, result.titles);
+            hideLoader('contentLoader');
+        });
+        document.getElementById('price_from').value ="";
+        document.getElementById('price_to').value = "";
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        loadFilters();
+       
+    });
+    document.getElementById('resetFiltersButton').onclick = loadFilters;
+    document.getElementById('sortSelect').addEventListener("change", function(ev){
+             filterChange(null);
+    });
+    document.getElementById('sortDir').addEventListener("change", function(ev){
+             filterChange(null);
+    });
+    document.getElementById('price_from').addEventListener("change", function(ev){
+             filterChange(null);
+    });
+    document.getElementById('price_to').addEventListener("change", function(ev){
+             filterChange(null);
+    });
+
+</script>
 </body>
 </html>

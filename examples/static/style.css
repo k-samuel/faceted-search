@@ -42,7 +42,8 @@ li.selected {
 .filterLabel {
     font-weight: bold;
     margin: 4px;
-    font-size: 14px;
+    font-size: 16px;
+    float: left;
 }
 
 .filterValue {
@@ -56,9 +57,12 @@ li.selected {
 
 .filterGrid {
     max-height: 160px;
-    overflow: scroll;
     padding: 4px;
+    margin-bottom: 10px;
+    /*
+    overflow: scroll;
     border: 1px solid #ccc;
+    */
 }
 
 .content {
@@ -137,4 +141,31 @@ div.img {
 
 .properties {
     padding: 6px;
+}
+
+.hideButton{
+    width: 20px;
+    height: 20px;
+    float: right;
+    background-position: center;
+    background-size: 20px 20px;
+    background-repeat: no-repeat;
+}
+
+.hideButton.vis{
+    background-image: url("darr.png");
+}
+.hideButton.hid{
+    background-image: url("rarr.png");
+}
+
+.filterBox{
+    margin-bottom: 10px;
+}
+.filterHeader{
+    background-color: #ededed7a;
+    height:24px;
+    border-radius: 6px;
+    padding: 4px;
+    cursor: pointer;
 }
