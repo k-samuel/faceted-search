@@ -48,6 +48,12 @@ class ExcludeValueFilter extends ValueFilter implements ExcludeFilterInterface
                 continue;
             }
 
+            // performance patch
+            if (empty($excludeRecords) && is_array($facetedData[$item])) {
+                $excludeRecords = array_fill_keys($facetedData[$item], true);
+                continue;
+            }
+
             foreach ($facetedData[$item] as $recId) {
                 $excludeRecords[$recId] = true;
             }

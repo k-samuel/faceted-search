@@ -2,10 +2,12 @@
 
 require '../../vendor/autoload.php';
 
+use KSamuel\FacetedSearch\Filter\FilterInterface;
 use KSamuel\FacetedSearch\Filter\ExcludeValueFilter;
 use KSamuel\FacetedSearch\Filter\RangeFilter;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 
+use KSamuel\FacetedSearch\Index\IndexInterface;
 use KSamuel\FacetedSearch\Index\Factory;
 use KSamuel\FacetedSearch\Index\Profile;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
@@ -53,80 +55,144 @@ $filters2 = [
 $filters3 = [
     new ValueFilter('color', 'black'),
     new ValueFilter('warehouse', [789, 45, 65, 1, 10]),
-    // new ValueFilter('type', ["normal", "middle"]),
     new ExcludeValueFilter('type', ['good'])
 ];
 
-//test find
-$t = microtime(true);
-$results = $search->query((new SearchQuery())->filters($filters));
-$time = microtime(true) - $t;
-$resultData[] = ['Find', number_format($time, 6) . "s", count($results)];
+/**
+ * Find test
+ * @param IndexInterface $search
+ * @param array<FilterInterface> $filters
+ * @return array<int,int|string>
+ */
+function find(IndexInterface $search, array $filters): array
+{
+    $t = microtime(true);
+    $results = $search->query((new SearchQuery())->filters($filters));
+    $time = microtime(true) - $t;
+    return ['Find', number_format($time, 6) . "s", count($results)];
+}
 
-//test find & sort
-/*
-$t = microtime(true);
-$results = $search->query((new SearchQuery())->filters($filters)->order('quantity', Order::SORT_DESC));
-$time = microtime(true) - $t;
-$resultData[] = ['Find & Sort', number_format($time, 6) . "s", count($results)];
-*/
+/**
+ * Find & sort test 
+ * @param IndexInterface $search
+ * @param array<FilterInterface> $filters
+ * @return array<int,int|string>
+ */
+function findAndSort(IndexInterface $search, array $filters): array
+{
+    $t = microtime(true);
+    $results = $search->query((new SearchQuery())->filters($filters)->order('quantity', Order::SORT_DESC));
+    $time = microtime(true) - $t;
+    return ['Find & Sort', number_format($time, 6) . "s", count($results)];
+}
 
-//test acceptable
-$t = microtime(true);
-$filtersData = $search->aggregate((new AggregationQuery())->filters($filters));
-$time = microtime(true) - $t;
-$resultData[] = ['Filters', number_format($time, 6) . "s", count($filters)];
+/**
+ * Aggregate test
+ * @param IndexInterface $search
+ * @param array<FilterInterface> $filters
+ * @return array<int,int|string>
+ */
+function aggregate(IndexInterface $search, array $filters): array
+{
+    $t = microtime(true);
+    $filtersData = $search->aggregate((new AggregationQuery())->filters($filters));
+    $time = microtime(true) - $t;
+    return ['Filters', number_format($time, 6) . "s", count($filters)];
+}
 
-//test aggregate with count
-$query = (new AggregationQuery())
-    ->filters($filters)
-    ->countItems(true);
+/**
+ * Aggregate & count test
+ * @param IndexInterface $search
+ * @param array<FilterInterface> $filters
+ * @return array<int,int|string>
+ */
+function aggregateAndCount(IndexInterface $search, array $filters): array
+{
+    $query = (new AggregationQuery())
+        ->filters($filters)
+        ->countItems(true);
 
-$t = microtime(true);
-$filtersData = $search->aggregate($query);
-$time = microtime(true) - $t;
-$resultData[] = ['Filters & count', number_format($time, 6) . "s", count($filters)];
+    $t = microtime(true);
+    $filtersData = $search->aggregate($query);
+    $time = microtime(true) - $t;
+    return ['Filters & count', number_format($time, 6) . "s", count($filters)];
+}
+
+/**
+ * Aggregate & count test
+ * @param IndexInterface $search
+ * @param array<FilterInterface> $filters
+ * @return array<int,int|string>
+ */
+function aggregateAndCountWithExclude(IndexInterface $search, array $filters): array
+{
+    $query = (new AggregationQuery())
+        ->filters($filters)
+        ->countItems(true);
+
+    $t = microtime(true);
+    $filtersData = $search->aggregate($query);
+    $time = microtime(true) - $t;
+    return ['Filters & count & exc', number_format($time, 6) . "s", count($filters)];
+}
 
 
 
-//test sort
-$results = $search->query((new SearchQuery())->filters($filters)->order('quantity', Order::SORT_DESC));
-$resultData[] = ['Sort', number_format($profile->getSortingTime(), 6) . "s", count($filters)];
+/**
+ * Sort test
+ * @param IndexInterface $search
+ * @param array<FilterInterface> $filters
+ * @param Profile $profile
+ * @return array<int,int|string>
+ */
+function sortTest(IndexInterface $search, array $filters, Profile $profile): array
+{
+    $results = $search->query((new SearchQuery())->filters($filters)->order('quantity', Order::SORT_DESC));
+    return ['Sort', number_format($profile->getSortingTime(), 6) . "s", count($filters)];
+}
 
-/*
-// find and sorter
-$sorter = new ByField($index);
-$sortField = 'quantity';
-$t = microtime(true);
-$results = $search->find($filters);
-$results = $sorter->sort($results, $sortField, ByField::SORT_DESC);
-$time = microtime(true) - $t;
-$resultData[] = ['Find + Sorter', number_format($time, 6) . "s", count($filters)];
 
-// SearchQuery & sort
-$query = (new SearchQuery())
-    ->filter(new ValueFilter('color', 'black'))
-    ->filter(new ValueFilter('warehouse', [789, 45, 65, 1, 10]))
-    ->filter(new ValueFilter('type', ["normal", "middle"]))
-    ->order($sortField, ByField::SORT_DESC);
+/**
+ * Find with rage test (other filters)
+ * @param IndexInterface $search
+ * @param array<FilterInterface> $filters
+ * @return array<int,int|string>
+ */
+function findWithRange(IndexInterface $search, array $filters): array
+{
+    $t = microtime(true);
+    $results2 = $search->query((new SearchQuery())->filters($filters));
+    $time = microtime(true) - $t;
+    return ['Find (ranges)', number_format($time, 6) . "s", count($results2)];
+}
 
-$t = microtime(true);
-$results = $search->query($query);
-$time = microtime(true) - $t;
-$resultData[] = ['Query + Sort', number_format($time, 6) . "s", count($filters)];
-*/
+/**
+ * Find with exclude filters test (other filters)
+ * @param IndexInterface $search
+ * @param array<FilterInterface> $filters
+ * @return array<int,int|string>
+ */
+function findWithExclude(IndexInterface $search, array $filters): array
+{
+    $t = microtime(true);
+    $results2 = $search->query((new SearchQuery())->filters($filters));
+    $time = microtime(true) - $t;
+    return ['Find (unsets)', number_format($time, 6) . "s", count($results2)];
+}
 
-/// test find with Range
-$t = microtime(true);
-$results2 = $search->query((new SearchQuery())->filters($filters2));
-$time = microtime(true) - $t;
-$resultData[] = ['Find (ranges)', number_format($time, 6) . "s", count($results2)];
 
-/// test find with UNSET
-$t = microtime(true);
-$results2 = $search->query((new SearchQuery())->filters($filters3));
-$time = microtime(true) - $t;
-$resultData[] = ['Find (unsets)', number_format($time, 6) . "s", count($results2)];
+$resultData[] = find($search, $filters);
+$resultData[] = findAndSort($search, $filters);
+$resultData[] = findWithExclude($search, $filters3);
+$resultData[] = findWithRange($search, $filters2);
+$resultData[] = aggregate($search, $filters);
+$resultData[] = aggregateAndCount($search, $filters);
+$resultData[] = aggregateAndCountWithExclude($search, $filters3);
+$resultData[] = sortTest($search, $filters, $profile);
+
+
+
+
 
 
 

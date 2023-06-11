@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Tests\Benchmark;
 
+use KSamuel\FacetedSearch\Filter\ExcludeValueFilter;
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Index\Factory;
@@ -35,6 +36,12 @@ class FixedArrayIndexBench extends ArrayIndexBench
         $this->searchQuery = (new SearchQuery())->filters($this->filters);
         $this->searchQuerySorted = clone $this->searchQuery;
         $this->searchQuerySorted->order('quantity', Order::SORT_DESC);
+
+        $this->searchQueryExclude = (new SearchQuery())->filters([
+            new ValueFilter('color', 'black'),
+            new ValueFilter('warehouse', [789, 45, 65, 1, 10]),
+            new ExcludeValueFilter('type', ['good'])
+        ]);
 
         $this->aggregationQuery = (new AggregationQuery())->filters($this->filters);
         $this->aggregationQueryCount = (new AggregationQuery())->filters($this->filters)->countItems();
