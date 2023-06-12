@@ -34,6 +34,14 @@ $query = (new AggregationQuery())
 
 Demo can be found [here](./examples). Start local server and open "Mobile Catalog" page.
 
+#### Insites discovered during development
+
+ExcludeValueFilter slightly slows down the search (Query), while speeding up the construction of aggregates. Considering that aggregates are much slower than searches, the functionality in general has a positive effect on performance.
+
+Found that in order to organize user-friendly behavior, additional sorting is needed within the RangeIndexer ranges. Sorting requires additional resources during index construction, and does not affect the performance of subsequent use of indexes.
+
+Sorting within ranges is possible only during the initial creating of index, since the connection with the real value is lost. Therefore, when using the RangeIndexer, you should not use adding new single values after a complete rebuild. As a workaround new values will be added to the end of range and be sorted only inside new values. This is relevant only for cases with sorting by field indexed by RangeIndexer.
+
 ### v3.0.0 (04.03.2023)
 - Removed deprecated methods.
 - The code has been refactored, the complexity has been reduced.

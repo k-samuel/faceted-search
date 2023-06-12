@@ -173,11 +173,12 @@ $search->setData($indexData);
 
 // get request params and create search filters
 $filters = [
+    // Values to search
     new ValueFilter('color', ['black']),
-    // Also you can exclude records with specific values using ExcludeValueFilter / ExcludeRangeFilter
-    new ExcludeValueFilter('type', ['used']),
     // RangeFilter example for numeric property ranges (min - max)
-    new RangeFilter('size', ['min'=>36, 'max'=>40])
+    new RangeFilter('size', ['min'=>36, 'max'=>40]),
+    // You can exclude records with specific values using ExcludeValueFilter / ExcludeRangeFilter
+    new ExcludeValueFilter('type', ['used']),
 ];
 // create SearchQuery
 $query = (new SearchQuery())->filters($filters);
@@ -243,6 +244,13 @@ $search->query($query);
 
 // will return [2,3,4]
 ```
+
+Sorting within ranges is possible only during the initial creating of index, since the connection with the real value is lost. 
+Therefore, when using the RangeIndexer, you should not use adding new single values after a complete rebuild. 
+As a workaround new values will be added to the end of range and be sorted only inside new values. 
+This is relevant only for cases with sorting by field indexed by RangeIndexer.
+
+
 RangeListIndexer allows you to use custom ranges list
 ```php
 <?php
