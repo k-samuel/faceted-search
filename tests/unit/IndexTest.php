@@ -1,5 +1,6 @@
 <?php
 
+use KSamuel\FacetedSearch\Filter\ExcludeValueFilter;
 use KSamuel\FacetedSearch\Filter\RangeFilter;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 use PHPUnit\Framework\TestCase;
@@ -7,6 +8,7 @@ use KSamuel\FacetedSearch\Index\Factory;
 
 use KSamuel\FacetedSearch\Index\IndexInterface;
 use KSamuel\FacetedSearch\Index\Profile;
+use KSamuel\FacetedSearch\Indexer\Number\RangeIndexer;
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
 use KSamuel\FacetedSearch\Query\AggregationSort;
@@ -516,7 +518,7 @@ class IndexTest extends TestCase
             $storage->addRecord($id, $item);
         }
 
-        $acceptableFilters = $acceptableFilters = $index->aggregate((new AggregationQuery())->sort());
+        $acceptableFilters = $index->aggregate((new AggregationQuery())->sort());
 
         $expect = [
             'color' => ['black' => true,  'white' => true],
@@ -529,6 +531,91 @@ class IndexTest extends TestCase
             $this->assertEquals(array_keys($expect[$field]), array_keys($values));
             $this->assertEquals(array_values($expect[$field]), array_values($values));
         }
+    }
+    /**
+     * @dataProvider storeProvider
+     */
+    public function testNoInputButExclude(IndexInterface $index): void
+    {
+        $storage = $index->getStorage();
+        $records = [
+            ['id' => 1, 'color' => 'black', 'size' => 7, 'group' => 'A'],
+            ['id' => 2, 'color' => 'black', 'size' => 8, 'group' => 'A'],
+            ['id' => 3, 'color' => 'white', 'size' => 9, 'group' => 'B'],
+        ];
+        foreach ($records as $item) {
+            $id = $item['id'];
+            unset($item['id']);
+            $storage->addRecord($id, $item);
+        }
+
+        $acceptableFilters = $index->aggregate(
+            (new AggregationQuery())
+                ->filter(
+                    new ExcludeValueFilter('color', ['white'])
+                )->sort()
+        );
+
+        $expect = [
+            'color' => ['black' => true],
+            'group' => ['A' => true],
+            'size' => [7 => true, 8 => true],
+        ];
+
+        $this->assertEquals(array_keys($expect), array_keys($acceptableFilters));
+        foreach ($expect as $field => $values) {
+            $this->assertEquals(array_keys($expect[$field]), array_keys($values));
+            $this->assertEquals(array_values($expect[$field]), array_values($values));
+        }
+    }
+    /**
+     * @dataProvider storeProvider
+     */
+    public function testNoInputButExcludeQuery(IndexInterface $index): void
+    {
+        $storage = $index->getStorage();
+        $records = [
+            ['id' => 1, 'color' => 'black', 'size' => 7, 'group' => 'A'],
+            ['id' => 2, 'color' => 'black', 'size' => 8, 'group' => 'A'],
+            ['id' => 3, 'color' => 'white', 'size' => 9, 'group' => 'B'],
+        ];
+        foreach ($records as $item) {
+            $id = $item['id'];
+            unset($item['id']);
+            $storage->addRecord($id, $item);
+        }
+
+        $data = $index->query(
+            (new SearchQuery())
+                ->filter(
+                    new ExcludeValueFilter('color', ['white'])
+                )->order('size', Order::SORT_ASC)
+        );
+
+        $this->assertEquals([1, 2], $data);
+    }
+    /**
+     * @dataProvider storeProvider
+     */
+    public function testNoInputQuery(IndexInterface $index): void
+    {
+        $storage = $index->getStorage();
+        $records = [
+            ['id' => 1, 'color' => 'black', 'size' => 7, 'group' => 'A'],
+            ['id' => 2, 'color' => 'black', 'size' => 8, 'group' => 'A'],
+            ['id' => 3, 'color' => 'white', 'size' => 9, 'group' => 'B'],
+        ];
+        foreach ($records as $item) {
+            $id = $item['id'];
+            unset($item['id']);
+            $storage->addRecord($id, $item);
+        }
+
+        $data = $index->query(
+            (new SearchQuery())->order('size', Order::SORT_ASC)
+        );
+
+        $this->assertEquals([1, 2, 3], $data);
     }
 
     public function testGetCount(): void
@@ -601,6 +688,59 @@ class IndexTest extends TestCase
             ],
         ];
         $this->assertEquals($expected, $result);
+    }
+
+    public function testFilterCombination(): void
+    {
+        $this->filterCombination((new Factory)->create(Factory::ARRAY_STORAGE));
+        $this->filterCombination((new Factory)->create(Factory::FIXED_ARRAY_STORAGE));
+    }
+
+    private function filterCombination(IndexInterface $index): void
+    {
+        $records = $this->getTestData();
+        $storage = $index->getStorage();
+
+        $storage->addIndexer('price_range', new RangeIndexer(50000));
+
+        foreach ($records as $id => $item) {
+            $item['price_range'] = $item['price'];
+            $storage->addRecord($id, $item);
+        }
+        $storage->optimize();
+
+        $filters = [
+            new ValueFilter('color', 'black'),
+            new ExcludeValueFilter('vendor', 'Xiaomi'),
+            new ValueFilter('price_range',  50000)
+        ];
+
+        $acceptableFilters = $index->aggregate((new AggregationQuery())->filters($filters)->countItems());
+
+        $expect = [
+            'vendor' => ['Apple' => 1, 'Samsung' => 1],
+            'model' => ['Iphone X Pro Max' => 1, 'Galaxy S20' => 1],
+            'price' => [80999 => 1, 70599 => 1],
+            // self filtering is not using by facets logic
+            'color' => ['black' => 2, 'white' => 1, 'yellow' => 1],
+            'has_phones' => [1 => 2],
+            'cam_mp' => [40 => 1, 105 => 1],
+            'sale' => [1 => 2],
+            'price_range' => [0 => 1, 50000 => 2]
+        ];
+        foreach ($expect as $field => &$values) {
+            asort($values);
+        }
+        unset($values);
+        foreach ($acceptableFilters as $field => &$values) {
+            asort($values);
+        }
+        unset($values);
+
+        foreach ($expect as $filter => $values) {
+            $this->assertArrayHasKey($filter, $acceptableFilters);
+            $this->assertEquals($values, $acceptableFilters[$filter]);
+        }
     }
 
     public function getTestData(): array

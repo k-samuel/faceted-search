@@ -39,13 +39,14 @@ class Scanner
      * @param StorageInterface $storage
      * @param array<\KSamuel\FacetedSearch\Filter\FilterInterface> $filters
      * @param array<int,bool> $inputRecords
+     * @param array<int,bool> $excludeRecords
      * @return array<int,bool>
      */
-    public function findRecordsMap(StorageInterface $storage, array $filters, array $inputRecords): array
+    public function findRecordsMap(StorageInterface $storage, array $filters, array $inputRecords, array $excludeRecords): array
     {
         // if no filters passed
         if (empty($filters)) {
-            return $this->findInput($storage, $inputRecords);
+            return $this->findInput($storage, $inputRecords, $excludeRecords);
         }
 
         $data = $storage->getData();
@@ -57,7 +58,7 @@ class Scanner
                 return [];
             }
 
-            $filter->filterInput($data[$fieldName], $inputRecords);
+            $filter->filterInput($data[$fieldName], $inputRecords, $excludeRecords);
 
             if (empty($inputRecords)) {
                 return [];
@@ -68,20 +69,66 @@ class Scanner
     }
 
     /**
+     * Find records by exclude filters as array map [$id1=>true, $id2=>true, ...]
+     * @param StorageInterface $storage
+     * @param array<int|string,\KSamuel\FacetedSearch\Filter\ExcludeFilterInterface> $filters
+     * @param array<int,bool> & $excludeRecords
+     * @return void
+     */
+    public function findExcludeRecordsMap(StorageInterface $storage, array $filters, array &$excludeRecords): void
+    {
+        // if no filters passed
+        if (empty($filters)) {
+            return;
+        }
+
+        $data = $storage->getData();
+
+        foreach ($filters as $filter) {
+            $fieldName = $filter->getFieldName();
+            if (isset($data[$fieldName])) {
+                $filter->addExcluded($data[$fieldName], $excludeRecords);
+            }
+        }
+    }
+
+    /**
      * Find records without filters as array map [$id1=>true, $id2=>true, ...]
      * @param StorageInterface $storage
      * @param array<int,bool> $inputRecords
+     * @param array<int,bool> $excludeRecords
      * @return array<int,bool>
      */
-    private function findInput(StorageInterface $storage, array $inputRecords): array
+    private function findInput(StorageInterface $storage, array $inputRecords, array $excludeRecords): array
     {
         $total = $this->getAllRecordIdMap($storage);
-        if (!empty($inputRecords)) {
-            return array_intersect_key($total, $inputRecords);
+
+        if (empty($inputRecords) && empty($excludeRecords)) {
+            /**
+             * @var array<int,bool> $total
+             */
+            return $total;
         }
-        /**
-         * @var array<int,bool> $total
-         */
+
+        if (!empty($inputRecords)) {
+            $total = array_intersect_key($total, $inputRecords);
+        }
+
+        // remove excluded records from result
+        if (!empty($excludeRecords)) {
+            if (count($total) > count($excludeRecords)) {
+                foreach ($excludeRecords as $key => $bool) {
+                    unset($total[$key]);
+                }
+            } else {
+                foreach ($total as $key => $bool) {
+                    if (isset($excludeRecords[$key])) {
+                        unset($total[$key]);
+                    }
+                }
+            }
+        }
+
         return $total;
     }
 

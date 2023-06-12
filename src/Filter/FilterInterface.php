@@ -42,7 +42,8 @@ interface FilterInterface
      * Filter faceted data
      * @param array<int|string,array<int>|\SplFixedArray<int>> $facetedData
      * @param array<int,bool|int> & $inputIdKeys - RecordId passed into keys of an array (performance issue)
+     * @param array<int,bool> $excludeRecords - RecordId passed into keys of an array (performance issue)
      * @return void
      */
-    public function filterInput(array $facetedData,  array &$inputIdKeys): void;
+    public function filterInput(array $facetedData,  array &$inputIdKeys, array $excludeRecords): void;
 }

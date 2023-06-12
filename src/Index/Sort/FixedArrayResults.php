@@ -65,15 +65,30 @@ class FixedArrayResults implements QueryResultsInterface
             // inline intersection - intersectIntMap
             // Performance patch SplFixedArray index access is faster than iteration
             $count = count($records);
-            for ($i = 0; $i < $count; $i++) {
-                /**
-                 * @var int $key
-                 */
-                $key = $records[$i];
-                if (isset($resultsMap[$key])) {
-                    $sorted[] = $key;
-                    // already sorted
-                    unset($resultsMap[$key]);
+            if ($order->getDirection() === Order::SORT_ASC) {
+                for ($i = 0; $i < $count; $i++) {
+                    /**
+                     * @var int $key
+                     */
+                    $key = $records[$i];
+                    if (isset($resultsMap[$key])) {
+                        $sorted[] = $key;
+                        // already sorted
+                        unset($resultsMap[$key]);
+                    }
+                }
+            } else {
+                $last = $count - 1;
+                for ($i = $last; $i >= 0; $i--) {
+                    /**
+                     * @var int $key
+                     */
+                    $key = $records[$i];
+                    if (isset($resultsMap[$key])) {
+                        $sorted[] = $key;
+                        // already sorted
+                        unset($resultsMap[$key]);
+                    }
                 }
             }
         }

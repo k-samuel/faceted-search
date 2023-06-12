@@ -30,6 +30,7 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Index;
 
+use KSamuel\FacetedSearch\Filter\ExcludeFilterInterface;
 use KSamuel\FacetedSearch\Index\Sort\AggregationResults;
 use KSamuel\FacetedSearch\Index\Sort\Filters;
 
@@ -39,6 +40,8 @@ use KSamuel\FacetedSearch\Query\AggregationQuery;
 use KSamuel\FacetedSearch\Index\Intersection\IntersectionInterface;
 use KSamuel\FacetedSearch\Index\Sort\QueryResultsInterface;
 use KSamuel\FacetedSearch\Query\SearchQuery;
+
+
 
 
 /**
@@ -80,7 +83,17 @@ class Index implements IndexInterface
     public function query(SearchQuery $query): array
     {
         $inputRecords =  $query->getInRecords();
-        $filters = $query->getFilters();
+        $filterList = $query->getFilters();
+        $filters = [];
+        $exceptFilters = [];
+
+        foreach ($filterList as $item) {
+            if ($item instanceof ExcludeFilterInterface) {
+                $exceptFilters[] = $item;
+            } else {
+                $filters[] = $item;
+            }
+        }
         $order = $query->getOrder();
 
         if (!empty($inputRecords)) {
@@ -93,7 +106,12 @@ class Index implements IndexInterface
             $filters = $this->filterSort->byCount($this->storage, $filters);
         }
 
-        $map = $this->scanner->findRecordsMap($this->storage, $filters, $inputRecords);
+        $excludeMap = [];
+        if (!empty($exceptFilters)) {
+            $this->scanner->findExcludeRecordsMap($this->storage, $exceptFilters, $excludeMap);
+        }
+
+        $map = $this->scanner->findRecordsMap($this->storage, $filters, $inputRecords, $excludeMap);
 
         if (!empty($order)) {
             if ($this->profiler != null) {
@@ -117,17 +135,35 @@ class Index implements IndexInterface
     public function aggregate(AggregationQuery $query): array
     {
         $input = $query->getInRecords();
-        $filters = $query->getFilters();
+
+        $filterList = $query->getFilters();
+        $filters = [];
+        $exceptFilters = [];
+
+        foreach ($filterList as $item) {
+            if ($item instanceof ExcludeFilterInterface) {
+                $exceptFilters[] = $item;
+            } else {
+                $filters[] = $item;
+            }
+        }
+
         $countValues = $query->getCountItems();
         $sort = $query->getSort();
+
+
+        $excludeMap = [];
+        if (!empty($exceptFilters)) {
+            $this->scanner->findExcludeRecordsMap($this->storage, $exceptFilters, $excludeMap);
+        }
 
         // Return all values from index if filters and input is not set
         if (empty($filters) && empty($input)) {
 
             if ($countValues) {
-                $result = $this->getValuesCount();
+                $result = $this->getValuesCount($excludeMap);
             } else {
-                $result = $this->getValues();
+                $result = $this->getValues($excludeMap);
             }
 
             if ($sort) {
@@ -152,16 +188,16 @@ class Index implements IndexInterface
             // index filters by field
             foreach ($filters as $filter) {
                 $name = $filter->getFieldName();
-                $resultCache[$name] = $this->scanner->findRecordsMap($this->storage, [$filter], $input);
+                $resultCache[$name] = $this->scanner->findRecordsMap($this->storage, [$filter], $input, $excludeMap);
             }
             // merge results
             $filteredRecords = $this->mergeFilters($resultCache);
         } elseif (!empty($input)) {
-            $filteredRecords = $this->scanner->findRecordsMap($this->storage, [], $input);
+            $filteredRecords = $this->scanner->findRecordsMap($this->storage, [], $input, $excludeMap);
         }
 
         // intersect index values and filtered records
-        $result = $this->aggregationScan($resultCache, $filteredRecords, $countValues, $input);
+        $result = $this->aggregationScan($resultCache, $filteredRecords, $countValues, $input, $excludeMap);
 
         if ($sort !== null) {
             $this->aggregationSort->sort($sort, $result);
@@ -173,9 +209,10 @@ class Index implements IndexInterface
      * @param array<int,bool> $filteredRecords
      * @param bool $countRecords
      * @param array<int,bool> $input
+     * @param array<int,bool> $exclude
      * @return array<int|string,array<int|string,int|true>>
      */
-    private function aggregationScan(array $resultCache, array $filteredRecords, bool $countRecords, array $input): array
+    private function aggregationScan(array $resultCache, array $filteredRecords, bool $countRecords, array $input, array $exclude): array
     {
         $result = [];
         $cacheCount = count($resultCache);
@@ -194,7 +231,7 @@ class Index implements IndexInterface
                     // optimization with cache of findRecordsMap
                     $recordIds = $this->mergeFilters($resultCache, $filterName);
                 } else {
-                    $recordIds = $this->scanner->findRecordsMap($this->storage, [], $input);
+                    $recordIds = $this->scanner->findRecordsMap($this->storage, [], $input, $exclude);
                 }
             } else {
                 $recordIds = $filteredRecords;
@@ -220,33 +257,68 @@ class Index implements IndexInterface
     }
 
     /**
+     * @param array<int,bool> $excludeMap
      * @return array<int|string,array<string|int,true>>
      */
-    protected function getValues(): array
+    protected function getValues(array $excludeMap): array
     {
         $result = [];
-        /**
-         * @var array<int|sting,array<int>> $filterValues
-         */
-        foreach ($this->scanner->scan($this->storage) as $filterName => $filterValues) {
-            foreach ($filterValues as $key => $info) {
-                $result[$filterName][$key] = true;
+        if (empty($excludeMap)) {
+            /**
+             * @var array<int|sting,array<int>> $filterValues
+             */
+            foreach ($this->scanner->scan($this->storage) as $filterName => $filterValues) {
+                foreach ($filterValues as $key => $info) {
+                    $result[$filterName][$key] = true;
+                }
+            }
+        } else {
+            /**
+             * @var array<int|sting,array<int>> $filterValues
+             */
+            foreach ($this->scanner->scan($this->storage) as $filterName => $filterValues) {
+                foreach ($filterValues as $key => $info) {
+                    foreach ($info as $value) {
+                        if (!isset($excludeMap[$value])) {
+                            $result[$filterName][$key] = true;
+                            continue;
+                        }
+                    }
+                }
             }
         }
         return $result;
     }
     /**
+     * @param array<int,bool> $excludeMap
      * @return array<int|string,array<string|int,int>>
      */
-    protected function getValuesCount(): array
+    protected function getValuesCount(array $excludeMap): array
     {
         $result = [];
-        /**
-         * @var array<int|sting,array<int>> $filterValues
-         */
-        foreach ($this->scanner->scan($this->storage) as $filterName => $filterValues) {
-            foreach ($filterValues as $key => $list) {
-                $result[$filterName][$key] = count($list);
+        if (empty($excludeMap)) {
+            /**
+             * @var array<int|sting,array<int>> $filterValues
+             */
+            foreach ($this->scanner->scan($this->storage) as $filterName => $filterValues) {
+                foreach ($filterValues as $key => $list) {
+                    $result[$filterName][$key] = count($list);
+                }
+            }
+        } else {
+            /**
+             * @var array<int|sting,array<int>> $filterValues
+             */
+            foreach ($this->scanner->scan($this->storage) as $filterName => $filterValues) {
+                foreach ($filterValues as $key => $list) {
+                    $count = 0;
+                    foreach ($list as $value) {
+                        if (!isset($excludeMap[$value])) {
+                            $count++;
+                        }
+                    }
+                    $result[$filterName][$key] = $count;
+                }
             }
         }
         return $result;

@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * MIT License
@@ -24,6 +25,7 @@
  * SOFTWARE.
  *
  */
+
 declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Indexer;
@@ -36,5 +38,12 @@ interface IndexerInterface
      * @param array<mixed> $values
      * @return bool
      */
-    public function add(array & $indexContainer, int $recordId, array $values) : bool;
+    public function add(array &$indexContainer, int $recordId, array $values): bool;
+
+    /**
+     * Optimize data structures
+     * @param array<int|string,array<int|string,array<int>>> &$indexContainer
+     * @return void
+     */
+    public function optimize(array &$indexContainer): void;
 }

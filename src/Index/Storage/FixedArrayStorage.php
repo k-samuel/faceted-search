@@ -52,6 +52,10 @@ class FixedArrayStorage extends ArrayStorage
         if ($this->isCompact) {
             $this->writeMode();
         }
+
+        foreach ($this->indexers as $fieldName => $item) {
+            $item->optimize($this->data[$fieldName]);
+        }
         /**
          * @var array<int|string,array<int|string,array<int>>>
          */
