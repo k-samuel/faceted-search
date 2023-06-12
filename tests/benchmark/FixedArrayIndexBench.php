@@ -33,18 +33,21 @@ class FixedArrayIndexBench extends ArrayIndexBench
             new ValueFilter('warehouse', [789, 45, 65, 1, 10]),
             new ValueFilter('type', ["normal", "middle"])
         ];
-        $this->searchQuery = (new SearchQuery())->filters($this->filters);
-        $this->searchQuerySorted = clone $this->searchQuery;
-        $this->searchQuerySorted->order('quantity', Order::SORT_DESC);
 
-        $this->searchQueryExclude = (new SearchQuery())->filters([
+        $this->excludeFilters = [
             new ValueFilter('color', 'black'),
             new ValueFilter('warehouse', [789, 45, 65, 1, 10]),
             new ExcludeValueFilter('type', ['good'])
-        ]);
+        ];
 
+        $this->searchQuery = (new SearchQuery())->filters($this->filters);
+        $this->searchQuerySorted = clone $this->searchQuery;
+        $this->searchQuerySorted->order('quantity', Order::SORT_DESC);
+        $this->searchQueryExclude = (new SearchQuery())->filters($this->excludeFilters);
         $this->aggregationQuery = (new AggregationQuery())->filters($this->filters);
         $this->aggregationQueryCount = (new AggregationQuery())->filters($this->filters)->countItems();
+        $this->aggregationExcludeQueryCount = (new AggregationQuery())->filters($this->excludeFilters)->countItems();
+
         $this->firstResults = $this->index->query($this->searchQuery);
     }
 }
