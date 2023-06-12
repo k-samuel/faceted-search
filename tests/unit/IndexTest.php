@@ -518,7 +518,7 @@ class IndexTest extends TestCase
             $storage->addRecord($id, $item);
         }
 
-        $acceptableFilters = $acceptableFilters = $index->aggregate((new AggregationQuery())->sort());
+        $acceptableFilters = $index->aggregate((new AggregationQuery())->sort());
 
         $expect = [
             'color' => ['black' => true,  'white' => true],
@@ -531,6 +531,91 @@ class IndexTest extends TestCase
             $this->assertEquals(array_keys($expect[$field]), array_keys($values));
             $this->assertEquals(array_values($expect[$field]), array_values($values));
         }
+    }
+    /**
+     * @dataProvider storeProvider
+     */
+    public function testNoInputButExclude(IndexInterface $index): void
+    {
+        $storage = $index->getStorage();
+        $records = [
+            ['id' => 1, 'color' => 'black', 'size' => 7, 'group' => 'A'],
+            ['id' => 2, 'color' => 'black', 'size' => 8, 'group' => 'A'],
+            ['id' => 3, 'color' => 'white', 'size' => 9, 'group' => 'B'],
+        ];
+        foreach ($records as $item) {
+            $id = $item['id'];
+            unset($item['id']);
+            $storage->addRecord($id, $item);
+        }
+
+        $acceptableFilters = $index->aggregate(
+            (new AggregationQuery())
+                ->filter(
+                    new ExcludeValueFilter('color', ['white'])
+                )->sort()
+        );
+
+        $expect = [
+            'color' => ['black' => true],
+            'group' => ['A' => true],
+            'size' => [7 => true, 8 => true],
+        ];
+
+        $this->assertEquals(array_keys($expect), array_keys($acceptableFilters));
+        foreach ($expect as $field => $values) {
+            $this->assertEquals(array_keys($expect[$field]), array_keys($values));
+            $this->assertEquals(array_values($expect[$field]), array_values($values));
+        }
+    }
+    /**
+     * @dataProvider storeProvider
+     */
+    public function testNoInputButExcludeQuery(IndexInterface $index): void
+    {
+        $storage = $index->getStorage();
+        $records = [
+            ['id' => 1, 'color' => 'black', 'size' => 7, 'group' => 'A'],
+            ['id' => 2, 'color' => 'black', 'size' => 8, 'group' => 'A'],
+            ['id' => 3, 'color' => 'white', 'size' => 9, 'group' => 'B'],
+        ];
+        foreach ($records as $item) {
+            $id = $item['id'];
+            unset($item['id']);
+            $storage->addRecord($id, $item);
+        }
+
+        $data = $index->query(
+            (new SearchQuery())
+                ->filter(
+                    new ExcludeValueFilter('color', ['white'])
+                )->order('size', Order::SORT_ASC)
+        );
+
+        $this->assertEquals([1, 2], $data);
+    }
+    /**
+     * @dataProvider storeProvider
+     */
+    public function testNoInputQuery(IndexInterface $index): void
+    {
+        $storage = $index->getStorage();
+        $records = [
+            ['id' => 1, 'color' => 'black', 'size' => 7, 'group' => 'A'],
+            ['id' => 2, 'color' => 'black', 'size' => 8, 'group' => 'A'],
+            ['id' => 3, 'color' => 'white', 'size' => 9, 'group' => 'B'],
+        ];
+        foreach ($records as $item) {
+            $id = $item['id'];
+            unset($item['id']);
+            $storage->addRecord($id, $item);
+        }
+
+        $data = $index->query(
+            (new SearchQuery())->order('size', Order::SORT_ASC)
+        );
+
+        $this->assertEquals([1, 2, 3], $data);
     }
 
     public function testGetCount(): void
