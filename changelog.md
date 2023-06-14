@@ -2,7 +2,7 @@
 
 
 
-### v3.1.0 (12.06.2023)
+### v3.1.0 (14.06.2023)
 
 #### Exclude Filters
 
@@ -34,7 +34,7 @@ $query = (new AggregationQuery())
 
 Demo can be found [here](./examples). Start local server and open "Mobile Catalog" page.
 
-#### Insites discovered during development
+#### Notes
 
 ExcludeValueFilter slightly slows down the search (Query), while speeding up the construction of aggregates. Considering that aggregates are much slower than searches, the functionality in general has a positive effect on performance.
 
