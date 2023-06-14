@@ -62,14 +62,30 @@ class ArrayResults implements QueryResultsInterface
         $sorted = [];
         foreach ($values as $value) {
             // inline intersection - intersectIntMap
-            foreach ($fieldData[$value] as $key) {
-                /**
-                 * @var int $key
-                 */
-                if (isset($resultsMap[$key])) {
-                    $sorted[] = $key;
-                    // already sorted
-                    unset($resultsMap[$key]);
+            if ($order->getDirection() === Order::SORT_ASC) {
+                foreach ($fieldData[$value] as $key) {
+                    /**
+                     * @var int $key
+                     */
+                    if (isset($resultsMap[$key])) {
+                        $sorted[] = $key;
+                        // already sorted
+                        unset($resultsMap[$key]);
+                    }
+                }
+            } else {
+                // special sorting for range indexers
+                $last = count($fieldData[$value]) - 1;
+                for ($i = $last; $i >= 0; $i--) {
+                    $key = $fieldData[$value][$i];
+                    /**
+                     * @var int $key
+                     */
+                    if (isset($resultsMap[$key])) {
+                        $sorted[] = $key;
+                        // already sorted
+                        unset($resultsMap[$key]);
+                    }
                 }
             }
         }

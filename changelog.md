@@ -1,5 +1,47 @@
 # Changelog
 
+
+
+### v3.1.0 (14.06.2023)
+
+#### Exclude Filters
+
+[Feature Request](https://github.com/k-samuel/faceted-search/issues/26)
+
+- ExcludeValueFilter and ExcludeRageFilter added
+- Updated examples demonstrates the use of most of the library's functions
+- Added sorting inside RangeIndexer's sets
+
+New filters allow the user to select values ​​and ranges to exclude from search results. 
+In some cases, such functionality is convenient for users, especially when their search comes from 
+understanding what they definitely do not want to see.
+
+Usage is similar to regular filters:
+```php
+// ....
+<?php
+$query = (new AggregationQuery())
+          ->filters([
+                new ExcludeValueFilter('color', ['green']), // remove products with green color from results
+                new ValueFilter('size', [41,42]),
+          ])
+          // Count items for each acceptable filter value (slower)
+          ->countItems()
+          // Sort results by fields and values
+          ->sort();
+// ...
+```
+
+Demo can be found [here](./examples). Start local server and open "Mobile Catalog" page.
+
+#### Notes
+
+ExcludeValueFilter slightly slows down the search (Query), while speeding up the construction of aggregates. Considering that aggregates are much slower than searches, the functionality in general has a positive effect on performance.
+
+Found that in order to organize user-friendly behavior, additional sorting is needed within the RangeIndexer ranges. Sorting requires additional resources during index construction, and does not affect the performance of subsequent use of indexes.
+
+Sorting within ranges is possible only during the initial creating of index, since the connection with the real value is lost. Therefore, when using the RangeIndexer, you should not use adding new single values after a complete rebuild. As a workaround new values will be added to the end of range and be sorted only inside new values. This is relevant only for cases with sorting by field indexed by RangeIndexer.
+
 ### v3.0.0 (04.03.2023)
 - Removed deprecated methods.
 - The code has been refactored, the complexity has been reduced.

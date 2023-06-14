@@ -25,6 +25,7 @@
  * SOFTWARE.
  *
  */
+
 declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Indexer\Number;
@@ -37,6 +38,13 @@ class RangeListIndexer implements IndexerInterface
      * @var array<int>
      */
     protected array $ranges;
+
+    protected bool $hasUnsorted = false;
+    /**
+     * New values for sorting
+     * @var array<int|string,array<int|string,array<int>>>
+     */
+    protected array $unsortedBuf = [];
 
     /**
      * CustomRangeIndexer constructor.
@@ -57,7 +65,13 @@ class RangeListIndexer implements IndexerInterface
     public function add(&$indexContainer, int $recordId, array $values): bool
     {
         foreach ($values as $value) {
-            $indexContainer[$this->detectRangeKey($value)][] = $recordId;
+            $position = $this->detectRangeKey($value);
+            $indexContainer[$position][] = $recordId;
+            if (!isset($this->unsortedBuf[$position][$value])) {
+                $this->unsortedBuf[$position][$value] = [];
+            }
+            $this->hasUnsorted = true;
+            $this->unsortedBuf[$position][$value][] = $recordId;
         }
         return true;
     }
@@ -77,5 +91,48 @@ class RangeListIndexer implements IndexerInterface
             $lastKey = $key;
         }
         return $lastKey;
+    }
+
+    /**
+     * Prepare values for export
+     *
+     * @param array<int|string,array<int|string,array<int>>> &$indexContainer
+     * @return void
+     */
+    public function optimize(array &$indexContainer): void
+    {
+        if (!$this->hasUnsorted) {
+            return;
+        }
+
+        foreach ($this->unsortedBuf as $position => &$values) {
+            ksort($values);
+            foreach ($values as $value => $ids) {
+                foreach ($ids as $id) {
+                    $this->addSorterId($indexContainer[$position], $id);
+                }
+                $indexContainer[$position] = array_values($indexContainer[$position]);
+            }
+        }
+        unset($values);
+        $this->unsortedBuf = [];
+        $this->hasUnsorted = false;
+    }
+    /**
+     * Add sorted element
+     *
+     * @param array<int,int> & $valueContainer
+     * @param int $id
+     * @return void
+     */
+    private function addSorterId(array &$valueContainer, int $id): void
+    {
+        foreach ($valueContainer as $index => $recordId) {
+            if ($recordId === $id) {
+                unset($valueContainer[$index]);
+                $valueContainer[] = $id;
+                return;
+            }
+        }
     }
 }

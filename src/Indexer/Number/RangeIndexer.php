@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * MIT License
@@ -24,6 +25,7 @@
  * SOFTWARE.
  *
  */
+
 declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Indexer\Number;
@@ -37,10 +39,17 @@ class RangeIndexer implements IndexerInterface
      */
     protected int $step;
 
+    protected bool $hasUnsorted = false;
+    /**
+     * New values for sorting
+     * @var array<int|string,array<int|string,array<int>>>
+     */
+    protected array $unsortedBuf = [];
+
     public function __construct(int $step)
     {
-        if($step <= 0){
-            throw new \Exception('Invalid step value: '.$step);
+        if ($step <= 0) {
+            throw new \Exception('Invalid step value: ' . $step);
         }
         $this->step = $step;
     }
@@ -51,13 +60,61 @@ class RangeIndexer implements IndexerInterface
      * @param array<int,int|float> $values
      * @return bool
      */
-    public function add(&$indexContainer, int $recordId, array $values) : bool
+    public function add(&$indexContainer, int $recordId, array $values): bool
     {
-        foreach ($values as $value){
+        $this->hasUnsorted = true;
+
+        foreach ($values as $value) {
             $position = (int)((float) $value / $this->step);
             $position = ($position) * $this->step;
             $indexContainer[$position][] = $recordId;
+            if (!isset($this->unsortedBuf[$position][$value])) {
+                $this->unsortedBuf[$position][$value] = [];
+            }
+            $this->unsortedBuf[$position][$value][] = $recordId;
         }
         return true;
+    }
+    /**
+     * Prepare values for export
+     *
+     * @param array<int|string,array<int|string,array<int>>> &$indexContainer
+     * @return void
+     */
+    public function optimize(array &$indexContainer): void
+    {
+        if (!$this->hasUnsorted) {
+            return;
+        }
+
+        foreach ($this->unsortedBuf as $position => &$values) {
+            ksort($values);
+            foreach ($values as $value => $ids) {
+                foreach ($ids as $id) {
+                    $this->addSorterId($indexContainer[$position], $id);
+                }
+                $indexContainer[$position] = array_values($indexContainer[$position]);
+            }
+        }
+        unset($values);
+        $this->unsortedBuf = [];
+        $this->hasUnsorted = false;
+    }
+    /**
+     * Add sorted element
+     *
+     * @param array<int,int> & $valueContainer
+     * @param int $id
+     * @return void
+     */
+    private function addSorterId(array &$valueContainer, int $id): void
+    {
+        foreach ($valueContainer as $index => $recordId) {
+            if ($recordId === $id) {
+                unset($valueContainer[$index]);
+                $valueContainer[] = $id;
+                return;
+            }
+        }
     }
 }

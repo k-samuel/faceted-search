@@ -85,5 +85,5 @@ abstract class AbstractFilter implements FilterInterface
     /**
      * @inheritDoc
      */
-    abstract public function filterInput(array $facetedData,  array &$inputIdKeys): void;
+    abstract public function filterInput(array $facetedData,  array &$inputIdKeys, array $excludeRecords): void;
 }

@@ -45,7 +45,7 @@ class ArrayStorage implements StorageInterface
      */
     protected array $data = [];
     /**
-     * @var array<IndexerInterface>
+     * @var array<int|string,IndexerInterface>
      */
     protected array $indexers = [];
 
@@ -101,6 +101,10 @@ class ArrayStorage implements StorageInterface
      */
     public function export(): array
     {
+        foreach ($this->indexers as $fieldName => $item) {
+            $item->optimize($this->data[$fieldName]);
+        }
+
         return $this->data;
     }
 
@@ -125,10 +129,10 @@ class ArrayStorage implements StorageInterface
 
     /**
      * Add specialized indexer for field
-     * @param string $fieldName
+     * @param int|string $fieldName
      * @param IndexerInterface $indexer
      */
-    public function addIndexer(string $fieldName, IndexerInterface $indexer): void
+    public function addIndexer($fieldName, IndexerInterface $indexer): void
     {
         $this->indexers[$fieldName] = $indexer;
     }
@@ -185,13 +189,20 @@ class ArrayStorage implements StorageInterface
 
     public function optimize(): void
     {
+        foreach ($this->indexers as $fieldName => $item) {
+            $item->optimize($this->data[$fieldName]);
+        }
+
         foreach ($this->data as $fieldName => &$valueList) {
 
             $valueCounts = [];
             foreach ($valueList as $value => &$list) {
                 $valueCounts[$value] = count($list);
-                // sort records by id ASC
-                sort($list);
+
+                // sort records by id ASC exclude range indexers data sorted by value
+                if (!isset($this->indexers[$fieldName])) {
+                    sort($list);
+                }
             }
             // sort values by records count
             asort($valueCounts);

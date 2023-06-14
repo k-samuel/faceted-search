@@ -5,4 +5,3 @@ Launch in current directory
 ``` php -S localhost:8000 ```
 
 ![](static/pic.png)
-![](static/pic2.png) 

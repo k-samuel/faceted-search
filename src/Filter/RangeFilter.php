@@ -54,7 +54,7 @@ class RangeFilter extends AbstractFilter
     /**
      * @inheritDoc
      */
-    public function filterInput(array $facetedData,  array &$inputIdKeys): void
+    public function filterInput(array $facetedData,  array &$inputIdKeys, array $excludeRecords): void
     {
         /**
          * @var array{min:int|float|null,max:int|float|null} $value
@@ -78,7 +78,7 @@ class RangeFilter extends AbstractFilter
             if ($max !== null && (float)$value > (float)$max) {
                 continue;
             }
-            if (empty($limit)) {
+            if (empty($limit) && empty($excludeRecords)) {
                 /**
                  * @var array<int>|\SplFixedArray<int> $records
                  */
@@ -90,7 +90,9 @@ class RangeFilter extends AbstractFilter
             } else {
                 // array sum (faster than array_merge here)
                 foreach ($records as $item) {
-                    $limit[] = $item;
+                    if (!isset($excludeRecords[$item])) {
+                        $limit[] = $item;
+                    }
                 }
             }
         }

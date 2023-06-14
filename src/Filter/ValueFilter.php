@@ -75,12 +75,15 @@ class ValueFilter extends AbstractFilter
     /**
      * @inheritDoc
      */
-    public function filterInput(array $facetedData,  array &$inputIdKeys): void
+    public function filterInput(array $facetedData,  array &$inputIdKeys, array $excludeRecords): void
     {
         if (empty($inputIdKeys)) {
-            $inputIdKeys = $this->filterData($facetedData);
+            $inputIdKeys = $this->filterData($facetedData, $excludeRecords);
             return;
         }
+
+        $emptyExclude = empty($excludeRecords);
+
 
         // collect list for different values of one property
         foreach ($this->value as $item) {
@@ -94,7 +97,7 @@ class ValueFilter extends AbstractFilter
                     /**
                      * @var int $recId
                      */
-                    if (isset($inputIdKeys[$recId])) {
+                    if (isset($inputIdKeys[$recId]) && ($emptyExclude || !isset($excludeRecords[$recId]))) {
                         /*
                          * Memory optimization.
                          * Flag matching entries with value "2" instead of allocating an additional results array.
@@ -110,7 +113,7 @@ class ValueFilter extends AbstractFilter
                     /**
                      * @var int $recId
                      */
-                    if (isset($inputIdKeys[$recId])) {
+                    if (isset($inputIdKeys[$recId]) && ($emptyExclude || !isset($excludeRecords[$recId]))) {
                         /*
                          Memory optimization.
                          Flag matching entries with value "2" instead of allocating an additional results array.
@@ -134,11 +137,14 @@ class ValueFilter extends AbstractFilter
     /** 
      * Filter faceted data
      * @param array<int|string,array<int>|\SplFixedArray<int>> $facetedData
+     * @param array<int,bool> $excludeRecords
      * @return array<int,bool> - results in keys
      */
-    private function filterData(array $facetedData): array
+    private function filterData(array $facetedData, array $excludeRecords): array
     {
         $result = [];
+
+        $emptyExclude = empty($excludeRecords);
 
         // collect list for different values of one property
         foreach ($this->value as $item) {
@@ -150,20 +156,22 @@ class ValueFilter extends AbstractFilter
             if (is_array($facetedData[$item])) {
 
                 // fast fill unique records (memory allocation optimization)
-                if (empty($result)) {
+                if (empty($result) && $emptyExclude) {
                     $result = array_fill_keys($facetedData[$item], true);
                     continue;
                 }
 
                 foreach ($facetedData[$item] as $recId) {
-                    /**
-                     * @var int $recId
-                     */
-                    $result[$recId] = true;
+                    if ($emptyExclude || !isset($excludeRecords[$recId])) {
+                        /**
+                         * @var int $recId
+                         */
+                        $result[$recId] = true;
+                    }
                 }
             } else {
                 // fast fill unique records (memory allocation optimization)
-                if (empty($result)) {
+                if (empty($result) && $emptyExclude) {
                     /**
                      * @var array<int,bool> $result
                      */
@@ -174,10 +182,12 @@ class ValueFilter extends AbstractFilter
                 $count = count($facetedData[$item]);
                 for ($i = 0; $i < $count; $i++) {
                     $recId = $facetedData[$item][$i];
-                    /**
-                     * @var int $recId
-                     */
-                    $result[$recId] = true;
+                    if ($emptyExclude || !isset($excludeRecords[$recId])) {
+                        /**
+                         * @var int $recId
+                         */
+                        $result[$recId] = true;
+                    }
                 }
             }
         }
