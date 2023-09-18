@@ -7,13 +7,12 @@
 
 Simple and fast faceted search without external servers like ElasticSearch and others.
 
-Easily handles 500,000 products with 10 properties. If you divide the indexes into product groups or categories,
-then for a long time you will not need scaling and more serious tools. Especially in conjunction with
-RoadRunner or Swoole.
+Easily handles 500,000 products with 10 properties.Divide the indexes into product groups or categories and for a long time you will not need scaling and more serious tools.
+Works especially effectively with Roadrunner, Swoole etc.
 
-In addition to faceted filters, the library also supports exclusion filters.
+In addition to faceted filters, also supports exclusion filters.
 
-The library is optimized for performance at the expense of RAM consumption.
+Optimized for high performance.
 
 [Changelog](./changelog.md) | [2.x version](https://github.com/k-samuel/faceted-search/tree/2.x)
 
