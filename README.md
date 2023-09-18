@@ -7,7 +7,7 @@
 
 Simple and fast faceted search without external servers like ElasticSearch and others.
 
-Easily handles 500,000 products with 10 properties.Divide the indexes into product groups or categories and for a long time you will not need scaling and more serious tools.
+Easily handles 500,000 products with 10 properties. Divide the indexes into product groups or categories and for a long time you will not need scaling and more serious tools.
 Works especially effectively with Roadrunner, Swoole etc.
 
 In addition to faceted filters, also supports exclusion filters.
