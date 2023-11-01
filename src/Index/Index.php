@@ -190,6 +190,13 @@ class Index implements IndexInterface
                 $name = $filter->getFieldName();
                 $resultCache[$name] = $this->scanner->findRecordsMap($this->storage, [$filter], $input, $excludeMap);
             }
+
+            // sort cache for better performance (less memory allocation in merge filters)
+            usort($resultCache, function ($a,  $b) {
+                return (count($a) < count($b)) ? -1 : 1;
+            });
+
+
             // merge results
             $filteredRecords = $this->mergeFilters($resultCache);
         } elseif (!empty($input)) {
