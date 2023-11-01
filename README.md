@@ -95,30 +95,6 @@ FixedArrayIndex
 * Results Found - count of found products (Find)
 * UB - unbalanced dataset
 
-Experimental Golang port bench https://github.com/k-samuel/go-faceted-search
-
-Bench v0.3.3 golang 1.19.4 with parallel aggregates. UB - unbalanced dataset 
-
-| Items count     | Memory   | Query            | Aggregate & Count        | Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~7Mb     | ~0.0003 s.       | ~0.002 s.                | ~0.0002 s.   | 907              |
-| 50,000          | ~14Mb    | ~0.001 s.        | ~0.012 s.                | ~0.001 s.    | 4550             |
-| 100,000         | ~21Mb    | ~0.003 s.        | ~0.025 s.                | ~0.002 s.    | 8817             |
-| 300,000         | ~47Mb    | ~0.010 s.        | ~0.082 s.                | ~0.006 s.    | 26891            |
-| 1,000,000       | ~140Mb   | ~0.037 s.        | ~0.285 s.                | ~0.026 s.    | 90520            |
-| 1,000,000 UB    | ~138Mb   | ~0.130 s.        | ~0.574 s.                | ~0.044 s.    | 179856           |
-
-*Since version 0.3.3, the index structures in PHP and Golang have diverged due to the peculiarities of the 
-implementation of hasMap in languages. In Go, hashMap had to be abandoned in favor of a more efficient storage 
-structure in slices, this allowed us to catch up with the performance of PHP.*
-
-*In PHP array (hashMap) is more CPU efficient by using doubleLinkedList and hashMap key packing.*
-
-*There are more efficient ways in Go to reduce the size of a slice without making a copy (used for list deduplication). 
-It allows make intersection using iteration through sorted slices.*
-
-*Further comparison does not make sense in view of the difference in algorithms.*
-
 ## Examples
 
 Create index using console/crontab etc.
