@@ -1,6 +1,27 @@
 # Changelog
 
-### v3.x.x (xx.xx.20xx)
+### v3.2.0 (xx.xx.2023)
+
+- ValueIntersectionFilter added [Feature Request](https://github.com/k-samuel/faceted-search/issues/33)
+
+Default Filters Flow example:
+
+Find phones with memory sizes ANY OF (12, 32, 64) AND camera 12m
+```php
+$filters[] = new ValueFilter(‘size’, [12,32,64]);
+$filters[] = new ValueFilter(‘camera’, [12]);
+```
+
+New functionality example:
+
+Search brand "Digma" OR "Pony" where the recommended usage is for portraits AND wildlife
+
+```php
+$filters[] = new ValueFilter('brand', ['Digma', 'Pony']); // ANY OF
+$filters[] = new ValueIntersectionFilter('usage', ['portraits', 'wildlife']); // portraits AND wildlife 
+```
+
+
 
   
 v3.1.0 Bench PHP 8.2.10 + JIT + opcache (no xdebug extension)

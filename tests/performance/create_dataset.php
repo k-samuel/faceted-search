@@ -1,7 +1,14 @@
 <?php
+$resultsCount = 100000;
+
 
 $t = microtime(true);
-$resultsCount = 10000;
+$filePath = '../data/' . $resultsCount . '/data.json';
+if (!is_dir(dirname($filePath))) {
+    if (!mkdir(dirname($filePath), 0775, true)) {
+        trigger_error('Cannot create dir ' . dirname($filePath));
+    }
+}
 
 $colors = ['red', 'green', 'blue', 'yellow', 'black', 'white'];
 $brands = [
@@ -53,7 +60,7 @@ for ($i = 1; $i <= $resultsCount; $i++) {
         'warehouse' => array_unique($wh),
         'type' => $type[rand(0, count($type) - 1)]
     ];
-    file_put_contents('./data.json', json_encode($rec) . "\n", FILE_APPEND);
+    file_put_contents($filePath, json_encode($rec) . "\n", FILE_APPEND);
 }
 
 echo 'total time: ' . number_format(microtime(true) - $t, 3) . PHP_EOL;
