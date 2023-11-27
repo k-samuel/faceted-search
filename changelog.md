@@ -4,7 +4,7 @@
 
 - ValueIntersectionFilter added [Feature Request](https://github.com/k-samuel/faceted-search/issues/33)
 
-Default Filters Flow example:
+Default Filters example:
 
 Find phones with memory sizes ANY OF (12, 32, 64) AND camera 12m
 ```php

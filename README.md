@@ -140,6 +140,7 @@ use KSamuel\FacetedSearch\Index\Factory;
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Filter\ExcludeValueFilter;
+use KSamuel\FacetedSearch\Filter\ValueIntersectionFilter
 use KSamuel\FacetedSearch\Filter\RangeFilter;
 use KSamuel\FacetedSearch\Query\SearchQuery;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
@@ -152,12 +153,14 @@ $search->setData($indexData);
 
 // get request params and create search filters
 $filters = [
-    // Values to search
-    new ValueFilter('color', ['black']),
+    // Values to search 
+    new ValueFilter('color', ['black','green']), // ANY OF  (OR condition)
     // RangeFilter example for numeric property ranges (min - max)
     new RangeFilter('size', ['min'=>36, 'max'=>40]),
     // You can exclude records with specific values using ExcludeValueFilter / ExcludeRangeFilter
     new ExcludeValueFilter('type', ['used']),
+    // You can select items with required multiple values of each record
+    new ValueIntersectionFilter('purpose', ['hunting','fishing']) // AND condition
 ];
 // create SearchQuery
 $query = (new SearchQuery())->filters($filters);
