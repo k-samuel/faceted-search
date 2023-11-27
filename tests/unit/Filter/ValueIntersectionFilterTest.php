@@ -1,5 +1,6 @@
 <?php
 
+use KSamuel\FacetedSearch\Filter\ExcludeValueFilter;
 use PHPUnit\Framework\TestCase;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Filter\ValueIntersectionFilter;
@@ -53,6 +54,7 @@ class ValueIntersectionFilterTest extends TestCase
         foreach ($data as $k => $v) {
             $storage->addRecord($k, $v);
         }
+        $storage->optimize();
         return $index;
     }
 
@@ -69,16 +71,60 @@ class ValueIntersectionFilterTest extends TestCase
             new ValueIntersectionFilter('second_usage', ['streetphoto', 'portraits']),
         ]);
 
+        $query3 = (new SearchQuery())->filters([
+            new ValueFilter('brand', ['Nony', 'Digma', 'Mikon', 'Common']),
+            new ValueIntersectionFilter('first_usage', ['streetphoto', 'weddings']),
+            new ExcludeValueFilter('brand', ['Digma'])
+        ]);
+
+        $query4 = (new SearchQuery())->filters([
+            new ValueFilter('brand', ['Nony', 'Digma', 'Mikon', 'Common']),
+            new ValueIntersectionFilter('first_usage', ['streetphoto', 'weddings']),
+        ])->inRecords([1, 3, 4]);
+
         $index = $this->getIndex(Factory::ARRAY_STORAGE);
         $result = $index->query($query1);
         sort($result);
         $this->assertEquals([2, 4], $result);
         $this->assertEquals([4], $index->query($query2));
+        $this->assertEquals([2], $index->query($query3));
+        $this->assertEquals([4], $index->query($query4));
 
         $index = $this->getIndex(Factory::FIXED_ARRAY_STORAGE);
         $result = $index->query($query1);
         sort($result);
         $this->assertEquals([2, 4], $result);
         $this->assertEquals([4], $index->query($query2));
+        $this->assertEquals([2], $index->query($query3));
+        $this->assertEquals([4], $index->query($query4));
+    }
+
+    public function testAggregate(): void
+    {
+        $query1 = (new AggregationQuery())->filters([
+            new ValueFilter('brand', ['Mikon', 'Digma']),
+            new ValueIntersectionFilter('first_usage', ['streetphoto', 'weddings']),
+            new ValueIntersectionFilter('second_usage', ['streetphoto', 'portraits']),
+        ])->countItems()->sort();
+
+        $index = $this->getIndex(Factory::ARRAY_STORAGE);
+        $result = $index->aggregate($query1);
+        $this->assertEquals([
+            'brand' => [
+                'Digma' => 1,
+            ],
+            'first_usage' => [
+                'streetphoto' => 1,
+                'weddings' => 1,
+                'portraits' => 1,
+            ],
+            'second_usage' => [
+                'streetphoto' => 2,
+                'wildlife' => 1,
+                'portraits' => 1,
+            ],
+        ], $result);
+
+        $index = $this->getIndex(Factory::FIXED_ARRAY_STORAGE);
     }
 }
