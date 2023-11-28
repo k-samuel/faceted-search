@@ -108,6 +108,7 @@ Bench v0.3.3 go 1.21.1 darwin/arm64 with parallel aggregates.
 | 300,000         | ~47Mb    | ~0.008 s.        | ~0.107 s.                | ~0.004 s.    | 26891            |
 | 1,000,000       | ~140Mb   | ~0.031 s.        | ~0.363 s.                | ~0.015 s.    | 90520            |
 | 1,000,000 UB    | ~138Mb   | ~0.059 s.        | ~0.899 s.                | ~0.028 s.    | 179856           |
+ 
  *(Apple M2 macOS 14.0)*
 
 *Since version 0.3.3, the index structures in PHP and Golang have diverged due to the peculiarities of the 
