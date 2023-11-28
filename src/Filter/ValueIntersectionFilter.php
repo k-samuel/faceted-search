@@ -94,6 +94,7 @@ class ValueIntersectionFilter extends ValueFilter
         $result = [];
 
         $emptyExclude = empty($excludeRecords);
+        $isFirst = true;
 
         // collect list for different values of one property
         foreach ($this->value as $item) {
@@ -103,7 +104,7 @@ class ValueIntersectionFilter extends ValueFilter
             }
 
             // fast fill unique records (memory allocation optimization)
-            if (empty($result) && $emptyExclude) {
+            if ($isFirst && empty($result) && $emptyExclude) {
                 if (is_array($facetedData[$item])) {
                     $result = array_fill_keys($facetedData[$item], true);
                 } else {
@@ -113,6 +114,7 @@ class ValueIntersectionFilter extends ValueFilter
                      */
                     $result = array_fill_keys($facetedData[$item]->toArray(), true);
                 }
+                $isFirst = false;
                 continue;
             }
 

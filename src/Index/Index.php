@@ -31,6 +31,7 @@ declare(strict_types=1);
 namespace KSamuel\FacetedSearch\Index;
 
 use KSamuel\FacetedSearch\Filter\ExcludeFilterInterface;
+use KSamuel\FacetedSearch\Filter\FilterInterface;
 use KSamuel\FacetedSearch\Index\Sort\AggregationResults;
 use KSamuel\FacetedSearch\Index\Sort\Filters;
 
@@ -204,7 +205,8 @@ class Index implements IndexInterface
             $countValues,
             $input,
             $excludeMap,
-            $query->getSelfFiltering()
+            $query->getSelfFiltering(),
+            $filters
         );
 
         if ($sort !== null) {
@@ -219,6 +221,7 @@ class Index implements IndexInterface
      * @param array<int,bool> $input
      * @param array<int,bool> $exclude
      * @param bool $selfFiltering
+     * @param array<FilterInterface> $filters
      * @return array<int|string,array<int|string,int|true>>
      */
     private function aggregationScan(
@@ -227,7 +230,8 @@ class Index implements IndexInterface
         bool $countRecords,
         array $input,
         array $exclude,
-        bool $selfFiltering
+        bool $selfFiltering,
+        array $filters
     ): array {
         $result = [];
         $cacheCount = count($resultCache);
@@ -250,7 +254,12 @@ class Index implements IndexInterface
                     }
                     $recordIds = $this->mergeFilters($resultCache, $skipKey);
                 } else {
-                    $recordIds = $this->scanner->findRecordsMap($this->storage, [], $input, $exclude);
+                    // Selecting a self-filtering scenario 
+                    if ($selfFiltering) {
+                        $recordIds = $this->scanner->findRecordsMap($this->storage, $filters, $input, $exclude);
+                    } else {
+                        $recordIds = $this->scanner->findRecordsMap($this->storage, [], $input, $exclude);
+                    }
                 }
             } else {
                 $recordIds = $filteredRecords;
