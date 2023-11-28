@@ -287,8 +287,26 @@ file_put_contents('./first-index.json', json_encode($indexData));
 // Index data is fully compatible. You can create both indexes from the same data 
 $arrayIndex = (new Factory)->create(Factory::ARRAY_STORAGE);
 $arrayIndex->setData($indexData);
+```
 
+### Filter Self-filtering condition
 
+Aggregates disables property self-filtering by default. It allow the user to choose another option in the interface.
+
+Example:
+User wants a phone with 32GB memory, checks the box for the desired option from (16, 32, 64). 
+If self-filtering is enabled, then all other options in the UI will disappear and only 32 will remain. 
+Thus, user will not be able to change his choice.
+
+During aggregation field filter value is used to limit values only other fields. 
+Example: the "size" filter condition uses to limit the list of "brand" field variations.
+
+All depends on your use case of the library. 
+Initially, the library was developed to simplify the construction of a search UI.
+If you want to use the library at the level of technical analysis, statistics, etc. , then enabling self-filtering can help you to get expected results.
+
+```php
+$query = (new AggregationQuery())->filters($filters)->countItems()->sort()->->selfFiltering(true);
 ```
 
 

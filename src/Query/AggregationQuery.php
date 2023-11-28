@@ -47,6 +47,12 @@ class AggregationQuery
 
     protected ?AggregationSort $sort = null;
 
+    /**
+     * Self filtering is disabled by default
+     * @var boolean
+     */
+    protected bool $selfFiltering = false;
+
 
     public function filter(FilterInterface $filter): self
     {
@@ -129,5 +135,27 @@ class AggregationQuery
     public function getSort(): ?AggregationSort
     {
         return $this->sort;
+    }
+
+    /**
+     * Enable/Disable self-filtering, disabled by default.
+     * Example:
+     * User wants a phone with 32GB memory, checks the box for the desired option (16, [x] 32, 64). 
+     * If self-filtering is enabled, then all other options in the interface will disappear and 
+     * only 32 will remain. Thus, user will not be able to change his choice.
+     * The filter value on a specific field during aggregation is used to filter values only for other fields.
+     * Example: the size condition intersects with the brand field data to limit the list of brand variations.
+     * @param bool $enabled
+     * @return self
+     */
+    public function selfFiltering(bool $enabled): self
+    {
+        $this->selfFiltering = $enabled;
+        return $this;
+    }
+
+    public function getSelfFiltering(): bool
+    {
+        return $this->selfFiltering;
     }
 }

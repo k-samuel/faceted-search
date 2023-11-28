@@ -198,7 +198,14 @@ class Index implements IndexInterface
         }
 
         // intersect index values and filtered records
-        $result = $this->aggregationScan($resultCache, $filteredRecords, $countValues, $input, $excludeMap);
+        $result = $this->aggregationScan(
+            $resultCache,
+            $filteredRecords,
+            $countValues,
+            $input,
+            $excludeMap,
+            $query->getSelfFiltering()
+        );
 
         if ($sort !== null) {
             $this->aggregationSort->sort($sort, $result);
@@ -211,10 +218,17 @@ class Index implements IndexInterface
      * @param bool $countRecords
      * @param array<int,bool> $input
      * @param array<int,bool> $exclude
+     * @param bool $selfFiltering
      * @return array<int|string,array<int|string,int|true>>
      */
-    private function aggregationScan(array $resultCache, array $filteredRecords, bool $countRecords, array $input, array $exclude): array
-    {
+    private function aggregationScan(
+        array $resultCache,
+        array $filteredRecords,
+        bool $countRecords,
+        array $input,
+        array $exclude,
+        bool $selfFiltering
+    ): array {
         $result = [];
         $cacheCount = count($resultCache);
         /**
@@ -224,13 +238,17 @@ class Index implements IndexInterface
             /**
              * @var string $filterName
              */
-
-            // do not apply self filtering
             if (isset($resultCache[$filterName])) {
                 // count of cached filters must be > 1 (1 filter will be skipped by field name)
                 if ($cacheCount > 1) {
                     // optimization with cache of findRecordsMap
-                    $recordIds = $this->mergeFilters($resultCache, $filterName);
+                    // do not apply self filtering
+                    if ($selfFiltering == false) {
+                        $skipKey = $filterName;
+                    } else {
+                        $skipKey = null;
+                    }
+                    $recordIds = $this->mergeFilters($resultCache, $skipKey);
                 } else {
                     $recordIds = $this->scanner->findRecordsMap($this->storage, [], $input, $exclude);
                 }

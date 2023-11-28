@@ -107,6 +107,12 @@ class ValueIntersectionFilterTest extends TestCase
             new ValueIntersectionFilter('second_usage', ['streetphoto', 'portraits']),
         ])->countItems()->sort();
 
+        $query2 = (new AggregationQuery())->filters([
+            new ValueFilter('brand', ['Mikon', 'Digma']),
+            new ValueIntersectionFilter('first_usage', ['streetphoto', 'weddings']),
+            new ValueIntersectionFilter('second_usage', ['streetphoto', 'portraits']),
+        ])->countItems()->sort()->selfFiltering(true);
+
         $index = $this->getIndex(Factory::ARRAY_STORAGE);
         $result = $index->aggregate($query1);
         $this->assertEquals([
@@ -125,6 +131,55 @@ class ValueIntersectionFilterTest extends TestCase
             ],
         ], $result);
 
+        $result = $index->aggregate($query2);
+        $this->assertEquals([
+            'brand' => [
+                'Digma' => 1,
+            ],
+            'first_usage' => [
+                'streetphoto' => 1,
+                'weddings' => 1,
+                'portraits' => 1,
+            ],
+            'second_usage' => [
+                'streetphoto' => 1,
+                'portraits' => 1,
+            ],
+        ], $result);
+
+
         $index = $this->getIndex(Factory::FIXED_ARRAY_STORAGE);
+        $result = $index->aggregate($query1);
+        $this->assertEquals([
+            'brand' => [
+                'Digma' => 1,
+            ],
+            'first_usage' => [
+                'streetphoto' => 1,
+                'weddings' => 1,
+                'portraits' => 1,
+            ],
+            'second_usage' => [
+                'streetphoto' => 2,
+                'wildlife' => 1,
+                'portraits' => 1,
+            ],
+        ], $result);
+
+        $result = $index->aggregate($query2);
+        $this->assertEquals([
+            'brand' => [
+                'Digma' => 1,
+            ],
+            'first_usage' => [
+                'streetphoto' => 1,
+                'weddings' => 1,
+                'portraits' => 1,
+            ],
+            'second_usage' => [
+                'streetphoto' => 1,
+                'portraits' => 1,
+            ],
+        ], $result);
     }
 }

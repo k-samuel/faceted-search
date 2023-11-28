@@ -3,7 +3,10 @@
 ### v3.2.0 (xx.xx.2023)
 
 - ValueIntersectionFilter added [Feature Request](https://github.com/k-samuel/faceted-search/issues/33)
+- Enable self-filtering option for AggregationQuery added
 
+
+#### ValueIntersectionFilter
 Default Filters example:
 
 Find phones with memory sizes ANY OF (12, 32, 64) AND camera 12m
@@ -21,9 +24,29 @@ $filters[] = new ValueFilter('brand', ['Digma', 'Pony']); // ANY OF
 $filters[] = new ValueIntersectionFilter('usage', ['portraits', 'wildlife']); // portraits AND wildlife 
 ```
 
+#### Self-filtering
+
+Aggregates disables property self-filtering by default. It allow the user to choose another option in the interface.
+
+Example:
+User wants a phone with 32GB memory, checks the box for the desired option from (16, 32, 64). 
+If self-filtering is enabled, then all other options in the UI will disappear and only 32 will remain. 
+Thus, user will not be able to change his choice.
+
+During aggregation field filter value is used to limit values only other fields. 
+Example: the "size" filter condition uses to limit the list of "brand" field variations.
+
+All depends on your use case of the library. 
+Initially, the library was developed to simplify the construction of a search UI.
+If you want to use the library at the level of technical analysis, statistics, etc. , then enabling self-filtering can help you to get expected results.
+
+```php
+$query = (new AggregationQuery())->filters($filters)->countItems()->sort()->->selfFiltering(true);
+```
 
 
-  
+#### Bench
+
 v3.1.0 Bench PHP 8.2.10 + JIT + opcache (no xdebug extension)
 
 ArrayIndex
