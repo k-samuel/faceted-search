@@ -17,11 +17,19 @@ $filters[] = new ValueFilter(‘camera’, [12]);
 
 New functionality example:
 
-Search brand "Digma" OR "Pony" where the recommended usage is for portraits AND wildlife
+Search brand "Digma" OR "Pony" where the recommended usage is for portraits AND wildlife.
+Can be used for records with multiple field values 
+```
+<?php 
+$data = [
+ ['id'=>1, 'brand'=>'Digma', 'usage'=>['portraits', 'wildlife']],
+ ['id'=>2, 'brand'=>'Pony', 'usage'=>['streetphoto', 'weddings','portraits']],
+];
 
-```php
+// ...
+
 $filters[] = new ValueFilter('brand', ['Digma', 'Pony']); // ANY OF
-$filters[] = new ValueIntersectionFilter('usage', ['portraits', 'wildlife']); // portraits AND wildlife 
+$filters[] = new ValueIntersectionFilter('usage', ['portraits', 'wildlife']); // portraits AND wildlife
 ```
 
 #### Self-filtering

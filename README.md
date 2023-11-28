@@ -159,7 +159,10 @@ $filters = [
     new RangeFilter('size', ['min'=>36, 'max'=>40]),
     // You can exclude records with specific values using ExcludeValueFilter / ExcludeRangeFilter
     new ExcludeValueFilter('type', ['used']),
+
     // You can select items with required multiple values of each record
+    // Can be used for records with multiple field values:
+    // ['id'=>2, 'brand'=>'Pony', 'purpose'=>['hunting', 'fishing', 'sports']]
     new ValueIntersectionFilter('purpose', ['hunting','fishing']) // AND condition
 ];
 // create SearchQuery
