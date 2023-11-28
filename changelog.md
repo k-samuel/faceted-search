@@ -18,7 +18,7 @@ $filters[] = new ValueFilter(‘camera’, [12]);
 New functionality example:
 
 Search brand "Digma" OR "Pony" where the recommended usage is for portraits AND wildlife.
-Can be used for records with multiple field values 
+Can be used for items with multiple field values 
 ```
 <?php 
 $data = [

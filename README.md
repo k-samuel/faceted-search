@@ -161,7 +161,7 @@ $filters = [
     new ExcludeValueFilter('type', ['used']),
 
     // You can select items with required multiple values of each record
-    // Can be used for records with multiple field values:
+    // Can be used for items with multiple field values:
     // ['id'=>2, 'brand'=>'Pony', 'purpose'=>['hunting', 'fishing', 'sports']]
     new ValueIntersectionFilter('purpose', ['hunting','fishing']) // AND condition
 ];
