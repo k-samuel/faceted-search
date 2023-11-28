@@ -58,27 +58,31 @@ For example: list of ProductId "in stock" to exclude not available products.
 
 Tests on sets of products with 10 attributes, search with filters by 3 fields.
 
-v3.0.0 Bench ArrayIndex  PHP 8.2.3 + JIT + opcache (no xdebug extension)
+v3.1.0 Bench PHP 8.2.10 + JIT + opcache (no xdebug extension)
 
-|  Items       | Memory | Query       | Aggregate  | Aggregate & Count | Sort by field | Results Found |
-| -----------: | -----: | ----------: | ---------: | ----------------: | ------------: | ------------: |
-|       10,000 |   ~3Mb |   ~0.0008s. |   ~0.001s. |          ~0.002s. |     ~0.0001s. |           907 |
-|       50,000 |  ~20Mb |    ~0.002s. |   ~0.005s. |          ~0.010s. |     ~0.0006s. |          4550 |
-|      100,000 |  ~40Mb |    ~0.004s. |   ~0.012s. |          ~0.023s. |     ~0.0012s. |          8817 |
-|      300,000 |  ~95Mb |    ~0.010s. |   ~0.036s. |          ~0.079s. |      ~0.004s. |         26891 |
-|    1,000,000 | ~329Mb |    ~0.039s. |   ~0.134s. |          ~0.287s. |      ~0.015s. |         90520 |
-| UB_1,000,000 | ~324Mb |    ~0.103s. |   ~0.225s. |          ~0.406s. |      ~0.032s. |        179856 |
+ ArrayIndex
 
-v3.0.0 Bench FixedArrayIndex PHP 8.2 + JIT + opcache (no xdebug extension) 
+|  Items count | Memory | Query      | Aggregate  | Aggregate & Count | Sort by field | Results Found |
+| -----------: | -----: | ---------: | ---------: | ----------------: | ------------: | ------------: |
+|       10,000 |   ~3Mb | ~0.0003 s. | ~0.0006 s. |         ~0.001 s. |    ~0.0002 s. |           907 |
+|       50,000 |  ~20Mb |  ~0.001 s. |  ~0.002 s. |         ~0.006 s. |    ~0.0005 s. |          4550 |
+|      100,000 |  ~40Mb |  ~0.002 s. |  ~0.006 s. |         ~0.013 s. |     ~0.001 s. |          8817 |
+|      300,000 |  ~95Mb |  ~0.006 s. |  ~0.016 s. |         ~0.036 s  |     ~0.002 s. |         26891 |
+|    1,000,000 | ~329Mb |  ~0.024 s. |  ~0.053 s. |         ~0.134 s. |     ~0.009 s. |         90520 |
+| 1,000,000 UB | ~324Mb |  ~0.046 s. |  ~0.078 s. |         ~0.159 s. |     ~0.015 s. |        179856 |
 
-|  Items       | Memory | Query       | Aggregate  | Aggregate & Count | Sort by field | Results Found |
-| -----------: | -----: | ----------: | ---------: | ----------------: | ------------: | ------------: |
-|       10,000 |   ~2Mb |   ~0.0012s. |   ~0.001s. |          ~0.005s. |     ~0.0004s. |           907 |
-|       50,000 |  ~12Mb |    ~0.004s. |   ~0.006s. |          ~0.022s. |      ~0.001s. |          4550 |
-|      100,000 |  ~23Mb |    ~0.007s. |   ~0.015s. |          ~0.048s. |      ~0.002s. |          8817 |
-|      300,000 |  ~70Mb |    ~0.020s. |   ~0.046s. |          ~0.142s. |      ~0.005s. |         26891 |
-|    1,000,000 | ~233Mb |    ~0.081s. |   ~0.172s. |          ~0.517s. |      ~0.021s. |         90520 |
-| UB_1,000,000 | ~233Mb |    ~0.149s. |   ~0.260s. |          ~0.682s. |      ~0.039s. |        179856 |
+FixedArrayIndex
+
+|  Items count | Memory |  Query     | Aggregate  | Aggregate & Count | Sort by field | Results Found |
+| -----------: | -----: | ---------: | ---------: | ----------------: | ------------: | ------------: |
+|       10,000 |   ~2Mb | ~0.0005 s. | ~0.0009 s. |         ~0.002 s. |    ~0.0003 s. |           907 |
+|       50,000 |  ~12Mb |  ~0.002 s. |  ~0.003 s. |         ~0.012 s. |    ~0.0007 s. |          4550 |
+|      100,000 |  ~23Mb |  ~0.006 s. |  ~0.010 s. |         ~0.029 s. |     ~0.001 s. |          8817 |
+|      300,000 |  ~70Mb |  ~0.012 s. |  ~0.022 s. |         ~0.072 s. |     ~0.003 s. |         26891 |
+|    1,000,000 | ~233Mb |  ~0.045 s. |  ~0.070 s. |         ~0.257 s. |     ~0.012 s. |         90520 |
+| 1,000,000 UB | ~233Mb |  ~0.068 s. |  ~0.101 s. |         ~0.290 s. |     ~0.017 s. |        179856 |
+
+ *(Apple M2 macOS 14.0)*
 
 * Items count - Products in index
 * Memory - RAM used for index
@@ -91,18 +95,21 @@ v3.0.0 Bench FixedArrayIndex PHP 8.2 + JIT + opcache (no xdebug extension)
 * Results Found - count of found products (Find)
 * UB - unbalanced dataset
 
+
 Experimental Golang port bench https://github.com/k-samuel/go-faceted-search
 
-Bench v0.3.3 golang 1.19.4 with parallel aggregates. UB - unbalanced dataset 
+Bench v0.3.3 go 1.21.1 darwin/arm64 with parallel aggregates. 
 
 | Items count     | Memory   | Query            | Aggregate & Count        | Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~7Mb     | ~0.0003 s.       | ~0.002 s.                | ~0.0002 s.   | 907              |
-| 50,000          | ~14Mb    | ~0.001 s.        | ~0.012 s.                | ~0.001 s.    | 4550             |
-| 100,000         | ~21Mb    | ~0.003 s.        | ~0.025 s.                | ~0.002 s.    | 8817             |
-| 300,000         | ~47Mb    | ~0.010 s.        | ~0.082 s.                | ~0.006 s.    | 26891            |
-| 1,000,000       | ~140Mb   | ~0.037 s.        | ~0.285 s.                | ~0.026 s.    | 90520            |
-| 1,000,000 UB    | ~138Mb   | ~0.130 s.        | ~0.574 s.                | ~0.044 s.    | 179856           |
+| 10,000          | ~7Mb     | ~0.0002 s.       | ~0.002 s.                | ~0.0001 s.   | 907              |
+| 50,000          | ~14Mb    | ~0.001 s.        | ~0.017 s.                | ~0.001 s.    | 4550             |
+| 100,000         | ~21Mb    | ~0.002 s.        | ~0.037 s.                | ~0.001 s.    | 8817             |
+| 300,000         | ~47Mb    | ~0.008 s.        | ~0.107 s.                | ~0.004 s.    | 26891            |
+| 1,000,000       | ~140Mb   | ~0.031 s.        | ~0.363 s.                | ~0.015 s.    | 90520            |
+| 1,000,000 UB    | ~138Mb   | ~0.059 s.        | ~0.899 s.                | ~0.028 s.    | 179856           |
+ 
+ *(Apple M2 macOS 14.0)*
 
 *Since version 0.3.3, the index structures in PHP and Golang have diverged due to the peculiarities of the 
 implementation of hasMap in languages. In Go, hashMap had to be abandoned in favor of a more efficient storage 
@@ -160,6 +167,7 @@ use KSamuel\FacetedSearch\Index\Factory;
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Filter\ExcludeValueFilter;
+use KSamuel\FacetedSearch\Filter\ValueIntersectionFilter;
 use KSamuel\FacetedSearch\Filter\RangeFilter;
 use KSamuel\FacetedSearch\Query\SearchQuery;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
@@ -172,12 +180,17 @@ $search->setData($indexData);
 
 // get request params and create search filters
 $filters = [
-    // Values to search
-    new ValueFilter('color', ['black']),
+    // Values to search 
+    new ValueFilter('color', ['black','green']), // ANY OF  (OR condition)
     // RangeFilter example for numeric property ranges (min - max)
     new RangeFilter('size', ['min'=>36, 'max'=>40]),
     // You can exclude records with specific values using ExcludeValueFilter / ExcludeRangeFilter
     new ExcludeValueFilter('type', ['used']),
+
+    // You can select items with required multiple values of each record
+    // Can be used for items with multiple field values:
+    // ['id'=>2, 'brand'=>'Pony', 'purpose'=>['hunting', 'fishing', 'sports']]
+    new ValueIntersectionFilter('purpose', ['hunting','fishing']) // AND condition
 ];
 // create SearchQuery
 $query = (new SearchQuery())->filters($filters);
@@ -304,8 +317,26 @@ file_put_contents('./first-index.json', json_encode($indexData));
 // Index data is fully compatible. You can create both indexes from the same data 
 $arrayIndex = (new Factory)->create(Factory::ARRAY_STORAGE);
 $arrayIndex->setData($indexData);
+```
 
+### Filter Self-filtering condition
 
+Aggregates disables property self-filtering by default. It allow the user to choose another option in the interface.
+
+Example:
+User wants a phone with 32GB memory, checks the box for the desired option from (16, 32, 64). 
+If self-filtering is enabled, then all other options in the UI will disappear and only 32 will remain. 
+Thus, user will not be able to change his choice.
+
+During aggregation field filter value is used to limit values only other fields. 
+Example: the "size" filter condition uses to limit the list of "brand" field variations.
+
+All depends on your use case of the library. 
+Initially, the library was developed to simplify the construction of a search UI.
+If you want to use the library at the level of technical analysis, statistics, etc. , then enabling self-filtering can help you to get expected results.
+
+```php
+$query = (new AggregationQuery())->filters($filters)->countItems()->sort()->selfFiltering(true);
 ```
 
 

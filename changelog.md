@@ -1,6 +1,85 @@
 # Changelog
 
+### v3.2.0 (29.11.2023)
 
+- ValueIntersectionFilter added [Feature Request](https://github.com/k-samuel/faceted-search/issues/33)
+- Enable self-filtering option for AggregationQuery added
+
+
+#### ValueIntersectionFilter
+Default Filters example:
+
+Find phones with memory sizes ANY OF (12, 32, 64) AND camera 12m
+```php
+$filters[] = new ValueFilter(‘size’, [12,32,64]);
+$filters[] = new ValueFilter(‘camera’, [12]);
+```
+
+New functionality example:
+
+Search brand "Digma" OR "Pony" where the recommended usage is for portraits AND wildlife.
+Can be used for items with multiple field values 
+```
+<?php 
+$data = [
+ ['id'=>1, 'brand'=>'Digma', 'usage'=>['portraits', 'wildlife']],
+ ['id'=>2, 'brand'=>'Pony', 'usage'=>['streetphoto', 'weddings','portraits']],
+];
+
+// ...
+
+$filters[] = new ValueFilter('brand', ['Digma', 'Pony']); // ANY OF
+$filters[] = new ValueIntersectionFilter('usage', ['portraits', 'wildlife']); // portraits AND wildlife
+```
+
+#### Self-filtering
+
+Aggregates disables property self-filtering by default. It allow the user to choose another option in the interface.
+
+Example:
+User wants a phone with 32GB memory, checks the box for the desired option from (16, 32, 64). 
+If self-filtering is enabled, then all other options in the UI will disappear and only 32 will remain. 
+Thus, user will not be able to change his choice.
+
+During aggregation field filter value is used to limit values only other fields. 
+Example: the "size" filter condition uses to limit the list of "brand" field variations.
+
+All depends on your use case of the library. 
+Initially, the library was developed to simplify the construction of a search UI.
+If you want to use the library at the level of technical analysis, statistics, etc. , then enabling self-filtering can help you to get expected results.
+
+```php
+$query = (new AggregationQuery())->filters($filters)->countItems()->sort()->selfFiltering(true);
+```
+
+
+#### Bench
+
+v3.1.0 Bench PHP 8.2.10 + JIT + opcache (no xdebug extension)
+
+ArrayIndex
+
+|  Items count | Memory | Query      | Aggregate  | Aggregate & Count | Sort by field | Results Found |
+| -----------: | -----: | ---------: | ---------: | ----------------: | ------------: | ------------: |
+|       10,000 |   ~3Mb | ~0.0003 s. | ~0.0006 s. |         ~0.001 s. |    ~0.0002 s. |           907 |
+|       50,000 |  ~20Mb |  ~0.001 s. |  ~0.002 s. |         ~0.006 s. |    ~0.0005 s. |          4550 |
+|      100,000 |  ~40Mb |  ~0.002 s. |  ~0.006 s. |         ~0.013 s. |     ~0.001 s. |          8817 |
+|      300,000 |  ~95Mb |  ~0.006 s. |  ~0.016 s. |         ~0.036 s  |     ~0.002 s. |         26891 |
+|    1,000,000 | ~329Mb |  ~0.024 s. |  ~0.053 s. |         ~0.134 s. |     ~0.009 s. |         90520 |
+| 1,000,000 UB | ~324Mb |  ~0.046 s. |  ~0.078 s. |         ~0.159 s. |     ~0.015 s. |        179856 |
+
+FixedArrayIndex
+
+|  Items count | Memory |  Query     | Aggregate  | Aggregate & Count | Sort by field | Results Found |
+| -----------: | -----: | ---------: | ---------: | ----------------: | ------------: | ------------: |
+|       10,000 |   ~2Mb | ~0.0005 s. | ~0.0009 s. |         ~0.002 s. |    ~0.0003 s. |           907 |
+|       50,000 |  ~12Mb |  ~0.002 s. |  ~0.003 s. |         ~0.012 s. |    ~0.0007 s. |          4550 |
+|      100,000 |  ~23Mb |  ~0.006 s. |  ~0.010 s. |         ~0.029 s. |     ~0.001 s. |          8817 |
+|      300,000 |  ~70Mb |  ~0.012 s. |  ~0.022 s. |         ~0.072 s. |     ~0.003 s. |         26891 |
+|    1,000,000 | ~233Mb |  ~0.045 s. |  ~0.070 s. |         ~0.257 s. |     ~0.012 s. |         90520 |
+| 1,000,000 UB | ~233Mb |  ~0.068 s. |  ~0.101 s. |         ~0.290 s. |     ~0.017 s. |        179856 |
+
+ *(Apple M2 macOS 14.0)*
 
 ### v3.1.0 (14.06.2023)
 

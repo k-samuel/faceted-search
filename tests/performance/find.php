@@ -69,7 +69,7 @@ function find(IndexInterface $search, array $filters): array
     $t = microtime(true);
     $results = $search->query((new SearchQuery())->filters($filters));
     $time = microtime(true) - $t;
-    return ['Find', number_format($time, 6) . "s", count($results)];
+    return ['Find', number_format($time, 6), count($results)];
 }
 
 /**
@@ -83,7 +83,7 @@ function findAndSort(IndexInterface $search, array $filters): array
     $t = microtime(true);
     $results = $search->query((new SearchQuery())->filters($filters)->order('quantity', Order::SORT_DESC));
     $time = microtime(true) - $t;
-    return ['Find & Sort', number_format($time, 6) . "s", count($results)];
+    return ['Find & Sort', number_format($time, 6), count($results)];
 }
 
 /**
@@ -97,7 +97,7 @@ function aggregate(IndexInterface $search, array $filters): array
     $t = microtime(true);
     $filtersData = $search->aggregate((new AggregationQuery())->filters($filters));
     $time = microtime(true) - $t;
-    return ['Filters', number_format($time, 6) . "s", count($filters)];
+    return ['Filters', number_format($time, 6), count($filters)];
 }
 
 /**
@@ -115,7 +115,7 @@ function aggregateAndCount(IndexInterface $search, array $filters): array
     $t = microtime(true);
     $filtersData = $search->aggregate($query);
     $time = microtime(true) - $t;
-    return ['Filters & count', number_format($time, 6) . "s", count($filters)];
+    return ['Filters & count', number_format($time, 6), count($filters)];
 }
 
 /**
@@ -133,7 +133,7 @@ function aggregateAndCountWithExclude(IndexInterface $search, array $filters): a
     $t = microtime(true);
     $filtersData = $search->aggregate($query);
     $time = microtime(true) - $t;
-    return ['Filters & count & exc', number_format($time, 6) . "s", count($filters)];
+    return ['Filters & count & exc', number_format($time, 6), count($filters)];
 }
 
 
@@ -148,7 +148,7 @@ function aggregateAndCountWithExclude(IndexInterface $search, array $filters): a
 function sortTest(IndexInterface $search, array $filters, Profile $profile): array
 {
     $results = $search->query((new SearchQuery())->filters($filters)->order('quantity', Order::SORT_DESC));
-    return ['Sort', number_format($profile->getSortingTime(), 6) . "s", count($filters)];
+    return ['Sort', number_format($profile->getSortingTime(), 6), count($filters)];
 }
 
 
@@ -163,7 +163,7 @@ function findWithRange(IndexInterface $search, array $filters): array
     $t = microtime(true);
     $results2 = $search->query((new SearchQuery())->filters($filters));
     $time = microtime(true) - $t;
-    return ['Find (ranges)', number_format($time, 6) . "s", count($results2)];
+    return ['Find (ranges)', number_format($time, 6), count($results2)];
 }
 
 /**
@@ -177,40 +177,101 @@ function findWithExclude(IndexInterface $search, array $filters): array
     $t = microtime(true);
     $results2 = $search->query((new SearchQuery())->filters($filters));
     $time = microtime(true) - $t;
-    return ['Find (unsets)', number_format($time, 6) . "s", count($results2)];
+    return ['Find (unsets)', number_format($time, 6), count($results2)];
+}
+/**
+ * @param array<int> $colLen
+ * @param int $totalLen
+ * @param array<string> $resultData
+ * @return string
+ */
+function prepareIndexStat(array $colLen, int $totalLen, array $resultData): string
+{
+    $result = str_repeat("-", $totalLen) . PHP_EOL;
+    foreach ($resultData as $cols) {
+        for ($i = 0; $i < 2; $i++) {
+            if (!isset($cols[$i])) {
+                $result .= '| ' . str_pad(' ', $colLen[$i]);
+                continue;
+            }
+            $result .=  '| ' . str_pad('' . $cols[$i], $colLen[$i]);
+        }
+        $result .=  "|" . PHP_EOL;
+    }
+    $result .=  str_repeat("-", $totalLen) . PHP_EOL;
+    return $result;
+}
+/**
+ * @param array<int> $colLen
+ * @param int $totalLen
+ * @param array<string> $resultData
+ * @return string
+ */
+function prepareResults(array $colLen, int $totalLen, array $resultData): string
+{
+    $result = str_repeat("-", $totalLen) . PHP_EOL;
+
+    foreach ($resultData as $index => $cols) {
+        if ($index == 1) {
+            $result .= str_repeat("-", $totalLen) . PHP_EOL;
+        }
+        for ($i = 0; $i < count($colLen); $i++) {
+            if (!isset($cols[$i])) {
+                $result .= '| ' . str_pad(' ', $colLen[$i]);
+                continue;
+            }
+            $result .= '| ' . str_pad('' . $cols[$i], $colLen[$i]);
+        }
+
+        $result .= "|" . PHP_EOL;
+    }
+    $result .= str_repeat("-", $totalLen) . PHP_EOL;
+    return $result;
 }
 
+$testResultData[] = ['Method', 'Time, s.', 'Records', 'Extra / Total Mb.'];
 
-$resultData[] = find($search, $filters);
-$resultData[] = findAndSort($search, $filters);
-$resultData[] = findWithExclude($search, $filters3);
-$resultData[] = findWithRange($search, $filters2);
-$resultData[] = aggregate($search, $filters);
-$resultData[] = aggregateAndCount($search, $filters);
-$resultData[] = aggregateAndCountWithExclude($search, $filters3);
-$resultData[] = sortTest($search, $filters, $profile);
-
-
-
-
-
+$tests = [
+    ['func' => 'find', 'args' => [$search, $filters]],
+    // ['func' => 'findAndSort', 'args' => [$search, $filters]],
+    // ['func' => 'findWithExclude', 'args' => [$search, $filters3]],
+    // ['func' => 'findWithRange', 'args' => [$search, $filters2]],
+    ['func' => 'aggregate', 'args' => [$search, $filters]],
+    ['func' => 'aggregateAndCount', 'args' => [$search, $filters]],
+    //['func' => 'aggregateAndCountWithExclude', 'args' => [$search, $filters3]],
+    // ['func' => 'sortTest', 'args' => [$search, $filters, $profile]]
+];
 
 
+if (function_exists('memory_reset_peak_usage')) {
+    foreach ($tests as $opts) {
+        $tmp = [];
+        gc_collect_cycles();
+        $memUse = (int)((memory_get_usage() - $m) / 1024 / 1024);
+        memory_reset_peak_usage();
+        $tmp =  call_user_func_array($opts['func'], $opts['args']);
+        $peak = (memory_get_peak_usage() / 1024 / 1024);
+        $tmp[] = number_format(($peak - $memUse), 3) . ' / ' . number_format($peak, 3);
+        $testResultData[] = $tmp;
+    }
+} else {
+    foreach ($tests as $opts) {
+        $testResultData[] = call_user_func_array($opts['func'], $opts['args']);
+    }
+}
 
 $count = $search->getCount();
 array_unshift($resultData, ['Records', number_format($count), '']);
 
-$colLen = [25, 14, 10];
-echo str_repeat("-", 56) . PHP_EOL;
+$colLen = [25, 10, 8, 20];
 
-foreach ($resultData as $index => $cols) {
-    if ($index == 4) {
-        echo str_repeat("-", 56) . PHP_EOL;
-    }
+$totalLen = $colLen[0] + $colLen[1] + 4;
+echo PHP_EOL;
+echo 'Index Info' . PHP_EOL;
+echo prepareIndexStat($colLen, $totalLen, $resultData);
+echo PHP_EOL;
 
-    foreach ($cols as $id => $item) {
-        echo '| ' . str_pad(' ' . $item, $colLen[$id]);
-    }
-    echo "|" . PHP_EOL;
-}
-echo str_repeat("-", 56) . PHP_EOL;
+$totalLen = array_sum($colLen) + count($colLen) * 2;
+echo 'Perf Results' . PHP_EOL;
+echo prepareResults($colLen, $totalLen, $testResultData);
+echo PHP_EOL;
