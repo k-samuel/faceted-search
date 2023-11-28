@@ -1,6 +1,6 @@
 # Changelog
 
-### v3.2.0 (xx.xx.2023)
+### v3.2.0 (29.11.2023)
 
 - ValueIntersectionFilter added [Feature Request](https://github.com/k-samuel/faceted-search/issues/33)
 - Enable self-filtering option for AggregationQuery added
