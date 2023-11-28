@@ -140,7 +140,7 @@ use KSamuel\FacetedSearch\Index\Factory;
 use KSamuel\FacetedSearch\Search;
 use KSamuel\FacetedSearch\Filter\ValueFilter;
 use KSamuel\FacetedSearch\Filter\ExcludeValueFilter;
-use KSamuel\FacetedSearch\Filter\ValueIntersectionFilter
+use KSamuel\FacetedSearch\Filter\ValueIntersectionFilter;
 use KSamuel\FacetedSearch\Filter\RangeFilter;
 use KSamuel\FacetedSearch\Query\SearchQuery;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
