@@ -41,7 +41,7 @@ Initially, the library was developed to simplify the construction of a search UI
 If you want to use the library at the level of technical analysis, statistics, etc. , then enabling self-filtering can help you to get expected results.
 
 ```php
-$query = (new AggregationQuery())->filters($filters)->countItems()->sort()->->selfFiltering(true);
+$query = (new AggregationQuery())->filters($filters)->countItems()->sort()->selfFiltering(true);
 ```
 
 
