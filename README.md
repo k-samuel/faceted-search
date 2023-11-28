@@ -98,16 +98,17 @@ FixedArrayIndex
 
 Experimental Golang port bench https://github.com/k-samuel/go-faceted-search
 
-Bench v0.3.3 golang 1.19.4 with parallel aggregates. UB - unbalanced dataset 
+Bench v0.3.3 go 1.21.1 darwin/arm64 with parallel aggregates. 
 
 | Items count     | Memory   | Query            | Aggregate & Count        | Sort by field| Results Found    |
 |----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~7Mb     | ~0.0003 s.       | ~0.002 s.                | ~0.0002 s.   | 907              |
-| 50,000          | ~14Mb    | ~0.001 s.        | ~0.012 s.                | ~0.001 s.    | 4550             |
-| 100,000         | ~21Mb    | ~0.003 s.        | ~0.025 s.                | ~0.002 s.    | 8817             |
-| 300,000         | ~47Mb    | ~0.010 s.        | ~0.082 s.                | ~0.006 s.    | 26891            |
-| 1,000,000       | ~140Mb   | ~0.037 s.        | ~0.285 s.                | ~0.026 s.    | 90520            |
-| 1,000,000 UB    | ~138Mb   | ~0.130 s.        | ~0.574 s.                | ~0.044 s.    | 179856           |
+| 10,000          | ~7Mb     | ~0.0002 s.       | ~0.002 s.                | ~0.0001 s.   | 907              |
+| 50,000          | ~14Mb    | ~0.001 s.        | ~0.017 s.                | ~0.001 s.    | 4550             |
+| 100,000         | ~21Mb    | ~0.002 s.        | ~0.037 s.                | ~0.001 s.    | 8817             |
+| 300,000         | ~47Mb    | ~0.008 s.        | ~0.107 s.                | ~0.004 s.    | 26891            |
+| 1,000,000       | ~140Mb   | ~0.031 s.        | ~0.363 s.                | ~0.015 s.    | 90520            |
+| 1,000,000 UB    | ~138Mb   | ~0.059 s.        | ~0.899 s.                | ~0.028 s.    | 179856           |
+ *(Apple M2 macOS 14.0)*
 
 *Since version 0.3.3, the index structures in PHP and Golang have diverged due to the peculiarities of the 
 implementation of hasMap in languages. In Go, hashMap had to be abandoned in favor of a more efficient storage 
