@@ -46,4 +46,11 @@ interface FilterInterface
      * @return void
      */
     public function filterInput(array $facetedData,  array &$inputIdKeys, array $excludeRecords): void;
+
+    /**
+     *  Get self-filtering flag
+     *
+     * @return bool
+     */
+    public function getSelfFiltering(): bool;
 }
