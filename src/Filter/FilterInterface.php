@@ -52,5 +52,5 @@ interface FilterInterface
      *
      * @return bool
      */
-    public function getSelfFiltering(): bool;
+    public function hasSelfFiltering(): bool;
 }

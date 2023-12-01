@@ -109,7 +109,7 @@ abstract class AbstractFilter implements FilterInterface
      * Get self-filtering flag
      * @return boolean
      */
-    public function getSelfFiltering(): bool
+    public function hasSelfFiltering(): bool
     {
         return $this->selfFiltering;
     }

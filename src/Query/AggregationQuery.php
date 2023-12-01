@@ -156,9 +156,9 @@ class AggregationQuery
 
     /**
      * Get self-filtering flag
-     * @return boolean
+     * @return bool
      */
-    public function getSelfFiltering(): bool
+    public function hasSelfFiltering(): bool
     {
         return $this->selfFiltering;
     }

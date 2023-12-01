@@ -205,7 +205,7 @@ class Index implements IndexInterface
             $countValues,
             $input,
             $excludeMap,
-            $query->getSelfFiltering(),
+            $query->hasSelfFiltering(),
             $filters
         );
 
@@ -247,7 +247,7 @@ class Index implements IndexInterface
         foreach ($this->scanner->scan($this->storage) as $filterName => $filterValues) {
 
             $needSelfFiltering = false;
-            if ($selfFiltering != false || (isset($indexedFilters[$filterName]) && $indexedFilters[$filterName]->getSelfFiltering())) {
+            if ($selfFiltering != false || (isset($indexedFilters[$filterName]) && $indexedFilters[$filterName]->hasSelfFiltering())) {
                 $needSelfFiltering = true;
             }
 
