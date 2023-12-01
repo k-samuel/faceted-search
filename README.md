@@ -335,8 +335,14 @@ All depends on your use case of the library.
 Initially, the library was developed to simplify the construction of a search UI.
 If you want to use the library at the level of technical analysis, statistics, etc. , then enabling self-filtering can help you to get expected results.
 
+For all filters:
 ```php
 $query = (new AggregationQuery())->filters($filters)->countItems()->sort()->selfFiltering(true);
+```
+
+For individual filter
+```php
+$filters[] = (new ValueIntersectionFilter('size', [12,32]))->selfFiltering(true);
 ```
 
 
