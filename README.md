@@ -340,7 +340,7 @@ For all filters:
 $query = (new AggregationQuery())->filters($filters)->countItems()->sort()->selfFiltering(true);
 ```
 
-For individual filter
+For individual filter:
 ```php
 $filters[] = (new ValueIntersectionFilter('size', [12,32]))->selfFiltering(true);
 ```
