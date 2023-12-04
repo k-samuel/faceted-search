@@ -1,6 +1,6 @@
 # Changelog
 
-### v3.2.1 (xx.11.2023)
+### v3.2.1 (04.12.2023)
 
 Self-filtering option for individual filter (disabled by default). [Feature Request](https://github.com/k-samuel/faceted-search/issues/37)
 Advanced configuration for AggregationQuery, if enabled, then result for filter can contain only filter values.
