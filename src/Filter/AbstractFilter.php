@@ -43,6 +43,12 @@ abstract class AbstractFilter implements FilterInterface
     protected $value;
 
     /**
+     * Self filtering is disabled by default
+     * @var boolean
+     */
+    protected bool $selfFiltering = false;
+
+    /**
      * AbstractFilter constructor.
      * @param string $fieldName
      * @param mixed $value
@@ -86,4 +92,25 @@ abstract class AbstractFilter implements FilterInterface
      * @inheritDoc
      */
     abstract public function filterInput(array $facetedData,  array &$inputIdKeys, array $excludeRecords): void;
+
+    /**
+     * Enable/Disable self-filtering for current filter, disabled by default.
+     * Used in AggregationQuery
+     * @param bool $enabled
+     * @return self 
+     */
+    public function selfFiltering(bool $enabled): self
+    {
+        $this->selfFiltering = $enabled;
+        return $this;
+    }
+
+    /**
+     * Get self-filtering flag
+     * @return boolean
+     */
+    public function hasSelfFiltering(): bool
+    {
+        return $this->selfFiltering;
+    }
 }

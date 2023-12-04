@@ -205,7 +205,7 @@ class Index implements IndexInterface
             $countValues,
             $input,
             $excludeMap,
-            $query->getSelfFiltering(),
+            $query->hasSelfFiltering(),
             $filters
         );
 
@@ -235,10 +235,22 @@ class Index implements IndexInterface
     ): array {
         $result = [];
         $cacheCount = count($resultCache);
+
+        $indexedFilters = [];
+        foreach ($filters as $filter) {
+            $indexedFilters[$filter->getFieldName()] = $filter;
+        }
+
         /**
          * @var array<int|string,array<int>> $filterValues
          */
         foreach ($this->scanner->scan($this->storage) as $filterName => $filterValues) {
+
+            $needSelfFiltering = false;
+            if ($selfFiltering != false || (isset($indexedFilters[$filterName]) && $indexedFilters[$filterName]->hasSelfFiltering())) {
+                $needSelfFiltering = true;
+            }
+
             /**
              * @var string $filterName
              */
@@ -247,15 +259,16 @@ class Index implements IndexInterface
                 if ($cacheCount > 1) {
                     // optimization with cache of findRecordsMap
                     // do not apply self filtering
-                    if ($selfFiltering == false) {
-                        $skipKey = $filterName;
-                    } else {
+                    if ($needSelfFiltering) {
                         $skipKey = null;
+                    } else {
+                        $skipKey = $filterName;
                     }
+
                     $recordIds = $this->mergeFilters($resultCache, $skipKey);
                 } else {
                     // Selecting a self-filtering scenario 
-                    if ($selfFiltering) {
+                    if ($needSelfFiltering) {
                         $recordIds = $this->scanner->findRecordsMap($this->storage, $filters, $input, $exclude);
                     } else {
                         $recordIds = $this->scanner->findRecordsMap($this->storage, [], $input, $exclude);

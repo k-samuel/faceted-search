@@ -124,7 +124,6 @@ class ValueIntersectionFilterTest extends TestCase
             new ValueIntersectionFilter('first_usage', ['wildlife', 'weddings', 'portraits']),
         ])->countItems()->sort()->selfFiltering(true);
 
-
         $index = $this->getIndex(Factory::ARRAY_STORAGE);
         $result = $index->aggregate($query1);
         $this->assertEquals([
@@ -220,5 +219,40 @@ class ValueIntersectionFilterTest extends TestCase
 
         $result = $index->aggregate($query4);
         $this->assertEquals([], $result);
+    }
+
+    public function testSelfFiltering(): void
+    {
+        $query1 = (new AggregationQuery())->filters([
+            new ValueIntersectionFilter('first_usage', ['streetphoto', 'portraits', 'weddings']),
+        ])->countItems()->sort()->selfFiltering(true);
+
+        $query2 = (new AggregationQuery())->filters([
+            (new ValueIntersectionFilter('first_usage', ['streetphoto', 'portraits', 'weddings']))->selfFiltering(true)
+        ])->countItems()->sort();
+
+
+        $index = $this->getIndex(Factory::ARRAY_STORAGE);
+        $result = $index->aggregate($query1);
+        $result2 = $index->aggregate($query2);
+
+        $expected = [
+            'brand' => [
+                'Digma' => 1,
+            ],
+            'first_usage' => [
+                'portraits' => 1,
+                'streetphoto' => 1,
+                'weddings' => 1,
+
+            ],
+            'second_usage' => [
+                'streetphoto' => 1,
+                'portraits' => 1,
+            ],
+        ];
+
+        $this->assertEquals($expected, $result);
+        $this->assertEquals($expected, $result2);
     }
 }
