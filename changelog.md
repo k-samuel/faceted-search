@@ -1,6 +1,6 @@
 # Changelog
 
-### v3.2.1 (04.12.2023)
+### v3.2.2 (13.06.2024)
 
 Documentation updated
 
