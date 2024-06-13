@@ -39,7 +39,7 @@ This is simple enough, even if products have different structure of properties.
 
 ## Notes
 
-* We recommend to create an individual index for each product category or type and include in such index only fields of concern.
+We recommend to create an individual index for each product category or type and include in such index only fields of concern.
 
 Use your database to store frequently changing fields, such as price, quantity, etc. The faceted search should be used for preliminary data filtering.
 
