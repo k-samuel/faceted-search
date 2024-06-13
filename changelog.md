@@ -1,5 +1,9 @@
 # Changelog
 
+### v3.2.2 (13.06.2024)
+
+Documentation updated
+
 ### v3.2.1 (04.12.2023)
 
 Self-filtering option for individual filter (disabled by default). [Feature Request](https://github.com/k-samuel/faceted-search/issues/37)
