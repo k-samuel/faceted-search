@@ -5,14 +5,11 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/b9d174969c1b457fa8a6c3b753266698)](https://www.codacy.com/gh/k-samuel/faceted-search/dashboard?utm_source=github.com&utm_medium=referral&utm_content=k-samuel/faceted-search&utm_campaign=Badge_Coverage)
 # PHP Faceted search library 3.x
 
-Simple and fast faceted search without external servers like ElasticSearch and others.
+Simplified and fast faceted search without using any additional servers such as ElasticSearch, etc.
 
-Easily handles 500,000 products with 10 properties. Divide the indexes into product groups or categories and for a long time you will not need scaling and more serious tools.
-Works especially effectively with Roadrunner, Swoole etc.
+It can easily process up to 500,000 items with 10 properties. Create individual indices for product groups or categories and you won't need to scale or use more complex tools for a long time. The software is more effective when operates together with Roadrunner, Swoole, etc.
 
-In addition to faceted filters, also supports exclusion filters.
-
-Optimized for high performance.
+In addition to faceted filters, it supports exclusive filters. The software is optimized for uncompromising performance.
 
 [Changelog](./changelog.md) | [2.x version](https://github.com/k-samuel/faceted-search/tree/2.x)
 
@@ -23,20 +20,16 @@ composer require k-samuel/faceted-search
 `
 
 ## Aggregates
-The main advantage of the library is the quick and easy construction of aggregates.
+The main advantage of the library is the fast and simplified building of aggregates. 
 
-Simply about aggregates.
+Aggregates in Simple Terms
 
 <img align="left" width="100" vspace="4" hspace="4" src="https://github.com/k-samuel/faceted-search/blob/master/docs/filters.png">
-We have selected a list of filters and received as a result a list of products suitable for these filters.
+Imagine that a user has chosen several filters in the interface. We need to update the interface so that only filters compliant with the user’s choice (overlapping product properties) are represented in a list of available filters. We also have to display a number of available products hidden behind each filter.
 
-In the user interface, we need to display only the general types of filters for the selected products and the number
-of products with a specific filter value (intersection).
+Every time a user selects a new parameter, аt the code level, determine how many options are available based on the user's selection and display a new list of filters in the interface
 
-When user select each new parameter in the filters, we need to calculate the list of available options and their number
-for new results.
-
-This is easy enough. Even if the goods have a different structure of properties.
+This is simple enough, even if products have different structure of properties.
 ```php
 <?php
   $query = (new AggregationQuery())->filters($filters);
@@ -46,17 +39,15 @@ This is easy enough. Even if the goods have a different structure of properties.
 
 ## Notes
 
-_* Create index for each product category or type and index only required fields._
+* We recommend to create an individual index for each product category or type and include in such index only fields of concern.
 
+Use your database to store frequently changing fields, such as price, quantity, etc. The faceted search should be used for preliminary data filtering.
 
-Use database to keep frequently changing fields (price/quantity/etc) and facets for pre-filtering.
-
-You can decrease the number of processed records by setting records list to search in.
-For example: list of ProductId "in stock" to exclude not available products.
+Try to reduce the number of records processed. Try to index only products that, for example, are held in stock to exclude processing data on unavailable products.
 
 ## Performance tests
 
-Tests on sets of products with 10 attributes, search with filters by 3 fields.
+Testing on a set of products with ten attributes, searching with filters on three fields.
 
 v3.1.0 Bench PHP 8.2.10 + JIT + opcache (no xdebug extension)
 
@@ -84,19 +75,17 @@ FixedArrayIndex
 
  *(Apple M2 macOS 14.0)*
 
-* Items count - Products in index
-* Memory - RAM used for index
-* Query - time of getting list of products filtered by 3 fields
-* Aggregate - find acceptable filter values for found products.
-  List of common properties and their values for found products (Aggregates)
-* Aggregate & Count - find acceptable filter values for found products.
-  List of common properties their values and count of found products (Aggregates)
-* Sort by field - time of sorting found results by field value
-* Results Found - count of found products (Find)
-* UB - unbalanced dataset
+* Items count - Number of products included in an index
+* Memory - RAM used by an index
+* Query - Time taken to generate a filtered product list
+* Aggregate - Generation of a list of available filter values for products found. A list of common properties and their values for products found (Aggregates)
+* Aggregate & Count - Generation of a list of available filter values for products found. A list of common properties and their values for products found and counting of products corresponding to each filter (Aggregates)
+* Sort by field - Time taken to sort results by one of the fields.
+* Results Found - The number of products founds
+* UB - Unbalanced dataset (uneven distribution of values in fields)
 
 
-Experimental Golang port bench https://github.com/k-samuel/go-faceted-search
+Benchmark of a library experimental port at Golang https://github.com/k-samuel/go-faceted-search
 
 Bench v0.3.3 go 1.21.1 darwin/arm64 with parallel aggregates. 
 
@@ -111,20 +100,17 @@ Bench v0.3.3 go 1.21.1 darwin/arm64 with parallel aggregates.
  
  *(Apple M2 macOS 14.0)*
 
-*Since version 0.3.3, the index structures in PHP and Golang have diverged due to the peculiarities of the 
-implementation of hasMap in languages. In Go, hashMap had to be abandoned in favor of a more efficient storage 
-structure in slices, this allowed us to catch up with the performance of PHP.*
+*The internal structure of index arrangement in versions on PHP and Golang will be different starting from experimental port ver. 0.0.3 due to peculiarities of the Hash Map internal structure in these languages. In Go, we had to stop using Hash Map to make data storage in slices more effective, which initially allowed us to match PHP version performance.*
 
-*In PHP array (hashMap) is more CPU efficient by using doubleLinkedList and hashMap key packing.*
+*In PHP, array (hashMap) is more effective for the current task due to using DoubleLinkedList and HashMap key packing.*
 
-*There are more efficient ways in Go to reduce the size of a slice without making a copy (used for list deduplication). 
-It allows make intersection using iteration through sorted slices.*
+*Go has more effective methods of reduction of the size of slices without copying data (used for list deduplication). This allows to find overlapping using sorted slices.*
 
-*Further comparison does not make sense in view of the difference in algorithms.*
+*Further comparison makes little sense because of different algorithms.*
 
 ## Examples
 
-Create index using console/crontab etc.
+Create an index using console/crontab etc.
 ```php
 <?php
 use KSamuel\FacetedSearch\Index\Factory;
@@ -133,7 +119,7 @@ use KSamuel\FacetedSearch\Index\Factory;
 $search = (new Factory)->create(Factory::ARRAY_STORAGE);
 $storage = $search->getStorage();
 /*
- * Get products data from DB
+ * Get product data from data base
  */
 $data = [
     ['id'=>7, 'color'=>'black', 'price'=>100, 'sale'=>true, 'size'=>36],   
@@ -143,19 +129,19 @@ $data = [
 
 foreach($data as $item){ 
    $recordId = $item['id'];
-   // no need to add faceted index by id
+   // no need to create faceted index by id (there are no filters by it)
    unset($item['id']);
    $storage->addRecord($recordId, $item);
 }
 
-// You can optionally call index optimization before using (since v2.2.0). 
-// The procedure can be run once after changing the index data. 
-// Optimization takes a few seconds, you should not call it during the processing of user requests.
+// You can run index optimization before using it (since v2.2.0).
+// The procedure may be run once after changing data
+// Optimization may take several seconds; you shouldn’t run optimization when the user query is in process.
 $storage->optimize();
 
-// save index data to some storage 
+// saving index data in your warehouse for further reuse 
 $indexData = $storage->export();
-// We will use file for example
+// To simplify the example we used json file. You need to use data base or cache
 file_put_contents('./first-index.json', json_encode($indexData));
 ```
 
@@ -173,12 +159,12 @@ use KSamuel\FacetedSearch\Query\SearchQuery;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
 use KSamuel\FacetedSearch\Query\Order;
 
-// load index by product category (use request params)
+// load index of the required product category (defined by query parameters)
 $indexData = json_decode(file_get_contents('./first-index.json'), true);
 $search = (new Factory)->create(Factory::ARRAY_STORAGE);
 $search->setData($indexData);
 
-// get request params and create search filters
+// get parameters of request and create search filters
 $filters = [
     // Values to search 
     new ValueFilter('color', ['black','green']), // ANY OF  (OR condition)
@@ -225,10 +211,9 @@ $records = $search->query($query);
 
 ### Indexers
 
-To speed up the search of RangeFilter by data with high variability of values, you can use the Range Indexer.
-For example, a search on product price ranges. Prices can be divided into ranges with the desired step.
+If there are too many values for a certain field in your data, you may use Range Indexer to accelerate RangeFilter operation. For example, searching by price ranges of products. Prices can be divided into intervals with a required increment.
 
-Note that RangeFilter is slow solution, it is better to avoid facets for highly variadic data
+Please, remember that RangeFilter is a rather slow solution, and it’s better to avoid facets with high value variability.
 
 ```php
 <?php
@@ -257,13 +242,12 @@ $search->query($query);
 // will return [2,3,4]
 ```
 
-Sorting within ranges is possible only during the initial creating of index, since the connection with the real value is lost. 
-Therefore, when using the RangeIndexer, you should not use adding new single values after a complete rebuild. 
-As a workaround new values will be added to the end of range and be sorted only inside new values. 
-This is relevant only for cases with sorting by field indexed by RangeIndexer.
+Sorting values inside the range is only possible during the process of index creation, since this aspect is lost in case with real value. Thus, when using RangeIndexer you shouldn’t add individual values to a ready index. As a way to solve this problem, library adds new values to the end of the range and sorts them only between themselves (sorts new values and adds them to the end).
 
+This specific feature makes sense only when you use results sorting by the field that is a range indexed using RangeIndexer.
 
-RangeListIndexer allows you to use custom ranges list
+RangeListIndexer allows creating your own ranges without using an increment as in case with RangeIndexer
+
 ```php
 <?php
 use KSamuel\FacetedSearch\Index\Factory;
@@ -279,9 +263,7 @@ Also, you can create your own indexers with range detection method
 
 ### FixedArrayIndex
 
-FixedArrayIndex is much slower but requires significant less memory.
-
-The stored index data is compatible, you can transfer it from ArrayIndex to FixedArrayIndex
+FixedArrayIndex is slower than ArrayIndex, but it uses much less RAM. FixedArrayIndex data are compatible with ArrayIndex.
 
 ```php
 <?php
@@ -290,7 +272,7 @@ use KSamuel\FacetedSearch\Index\Factory;
 $search = (new Factory)->create(Factory::FIXED_ARRAY_STORAGE);
 $storage = $search->getStorage();
 /*
- * Getting products data from DB
+ * Get product data from data base
  * Sort data by $recordId before using Index->addRecord it can improve performance 
  */
 $data = [
@@ -300,40 +282,34 @@ $data = [
 ];
 foreach($data as $item){ 
    $recordId = $item['id'];
-   // no need to add faceted index by id
+   // no need to create faceted index by id (there are no filters by it)
    unset($item['id']);
    $storage->addRecord($recordId, $item);
 }
-// You can optionally call index optimization before using (since v2.2.0). 
-// The procedure can be run once after changing the index data. 
-// Optimization takes a few seconds, you should not call it during the processing of user requests.
-// Can be called only in write mode of FixedArrayIndex
+
+// You can run index optimization before using it (since v2.2.0).
+// The procedure may be run once after changing data
+// Optimization may take several seconds; you shouldn’t run optimization when the user query is in process.
 $storage->optimize();
-// save index data to some storage 
+// saving index data in your warehouse for further reuse
 $indexData = $storage->export();
-// We will use file for example
+// To simplify the example we used json file. You need to use data base or cache
 file_put_contents('./first-index.json', json_encode($indexData));
 
-// Index data is fully compatible. You can create both indexes from the same data 
+// ArrayStorage and FixedArrayStorage indices data are completely compatible. You can create both indices using saved data. 
 $arrayIndex = (new Factory)->create(Factory::ARRAY_STORAGE);
 $arrayIndex->setData($indexData);
 ```
 
-### Filter Self-filtering condition
+### Filter. Self-Filtration Features
 
-Aggregates disables property self-filtering by default. It allow the user to choose another option in the interface.
+When building aggregates, self-filtering of properties is disabled. This allows the user selecting a different value of the same field for filtering (switch the selection) with filter by a certain value of such field being on.
 
-Example:
-User wants a phone with 32GB memory, checks the box for the desired option from (16, 32, 64). 
-If self-filtering is enabled, then all other options in the UI will disappear and only 32 will remain. 
-Thus, user will not be able to change his choice.
+Example. The user wants to find a phone with 32Gb RAM, ticks this checkbox from the provided list (16, 32, 64). If self-filtering is on, then other options will disappear from the user interface. Only 32 Gb value will remain as it will be filtered on the basis of the user’s choice. In this case the user won’t be able to change his/her choice to 64 Gb or 16 Gb.
 
-During aggregation field filter value is used to limit values only other fields. 
-Example: the "size" filter condition uses to limit the list of "brand" field variations.
+When building aggregates, field values are used to limit the list of available options of other fields. For example: Filter by “size” field value is used to limit the list of “brand” field results.
 
-All depends on your use case of the library. 
-Initially, the library was developed to simplify the construction of a search UI.
-If you want to use the library at the level of technical analysis, statistics, etc. , then enabling self-filtering can help you to get expected results.
+Everything depends on your library use scenario. Library was initially designed to simplify the user UI building. If you use library for technical analysis or statistics, enabling self-filtering will help you get expected results.
 
 For all filters:
 ```php
