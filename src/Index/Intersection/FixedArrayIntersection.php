@@ -44,9 +44,9 @@ class FixedArrayIntersection implements IntersectionInterface
     public function getIntersectMapCount($a, array $b): int
     {
         $intersectLen = 0;
-
-        foreach ($a as $key) {
-            if (isset($b[$key])) {
+        $count = count($a);
+        for ($i = 0; $i < $count; $i++) {
+            if (isset($b[$a[$i]])) {
                 $intersectLen++;
             }
         }
