@@ -45,7 +45,7 @@ class FixedArrayStorage extends ArrayStorage
 
     /**
      * Get index data. Can be used for storing it to DB
-     * @return array<int|string,array<int|string,array<int,int>>>
+     * @return array<int|string,array<int|string,array<int>>>
      */
     public function export(): array
     {
@@ -54,11 +54,10 @@ class FixedArrayStorage extends ArrayStorage
         }
 
         foreach ($this->indexers as $fieldName => $item) {
-            // @phpstan-ignore-next-line
             $item->optimize($this->data[$fieldName]);
         }
         /**
-         * @var array<int|string,array<int|string,array<int,int>>>
+         * @var array<int|string,array<int|string,array<int>>>
          */
         return $this->data;
     }
@@ -70,7 +69,7 @@ class FixedArrayStorage extends ArrayStorage
     {
         foreach ($this->data as &$value) {
             /**
-             * @var array<int,int>|\SplFixedArray<int> $recordList
+             * @var \SplFixedArray<int> $recordList
              */
             foreach ($value as &$recordList) {
                 if ($recordList instanceof \SplFixedArray) {
@@ -90,7 +89,7 @@ class FixedArrayStorage extends ArrayStorage
     {
         foreach ($this->data as &$value) {
             /**
-             * @var array<int,int>|\SplFixedArray<int> $recordList
+             * @var array<int>|\SplFixedArray<int> $recordList
              */
             foreach ($value as &$recordList) {
                 if (is_array($recordList)) {

@@ -64,7 +64,7 @@ class Scanner
                 return [];
             }
         }
-        // @phpstan-ignore return.type
+
         return $inputRecords;
     }
 
@@ -87,7 +87,6 @@ class Scanner
         foreach ($filters as $filter) {
             $fieldName = $filter->getFieldName();
             if (isset($data[$fieldName])) {
-                // @phpstan-ignore-next-line
                 $filter->addExcluded($data[$fieldName], $excludeRecords);
             }
         }
@@ -140,9 +139,6 @@ class Scanner
      */
     public function getAllRecordIdMap(StorageInterface $storage): array
     {
-        /**
-         * @var array<int,bool> $result
-         */
         $result = [];
         /**
          * @var array<int|string,array<int>>$values
@@ -154,6 +150,10 @@ class Scanner
                 }
             }
         }
+        /**
+         * @var array<int,bool> $result
+         */
+
         return $result;
     }
     /**

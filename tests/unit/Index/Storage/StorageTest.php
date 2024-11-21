@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 class StorageTest extends TestCase
 {
-    static public function storeProvider(): array
+    public function storeProvider(): array
     {
         return [
             [(new Factory)->create(Factory::ARRAY_STORAGE)],

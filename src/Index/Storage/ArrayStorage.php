@@ -41,18 +41,18 @@ class ArrayStorage implements StorageInterface
 {
     /**
      * Index data
-     * @var array<int|string,array<int|string,array<int,int>>>
+     * @var array<int|string,array<int|string,array<int>>>
      */
     protected array $data = [];
     /**
-     * @var array<int|string, IndexerInterface>
+     * @var array<int|string,IndexerInterface>
      */
     protected array $indexers = [];
 
     /**
      * Add record to index
      * @param int $recordId
-     * @param array<int|string,mixed|array<int,mixed>> $recordValues -  ['fieldName'=>'fieldValue','fieldName2'=>['val1','val2']]
+     * @param array<int|string,array<int,mixed>> $recordValues -  ['fieldName'=>'fieldValue','fieldName2'=>['val1','val2']]
      * @return bool
      */
     public function addRecord(int $recordId, array $recordValues): bool
@@ -68,10 +68,6 @@ class ArrayStorage implements StorageInterface
                 if (!isset($this->data[$fieldName])) {
                     $this->data[$fieldName] = [];
                 }
-
-                /**
-                 * @phpstan-ignore-next-line
-                 */
                 if (!$this->indexers[$fieldName]->add($this->data[$fieldName], $recordId, $values)) {
                     return false;
                 }
@@ -92,7 +88,7 @@ class ArrayStorage implements StorageInterface
 
     /**
      * Get facet data.
-     * @return array<int|string,array<int|string,array<int,int>|\SplFixedArray<int>>>
+     * @return array<int|string,array<int|string,array<int>|\SplFixedArray<int>>>
      */
     public function getData(): array
     {
@@ -100,13 +96,12 @@ class ArrayStorage implements StorageInterface
     }
 
     /**
-     * Get facet data. 
-     * @return array<int|string,array<int|string,array<int,int>>>
+     * Get facet data.
+     * @return array<int|string,array<int|string,array<int>>>
      */
     public function export(): array
     {
         foreach ($this->indexers as $fieldName => $item) {
-            // @phpstan-ignore-next-line
             $item->optimize($this->data[$fieldName]);
         }
 
@@ -115,7 +110,7 @@ class ArrayStorage implements StorageInterface
 
     /**
      * Set index data. Can be used for restoring from DB
-     * @param array<int|string,array<int|string,array<int,int>>> $data
+     * @param array<int|string,array<int|string,array<int>>> $data
      */
     public function setData(array $data): void
     {
@@ -195,7 +190,6 @@ class ArrayStorage implements StorageInterface
     public function optimize(): void
     {
         foreach ($this->indexers as $fieldName => $item) {
-            // @phpstan-ignore-next-line
             $item->optimize($this->data[$fieldName]);
         }
 
