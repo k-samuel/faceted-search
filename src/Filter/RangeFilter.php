@@ -104,6 +104,9 @@ class RangeFilter extends AbstractFilter
 
         if (empty($inputIdKeys)) {
             foreach ($limit as $v) {
+                /**
+                 * @var int $v
+                 */
                 $inputIdKeys[$v] = true;
             }
             return;
@@ -113,6 +116,9 @@ class RangeFilter extends AbstractFilter
         // Reuse of input data. Set mark "2" for the data that needs to be in result.
         foreach ($limit as $index) {
             if (isset($inputIdKeys[$index])) {
+                /**
+                 * @var int $index
+                 */
                 $inputIdKeys[$index] = 2;
             }
         }

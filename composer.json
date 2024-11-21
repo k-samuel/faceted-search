@@ -33,8 +33,8 @@
         }
     },
     "require-dev": {
-        "phpunit/phpunit": "^9",
-        "phpstan/phpstan": "^1",
+        "phpunit/phpunit": "^11",
+        "phpstan/phpstan": "^2",
         "codacy/coverage": "dev-master",
         "phpbench/phpbench": "^1.2"
     },

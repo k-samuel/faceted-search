@@ -37,7 +37,7 @@ namespace KSamuel\FacetedSearch\Filter;
 class ExcludeRangeFilter extends RangeFilter implements ExcludeFilterInterface
 {
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function addExcluded(array $facetedData,  array &$excludeRecords): void
     {
@@ -61,6 +61,9 @@ class ExcludeRangeFilter extends RangeFilter implements ExcludeFilterInterface
                 continue;
             }
             foreach ($records as $item) {
+                /**
+                 * @var int $item
+                 */
                 $excludeRecords[$item] = true;
             }
         }

@@ -96,7 +96,7 @@ class RangeListIndexer implements IndexerInterface
     /**
      * Prepare values for export
      *
-     * @param array<int|string,array<int|string,array<int>>> &$indexContainer
+     * @param array<int|string,array<int|string,array<int,int>>> &$indexContainer
      * @return void
      */
     public function optimize(array &$indexContainer): void
@@ -107,10 +107,12 @@ class RangeListIndexer implements IndexerInterface
 
         foreach ($this->unsortedBuf as $position => &$values) {
             ksort($values);
-            foreach ($values as $value => $ids) {
+            foreach ($values as $ids) {
                 foreach ($ids as $id) {
+                    // @phpstan-ignore-next-line
                     $this->addSorterId($indexContainer[$position], $id);
                 }
+                // @phpstan-ignore-next-line
                 $indexContainer[$position] = array_values($indexContainer[$position]);
             }
         }

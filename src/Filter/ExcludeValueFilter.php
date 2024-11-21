@@ -55,6 +55,9 @@ class ExcludeValueFilter extends ValueFilter implements ExcludeFilterInterface
             }
 
             foreach ($facetedData[$item] as $recId) {
+                /**
+                 * @var int $recId
+                 */
                 $excludeRecords[$recId] = true;
             }
         }

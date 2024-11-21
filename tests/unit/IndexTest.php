@@ -41,7 +41,7 @@ class IndexTest extends TestCase
         );
     }
 
-    public function storeProvider(): array
+    static public function storeProvider(): array
     {
         return [
             [(new Factory)->create(Factory::ARRAY_STORAGE)],

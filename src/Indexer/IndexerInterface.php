@@ -42,7 +42,7 @@ interface IndexerInterface
 
     /**
      * Optimize data structures
-     * @param array<int|string,array<int|string,array<int>>> &$indexContainer
+     * @param array<int|string,array<int|string,array<int,int>>> &$indexContainer
      * @return void
      */
     public function optimize(array &$indexContainer): void;

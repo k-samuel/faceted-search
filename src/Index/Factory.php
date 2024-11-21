@@ -47,9 +47,6 @@ final class Factory
 
     public function create(string $storage): IndexInterface
     {
-        /**
-         * @var StorageInterface $store
-         */
         $store = new $storage;
 
         if (!$store instanceof StorageInterface) {

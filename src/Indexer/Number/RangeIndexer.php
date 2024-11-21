@@ -34,15 +34,13 @@ use KSamuel\FacetedSearch\Indexer\IndexerInterface;
 
 class RangeIndexer implements IndexerInterface
 {
-    /**
-     * @var int
-     */
+
     protected int $step;
 
     protected bool $hasUnsorted = false;
     /**
      * New values for sorting
-     * @var array<int|string,array<int|string,array<int>>>
+     * @var array<int|string,array<int|string,array<int,int>>>
      */
     protected array $unsortedBuf = [];
 
@@ -55,7 +53,7 @@ class RangeIndexer implements IndexerInterface
     }
 
     /**
-     * @param array<int|string,array<int>> $indexContainer
+     * @param array<int|string,array<int,int>> $indexContainer
      * @param int $recordId
      * @param array<int,int|float> $values
      * @return bool
@@ -78,7 +76,7 @@ class RangeIndexer implements IndexerInterface
     /**
      * Prepare values for export
      *
-     * @param array<int|string,array<int|string,array<int>>> &$indexContainer
+     * @param array<int|string,array<int|string,array<int,int>>> &$indexContainer
      * @return void
      */
     public function optimize(array &$indexContainer): void
@@ -89,10 +87,12 @@ class RangeIndexer implements IndexerInterface
 
         foreach ($this->unsortedBuf as $position => &$values) {
             ksort($values);
-            foreach ($values as $value => $ids) {
+            foreach ($values as $ids) {
                 foreach ($ids as $id) {
+                    // @phpstan-ignore-next-line
                     $this->addSorterId($indexContainer[$position], $id);
                 }
+                // @phpstan-ignore parameterByRef.type
                 $indexContainer[$position] = array_values($indexContainer[$position]);
             }
         }

@@ -37,7 +37,7 @@ namespace KSamuel\FacetedSearch\Filter;
 class ValueFilter extends AbstractFilter
 {
     /**
-     * @var array<int,mixed>
+     * @var array<int|mixed,mixed>
      */
     protected $value;
 
