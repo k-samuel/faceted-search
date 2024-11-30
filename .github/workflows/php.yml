@@ -2,9 +2,9 @@ name: Build and Test
 
 on:
   push:
-    branches: [ master, develop, 1.x, 2.x, 3.x]
+    branches: [ master, develop, 1.x, 2.x, 3.x, 4.x]
   pull_request:
-    branches: [ master, develop, 1.x, 2.x, 3.x]
+    branches: [ master, develop, 1.x, 2.x, 3.x, 4.x]
 
 jobs:
   build:
@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         operating-system: ['ubuntu-latest']
-        php-versions: ['7.4','8','8.1','8.2','8.3']
+        php-versions: ['7.4','8','8.1','8.2','8.3','8.4']
 
     steps:
     - name: Checkout
