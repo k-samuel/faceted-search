@@ -25,7 +25,7 @@ class IndexTest extends TestCase
         $this->assertTrue($storage->addRecord(112, ['vendor' => 'Tester', 'price' => 100]));
         $this->assertTrue($storage->addRecord(113, ['vendor' => 'Tester2', 'price' => 101]));
         $this->assertTrue($storage->addRecord(114, ['vendor' => 'Tester2', 'price' => 101]));
-
+        $storage->optimize();
         $this->assertEquals(
             [
                 'vendor' => [
@@ -60,6 +60,7 @@ class IndexTest extends TestCase
         foreach ($records as $id => $item) {
             $storage->addRecord($id, $item);
         }
+        $storage->optimize();
 
         $filter = new ValueFilter('vendor');
         $filter->setValue(['Samsung', 'Apple']);
@@ -107,6 +108,8 @@ class IndexTest extends TestCase
         foreach ($records as $id => $item) {
             $storage->addRecord($id, $item);
         }
+        $storage->optimize();
+
         $filter = new ValueFilter('vendor');
         $filter->setValue(['Samsung', 'Apple']);
         $result = $index->query((new SearchQuery())->filters([$filter])->inRecords([1, 3]));
@@ -126,6 +129,7 @@ class IndexTest extends TestCase
         foreach ($records as $id => $item) {
             $storage->addRecord($id, $item);
         }
+        $storage->optimize();
 
         $filter = new ValueFilter('color', 'black');
 
@@ -173,6 +177,7 @@ class IndexTest extends TestCase
         foreach ($records as $id => $item) {
             $storage->addRecord($id, $item);
         }
+        $storage->optimize();
 
         $acceptableFilters = $index->aggregate((new AggregationQuery())->countItems());
 
@@ -214,7 +219,7 @@ class IndexTest extends TestCase
         foreach ($records as  $item) {
             $storage->addRecord($item['id'], $item);
         }
-
+        $storage->optimize();
 
         $acceptableFilters = $index->aggregate((new AggregationQuery())->inRecords([1, 2])->countItems());
 
@@ -249,6 +254,7 @@ class IndexTest extends TestCase
         foreach ($records as $id => $item) {
             $storage->addRecord($id, $item);
         }
+        $storage->optimize();
 
         $filter = new ValueFilter('color', 'black');
 
@@ -298,6 +304,7 @@ class IndexTest extends TestCase
         foreach ($records as $id => $item) {
             $storage->addRecord($id, $item);
         }
+        $storage->optimize();
 
         $filter = new ValueFilter('color', 'black');
         $filter2 = new ValueFilter('size', 7);
@@ -340,6 +347,7 @@ class IndexTest extends TestCase
             unset($item['id']);
             $storage->addRecord($id, $item);
         }
+        $storage->optimize();
 
         $filter = new ValueFilter(2, 7.11);
         $result = $index->query((new SearchQuery())->filters([$filter]));
@@ -390,6 +398,7 @@ class IndexTest extends TestCase
             unset($item['id']);
             $storage->addRecord($id, $item);
         }
+        $storage->optimize();
 
         $filter = new ValueFilter('size', 7.11);
         $result = $index->query((new SearchQuery())->filters([$filter]));
@@ -441,6 +450,7 @@ class IndexTest extends TestCase
             unset($item['id']);
             $storage->addRecord($id, $item);
         }
+        $storage->optimize();
 
         $query = (new SearchQuery())->order('size', Order::SORT_DESC);
         $results = $index->query($query);
@@ -472,6 +482,7 @@ class IndexTest extends TestCase
         foreach ($records as $id => $item) {
             $storage->addRecord($id, $item);
         }
+        $storage->optimize();
 
         $acceptableFilters = $index->aggregate((new AggregationQuery())->countItems()->sort());
 
@@ -517,6 +528,7 @@ class IndexTest extends TestCase
             unset($item['id']);
             $storage->addRecord($id, $item);
         }
+        $storage->optimize();
 
         $acceptableFilters = $index->aggregate((new AggregationQuery())->sort());
 
@@ -548,6 +560,7 @@ class IndexTest extends TestCase
             unset($item['id']);
             $storage->addRecord($id, $item);
         }
+        $storage->optimize();
 
         $acceptableFilters = $index->aggregate(
             (new AggregationQuery())
@@ -584,6 +597,7 @@ class IndexTest extends TestCase
             unset($item['id']);
             $storage->addRecord($id, $item);
         }
+        $storage->optimize();
 
         $data = $index->query(
             (new SearchQuery())
@@ -610,6 +624,7 @@ class IndexTest extends TestCase
             unset($item['id']);
             $storage->addRecord($id, $item);
         }
+        $storage->optimize();
 
         $data = $index->query(
             (new SearchQuery())->order('size', Order::SORT_ASC)
@@ -625,6 +640,7 @@ class IndexTest extends TestCase
         $storage->addRecord(1, ['col' => 2]);
         $storage->addRecord(2, ['col' => 2, 'pr' => 1, 'dr' => 2]);
         $storage->addRecord(3, ['col' => 2, 'pr' => 1, 'dr' => 3]);
+        $storage->optimize();
         $this->assertEquals(3, $index->getCount());
     }
 

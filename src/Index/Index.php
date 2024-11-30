@@ -4,7 +4,7 @@
  *
  * MIT License
  *
- * Copyright (C) 2020-2023  Kirill Yegorov https://github.com/k-samuel
+ * Copyright (C) 2020-2024 Kirill Yegorov https://github.com/k-samuel
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,14 +36,13 @@ use KSamuel\FacetedSearch\Index\Sort\AggregationResults;
 use KSamuel\FacetedSearch\Index\Sort\Filters;
 
 use KSamuel\FacetedSearch\Index\Storage\StorageInterface;
+use KSamuel\FacetedSearch\Index\Storage\ValueIntersectionInterface;
+
 use KSamuel\FacetedSearch\Index\Storage\Scanner;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
-use KSamuel\FacetedSearch\Index\Intersection\IntersectionInterface;
+
 use KSamuel\FacetedSearch\Index\Sort\QueryResultsInterface;
 use KSamuel\FacetedSearch\Query\SearchQuery;
-
-
-
 
 /**
  * Simple faceted index
@@ -56,7 +55,7 @@ class Index implements IndexInterface
     private AggregationResults $aggregationSort;
     private QueryResultsInterface $querySort;
     private Scanner $scanner;
-    private IntersectionInterface $intersection;
+    private ValueIntersectionInterface $intersection;
 
     private ?Profile $profiler = null;
 
@@ -66,7 +65,7 @@ class Index implements IndexInterface
         AggregationResults $aggregationSort,
         QueryResultsInterface $querySort,
         Scanner $scanner,
-        IntersectionInterface $intersection
+        ValueIntersectionInterface $intersection
     ) {
         $this->storage = $storage;
         $this->filterSort = $filterSort;
@@ -241,10 +240,10 @@ class Index implements IndexInterface
             $indexedFilters[$filter->getFieldName()] = $filter;
         }
 
-        /**
-         * @var array<int|string,array<int>> $filterValues
-         */
-        foreach ($this->scanner->scan($this->storage) as $filterName => $filterValues) {
+        $field = $this->storage->field();
+        $value = $field->value();
+
+        foreach ($this->storage->fieldNames() as $filterName) {
 
             $needSelfFiltering = false;
             if ($selfFiltering != false || (isset($indexedFilters[$filterName]) && $indexedFilters[$filterName]->hasSelfFiltering())) {
@@ -278,10 +277,14 @@ class Index implements IndexInterface
                 $recordIds = $filteredRecords;
             }
 
-            foreach ($filterValues as $filterValue => $data) {
+            $this->storage->linkField($filterName, $field);
+
+            foreach ($field->values() as $filterValue) {
+
+                $field->linkValue($filterValue, $value);
 
                 if ($countRecords) {
-                    $intersect = $this->intersection->getIntersectMapCount($data, $recordIds);
+                    $intersect = $this->intersection->getIntersectionCount($value, $recordIds);
                     if ($intersect === 0) {
                         continue;
                     }
@@ -289,7 +292,7 @@ class Index implements IndexInterface
                     continue;
                 }
 
-                if ($this->intersection->hasIntersectIntMap($data, $recordIds)) {
+                if ($this->intersection->hasIntersection($value, $recordIds)) {
                     $result[$filterName][$filterValue] = true;
                 }
             }
@@ -304,27 +307,12 @@ class Index implements IndexInterface
     protected function getValues(array $excludeMap): array
     {
         $result = [];
-        if (empty($excludeMap)) {
-            /**
-             * @var array<int|sting,array<int>> $filterValues
-             */
-            foreach ($this->scanner->scan($this->storage) as $filterName => $filterValues) {
-                foreach ($filterValues as $key => $info) {
-                    $result[$filterName][$key] = true;
-                }
-            }
-        } else {
-            /**
-             * @var array<int|sting,array<int>> $filterValues
-             */
-            foreach ($this->scanner->scan($this->storage) as $filterName => $filterValues) {
-                foreach ($filterValues as $key => $info) {
-                    foreach ($info as $value) {
-                        if (!isset($excludeMap[$value])) {
-                            $result[$filterName][$key] = true;
-                            continue;
-                        }
-                    }
+        $field = $this->storage->field();
+        foreach ($this->storage->fieldNames() as $fieldName) {
+            $this->storage->linkField($fieldName, $field);
+            foreach ($field->values() as $value) {
+                if (empty($excludeMap) || !isset($excludeMap[$value])) {
+                    $result[$fieldName][$value] = true;
                 }
             }
         }
@@ -337,29 +325,31 @@ class Index implements IndexInterface
     protected function getValuesCount(array $excludeMap): array
     {
         $result = [];
+        $field = $this->storage->field();
+        $val = $field->value();
+
         if (empty($excludeMap)) {
-            /**
-             * @var array<int|sting,array<int>> $filterValues
-             */
-            foreach ($this->scanner->scan($this->storage) as $filterName => $filterValues) {
-                foreach ($filterValues as $key => $list) {
-                    $result[$filterName][$key] = count($list);
+            foreach ($this->storage->fieldNames() as $fieldName) {
+                $this->storage->linkField($fieldName, $field);
+                foreach ($field->values() as $value) {
+                    $field->linkValue($value, $val);
+                    $result[$fieldName][$value] = $val->count();
                 }
             }
-        } else {
-            /**
-             * @var array<int|sting,array<int>> $filterValues
-             */
-            foreach ($this->scanner->scan($this->storage) as $filterName => $filterValues) {
-                foreach ($filterValues as $key => $list) {
-                    $count = 0;
-                    foreach ($list as $value) {
-                        if (!isset($excludeMap[$value])) {
-                            $count++;
-                        }
+            return $result;
+        }
+
+        foreach ($this->storage->fieldNames() as $fieldName) {
+            $this->storage->linkField($fieldName, $field);
+            foreach ($field->values() as $value) {
+                $field->linkValue($value, $val);
+                $count = 0;
+                foreach ($val->ids() as $recordId) {
+                    if (!isset($excludeMap[$recordId])) {
+                        $count++;
                     }
-                    $result[$filterName][$key] = $count;
                 }
+                $result[$fieldName][$value] = $count;
             }
         }
         return $result;

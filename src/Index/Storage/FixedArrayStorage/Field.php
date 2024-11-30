@@ -4,7 +4,7 @@
  *
  * MIT License
  *
- * Copyright (C) 2020  Kirill Yegorov https://github.com/k-samuel
+ * Copyright (C) 2020-2024  Kirill Yegorov https://github.com/k-samuel
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,30 +28,71 @@
 
 declare(strict_types=1);
 
-namespace KSamuel\FacetedSearch\Filter;
+namespace KSamuel\FacetedSearch\Index\Storage\FixedArrayStorage;
 
 use KSamuel\FacetedSearch\Index\Storage\FieldInterface;
 
-interface FilterInterface
+use \Generator;
+use KSamuel\FacetedSearch\Index\Storage\ValueInterface;
+
+class Field implements FieldInterface
 {
     /**
-     * Get field name
-     * @return string
+     * @var array<int|string,\SplFixedArray<int>>
      */
-    public function getFieldName(): string;
+    private array $data;
 
     /**
-     * Filter faceted data
-     * @param FieldInterface $field
-     * @param array<int,bool|int> & $inputIdKeys - RecordId passed into keys of an array (performance issue)
-     * @param array<int,bool> $excludeRecords - RecordId passed into keys of an array (performance issue)
+     * @var string|int
+     */
+    private $name;
+
+    /**
+     * @param int|string $name
+     * @param array<int|string,\SplFixedArray<int>> $data
      * @return void
      */
-    public function filterInput(FieldInterface $field,  array &$inputIdKeys, array $excludeRecords): void;
+    public function setDataLink($name, array &$data): void
+    {
+        $this->name = $name;
+        $this->data = $data;
+    }
 
     /**
-     * Get self-filtering flag
-     * @return bool
+     * @inheritDoc
      */
-    public function hasSelfFiltering(): bool;
+    public function hasValue($value): bool
+    {
+        return isset($this->data[$value]);
+    }
+
+    public function values(): Generator
+    {
+        foreach ($this->data as $value => $list) {
+            yield $value;
+        }
+    }
+
+    public function value(): ValueInterface
+    {
+        return new Value();
+    }
+
+
+    /**
+     * @inheritDoc
+     */
+    public function linkValue($value, ValueInterface $fieldContainer): void
+    {
+        $link = &$this->data[$value];
+        $fieldContainer->setDataLink($link);
+    }
+
+    /**
+     * @return int|string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
 }

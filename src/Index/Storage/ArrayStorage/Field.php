@@ -4,7 +4,7 @@
  *
  * MIT License
  *
- * Copyright (C) 2020  Kirill Yegorov https://github.com/k-samuel
+ * Copyright (C) 2020-2024  Kirill Yegorov https://github.com/k-samuel
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,40 +28,71 @@
 
 declare(strict_types=1);
 
-namespace KSamuel\FacetedSearch\Filter;
+namespace KSamuel\FacetedSearch\Index\Storage\ArrayStorage;
 
 use KSamuel\FacetedSearch\Index\Storage\FieldInterface;
 
-/**
- * Simple filter for faceted index. Filter item by value
- * @package KSamuel\FacetedSearch\Filter
- */
-class ExcludeValueFilter extends ValueFilter implements ExcludeFilterInterface
+use \Generator;
+use KSamuel\FacetedSearch\Index\Storage\ValueInterface;
+
+class Field implements FieldInterface
 {
+    /**
+     * @var array<int|string,array<int,int>>
+     */
+    private array $data;
+
+    /**
+     * @var string|int
+     */
+    private $name;
+
+    /**
+     * @param int|string $name
+     * @param array<int|string,array<int,int>> $data
+     * @return void
+     */
+    public function setDataLink($name, array &$data): void
+    {
+        $this->name = $name;
+        $this->data = $data;
+    }
+
     /**
      * @inheritDoc
      */
-    public function addExcluded(FieldInterface $field,  array &$excludeRecords): void
+    public function hasValue($value): bool
     {
-        $value = $field->value();
-        // collect list for different values of one property
-        foreach ($this->value as $item) {
+        return isset($this->data[$value]);
+    }
 
-            if (!$field->hasValue($item)) {
-                continue;
-            }
-
-            $field->linkValue($item, $value);
-
-            // performance patch
-            if (empty($excludeRecords) && !$value->isEmpty()) {
-                $excludeRecords = $value->getIdMap();
-                continue;
-            }
-
-            foreach ($value->ids() as $recId) {
-                $excludeRecords[$recId] = true;
-            }
+    public function values(): Generator
+    {
+        foreach ($this->data as $value => $list) {
+            yield $value;
         }
+    }
+
+    public function value(): ValueInterface
+    {
+        return new Value();
+    }
+
+
+    /**
+     * @inheritDoc
+     */
+    public function linkValue($value, ValueInterface $fieldContainer): void
+    {
+        $link = &$this->data[$value];
+        $fieldContainer->setDataLink($link);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getName()
+    {
+        return $this->name;
     }
 }

@@ -30,6 +30,8 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Filter;
 
+use KSamuel\FacetedSearch\Index\Storage\FieldInterface;
+
 /**
  * Simple filter for faceted index. Filter item by value
  * @package KSamuel\FacetedSearch\Filter
@@ -39,10 +41,10 @@ class ValueIntersectionFilter extends ValueFilter
     /**
      * @inheritDoc
      */
-    public function filterInput(array $facetedData,  array &$inputIdKeys, array $excludeRecords): void
+    public function filterInput(FieldInterface $field,  array &$inputIdKeys, array $excludeRecords): void
     {
         if (empty($inputIdKeys)) {
-            $inputIdKeys = $this->filterData($facetedData, $excludeRecords);
+            $inputIdKeys = $this->filterData($field, $excludeRecords);
             return;
         }
 
@@ -50,83 +52,78 @@ class ValueIntersectionFilter extends ValueFilter
         $result = [];
         $isFirst = true;
 
+        $value = $field->value();
+
         // collect list for different values of one property
         foreach ($this->value as $item) {
 
-            if (!isset($facetedData[$item])) {
+            if (!$field->hasValue($item)) {
                 $inputIdKeys = [];
                 return;
             }
 
+            $field->linkValue($item, $value);
+
+            // memory allocation optimization
             if ($isFirst) {
-                if (is_array($facetedData[$item])) {
-                    $result = array_fill_keys($facetedData[$item], true);
-                } else {
-                    // splFixedArray
-                    $result = array_fill_keys($facetedData[$item]->toArray(), true);
-                }
+                $result = $value->getIdMap();
                 $isFirst = false;
+                // The execution should not go to the next iteration, it is just a variable prefill
             }
 
-
+            // find intersection
             $tmp = [];
-            foreach ($facetedData[$item] as $recId) {
-                /**
-                 * @var int $recId
-                 */
+            foreach ($value->ids() as $recId) {
                 if (isset($inputIdKeys[$recId]) && isset($result[$recId]) && ($emptyExclude || !isset($excludeRecords[$recId]))) {
                     $tmp[$recId] = true;
                 }
             }
+            // save intersected list to result
             $result = $tmp;
         }
+        // update input variable passed by reference
         $inputIdKeys = $result;
     }
 
     /** 
      * Filter faceted data
-     * @param array<int|string,array<int>|\SplFixedArray<int>> $facetedData
+     * @param FieldInterface $field
      * @param array<int,bool> $excludeRecords
      * @return array<int,bool> - results in keys
      */
-    private function filterData(array $facetedData, array $excludeRecords): array
+    private function filterData(FieldInterface $field, array $excludeRecords): array
     {
         $result = [];
 
         $emptyExclude = empty($excludeRecords);
         $isFirst = true;
 
+        $value = $field->value();
+
         // collect list for different values of one property
         foreach ($this->value as $item) {
 
-            if (!isset($facetedData[$item])) {
+            if (!$field->hasValue($item)) {
                 return [];
             }
 
+            $field->linkValue($item, $value);
+
             // fast fill unique records (memory allocation optimization)
             if ($isFirst && empty($result) && $emptyExclude) {
-                if (is_array($facetedData[$item])) {
-                    $result = array_fill_keys($facetedData[$item], true);
-                } else {
-                    // splFixedArray
-                    /**
-                     * @var array<int,bool> $result
-                     */
-                    $result = array_fill_keys($facetedData[$item]->toArray(), true);
-                }
+                $result = $value->getIdMap();
                 $isFirst = false;
                 continue;
             }
 
+            // find intersection
             $tmp = [];
-            foreach ($facetedData[$item] as $recId) {
+            foreach ($value->ids() as $recId) {
                 if (isset($result[$recId]) && ($emptyExclude || !isset($excludeRecords[$recId]))) {
-                    /**
-                     * @var int $recId
-                     */
                     $tmp[$recId] = true;
                 }
             }
+            // save intersected list to result
             $result = $tmp;
         }
         return $result;

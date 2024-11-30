@@ -30,13 +30,15 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Filter;
 
+use KSamuel\FacetedSearch\Index\Storage\FieldInterface;
+
 interface ExcludeFilterInterface extends FilterInterface
 {
     /**
      * Add records into exclude list
-     * @param array<int|string,array<int>|\SplFixedArray<int>> $facetedData
+     * @param FieldInterface $field
      * @param array<int,bool|int> & $excludeRecords - RecordId passed into keys of an array (performance issue)
      * @return void
      */
-    public function addExcluded(array $facetedData,  array &$excludeRecords): void;
+    public function addExcluded(FieldInterface $field,  array &$excludeRecords): void;
 }

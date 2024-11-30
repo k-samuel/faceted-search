@@ -28,12 +28,13 @@
 
 declare(strict_types=1);
 
-namespace KSamuel\FacetedSearch\Index\Sort;
+namespace KSamuel\FacetedSearch\Index\Storage\ArrayStorage\Sort;
 
+use KSamuel\FacetedSearch\Index\Sort\QueryResultsInterface;
 use KSamuel\FacetedSearch\Index\Storage\StorageInterface;
 use KSamuel\FacetedSearch\Query\Order;
 
-class ArrayResults implements QueryResultsInterface
+class Results implements QueryResultsInterface
 {
     /**
      * Sort results by field value

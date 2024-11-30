@@ -31,10 +31,8 @@ class StorageTest extends TestCase
 
         foreach ($records as $id => $val) {
             $this->assertTrue($storage->addRecord($id, $val));
-            if ($id === 112) {
-                $storage->optimize();
-            }
         }
+        $storage->optimize();
 
         $expected = [
             'vendor' => [
@@ -47,7 +45,7 @@ class StorageTest extends TestCase
             ]
         ];
 
-        $this->assertEquals($expected, $storage->getData());
+        $this->assertEquals($expected, $storage->export());
     }
     /**
      * @dataProvider storeProvider
@@ -260,6 +258,7 @@ class StorageTest extends TestCase
             'status' => 'new',
             'sellerId' => 120
         ]);
+        $storage->optimize();
 
         $result = $index->query(
             (new SearchQuery())->filter(new ValueFilter('color', 'red'))

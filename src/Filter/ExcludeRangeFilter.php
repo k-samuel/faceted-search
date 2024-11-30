@@ -30,6 +30,8 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Filter;
 
+use KSamuel\FacetedSearch\Index\Storage\FieldInterface;
+
 /**
  * Range filter for faceted index. Filter item by range (min,max)
  * @package KSamuel\FacetedSearch\Filter
@@ -39,7 +41,7 @@ class ExcludeRangeFilter extends RangeFilter implements ExcludeFilterInterface
     /**
      * @inheritDoc
      */
-    public function addExcluded(array $facetedData,  array &$excludeRecords): void
+    public function addExcluded(FieldInterface $field,  array &$excludeRecords): void
     {
         /**
          * @var array{min:int|float|null,max:int|float|null} $value
@@ -53,15 +55,20 @@ class ExcludeRangeFilter extends RangeFilter implements ExcludeFilterInterface
             return;
         }
 
-        foreach ($facetedData as $value => $records) {
+        $valueContainer = $field->value();
+
+        foreach ($field->values() as $value) {
+
             if ($min !== null && (float)$value < (float)$min) {
                 continue;
             }
             if ($max !== null && (float)$value > (float)$max) {
                 continue;
             }
-            foreach ($records as $item) {
-                $excludeRecords[$item] = true;
+
+            $field->linkValue($value, $valueContainer);
+            foreach ($valueContainer->ids() as $recordId) {
+                $excludeRecords[$recordId] = true;
             }
         }
     }

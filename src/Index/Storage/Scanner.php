@@ -30,8 +30,6 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Index\Storage;
 
-use Generator;
-
 class Scanner
 {
     /**
@@ -50,15 +48,19 @@ class Scanner
         }
 
         $data = $storage->getData();
+        $field = $storage->field();
 
         foreach ($filters as $filter) {
 
             $fieldName = $filter->getFieldName();
-            if (!isset($data[$fieldName])) {
+
+            if (!$storage->hasField($fieldName)) {
                 return [];
             }
 
-            $filter->filterInput($data[$fieldName], $inputRecords, $excludeRecords);
+            $storage->linkField($fieldName, $field);
+
+            $filter->filterInput($field, $inputRecords, $excludeRecords);
 
             if (empty($inputRecords)) {
                 return [];
@@ -83,11 +85,12 @@ class Scanner
         }
 
         $data = $storage->getData();
-
+        $field = $storage->field();
         foreach ($filters as $filter) {
             $fieldName = $filter->getFieldName();
-            if (isset($data[$fieldName])) {
-                $filter->addExcluded($data[$fieldName], $excludeRecords);
+            if ($storage->hasField($fieldName)) {
+                $storage->linkField($fieldName, $field);
+                $filter->addExcluded($field, $excludeRecords);
             }
         }
     }
@@ -111,7 +114,11 @@ class Scanner
         }
 
         if (!empty($inputRecords)) {
-            $total = array_intersect_key($total, $inputRecords);
+            foreach ($total as $k => $v) {
+                if (!isset($inputRecords[$k])) {
+                    unset($total[$k]);
+                }
+            }
         }
 
         // remove excluded records from result
@@ -140,13 +147,15 @@ class Scanner
     public function getAllRecordIdMap(StorageInterface $storage): array
     {
         $result = [];
-        /**
-         * @var array<int|string,array<int>>$values
-         */
-        foreach ($storage->scan() as $values) {
-            foreach ($values as $list) {
-                foreach ($list as $v) {
-                    $result[$v] = true;
+
+        $field = $storage->field();
+        $val = $field->value();
+        foreach ($storage->fieldNames() as $fieldName) {
+            $storage->linkField($fieldName, $field);
+            foreach ($field->values() as $value) {
+                $field->linkValue($value, $val);
+                foreach ($val->ids() as $id) {
+                    $result[$id] = true;
                 }
             }
         }
@@ -155,13 +164,5 @@ class Scanner
          */
 
         return $result;
-    }
-    /**
-     * List data
-     * @return Generator
-     */
-    public function scan(StorageInterface $storage): Generator
-    {
-        return $storage->scan();
     }
 }

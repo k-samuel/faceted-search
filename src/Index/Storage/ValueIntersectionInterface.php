@@ -4,7 +4,7 @@
  *
  * MIT License
  *
- * Copyright (C) 2020  Kirill Yegorov https://github.com/k-samuel
+ * Copyright (C) 2020-2023  Kirill Yegorov https://github.com/k-samuel
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,40 +28,25 @@
 
 declare(strict_types=1);
 
-namespace KSamuel\FacetedSearch\Filter;
+namespace KSamuel\FacetedSearch\Index\Storage;
 
-use KSamuel\FacetedSearch\Index\Storage\FieldInterface;
+use KSamuel\FacetedSearch\Index\Storage\ValueInterface;
 
-/**
- * Simple filter for faceted index. Filter item by value
- * @package KSamuel\FacetedSearch\Filter
- */
-class ExcludeValueFilter extends ValueFilter implements ExcludeFilterInterface
+interface ValueIntersectionInterface
 {
     /**
-     * @inheritDoc
+     * Get intersection count
+     * @param ValueInterface $value
+     * @param array<int,bool> $recordIds
+     * @return int
      */
-    public function addExcluded(FieldInterface $field,  array &$excludeRecords): void
-    {
-        $value = $field->value();
-        // collect list for different values of one property
-        foreach ($this->value as $item) {
+    public function getIntersectionCount(ValueInterface $value, array $recordIds): int;
 
-            if (!$field->hasValue($item)) {
-                continue;
-            }
-
-            $field->linkValue($item, $value);
-
-            // performance patch
-            if (empty($excludeRecords) && !$value->isEmpty()) {
-                $excludeRecords = $value->getIdMap();
-                continue;
-            }
-
-            foreach ($value->ids() as $recId) {
-                $excludeRecords[$recId] = true;
-            }
-        }
-    }
+    /**
+     * Check if arrays has intersection
+     * @param ValueInterface $value
+     * @param array<int,bool> $recordIds
+     * @return bool
+     */
+    public function hasIntersection(ValueInterface $value, array $recordIds): bool;
 }

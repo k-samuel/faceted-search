@@ -4,7 +4,7 @@
  *
  * MIT License
  *
- * Copyright (C) 2020-2023  Kirill Yegorov https://github.com/k-samuel
+ * Copyright (C) 2020-2024  Kirill Yegorov https://github.com/k-samuel
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,42 +28,42 @@
 
 declare(strict_types=1);
 
-namespace KSamuel\FacetedSearch\Index\Intersection;
+namespace KSamuel\FacetedSearch\Index\Storage;
 
-class ArrayIntersection implements IntersectionInterface
+use \ArrayAccess;
+
+interface ValueInterface
 {
     /**
-     * Get intersection count
-     * @param array<int,int> $a
-     * @param array<int,bool> $b
-     * @return int
+     * @param array<int,int|bool>|\SplFixedArray<int> $data
+     * @return void
      */
-    public function getIntersectMapCount($a, array $b): int
-    {
-        $intersectLen = 0;
-
-        foreach ($a as $key) {
-            if (isset($b[$key])) {
-                $intersectLen++;
-            }
-        }
-
-        return $intersectLen;
-    }
+    public function setDataLink(&$data): void;
 
     /**
-     * Check if arrays has intersection
-     * @param array<int,int> $a
-     * @param array<int,bool> $b
-     * @return bool
+     * @return array<int,int|bool>|\SplFixedArray<int>
      */
-    public function hasIntersectIntMap($a, array $b): bool
-    {
-        foreach ($a as $key) {
-            if (isset($b[$key])) {
-                return true;
-            }
-        }
-        return false;
-    }
+    public function getData();
+
+    /**
+     * Get list of recordId
+     * @return array<int>
+     */
+    public function ids(): array;
+
+    /**
+     * Get count of record id
+     *
+     * @return int
+     */
+    public function count(): int;
+
+    /**
+     * Get recordId list as map with id in key and bool as val
+     *
+     * @return array<int,bool>
+     */
+    public function getIdMap(): array;
+
+    public function isEmpty(): bool;
 }

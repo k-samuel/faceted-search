@@ -30,6 +30,8 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Filter;
 
+use KSamuel\FacetedSearch\Index\Storage\FieldInterface;
+
 /**
  * Simple filter for faceted index. Filter item by value
  * @package KSamuel\FacetedSearch\Filter
@@ -37,7 +39,7 @@ namespace KSamuel\FacetedSearch\Filter;
 class ValueFilter extends AbstractFilter
 {
     /**
-     * @var array<int,mixed>
+     * @var array<int,int|string>
      */
     protected $value;
 
@@ -55,6 +57,11 @@ class ValueFilter extends AbstractFilter
             if (is_float($value)) {
                 $value = (string)$value;
             }
+
+            /**
+             * @var int|string $value
+             */
+
             $this->value = [$value];
             return;
         }
@@ -75,51 +82,35 @@ class ValueFilter extends AbstractFilter
     /**
      * @inheritDoc
      */
-    public function filterInput(array $facetedData,  array &$inputIdKeys, array $excludeRecords): void
+    public function filterInput(FieldInterface $field,  array &$inputIdKeys, array $excludeRecords): void
     {
         if (empty($inputIdKeys)) {
-            $inputIdKeys = $this->filterData($facetedData, $excludeRecords);
+            $inputIdKeys = $this->filterData($field, $excludeRecords);
             return;
         }
 
         $emptyExclude = empty($excludeRecords);
 
+        $value = $field->value();
 
         // collect list for different values of one property
         foreach ($this->value as $item) {
 
-            if (!isset($facetedData[$item])) {
+            if (!$field->hasValue($item)) {
                 continue;
             }
+            $field->linkValue($item, $value);
 
-            if (is_array($facetedData[$item])) {
-                foreach ($facetedData[$item] as $recId) {
-                    /**
-                     * @var int $recId
-                     */
-                    if (isset($inputIdKeys[$recId]) && ($emptyExclude || !isset($excludeRecords[$recId]))) {
-                        /*
+            foreach ($value->ids() as $recId) {
+                /**
+                 * @var int $recId
+                 */
+                if (isset($inputIdKeys[$recId]) && ($emptyExclude || !isset($excludeRecords[$recId]))) {
+                    /*
                          * Memory optimization.
                          * Flag matching entries with value "2" instead of allocating an additional results array.
                          */
-                        $inputIdKeys[$recId] = 2;
-                    }
-                }
-            } else {
-                // Performance patch SplFixedArray index access is faster than iteration
-                $count = count($facetedData[$item]);
-                for ($i = 0; $i < $count; $i++) {
-                    $recId = $facetedData[$item][$i];
-                    /**
-                     * @var int $recId
-                     */
-                    if (isset($inputIdKeys[$recId]) && ($emptyExclude || !isset($excludeRecords[$recId]))) {
-                        /*
-                         Memory optimization.
-                         Flag matching entries with value "2" instead of allocating an additional results array.
-                         */
-                        $inputIdKeys[$recId] = 2;
-                    }
+                    $inputIdKeys[$recId] = 2;
                 }
             }
         }
@@ -136,58 +127,38 @@ class ValueFilter extends AbstractFilter
 
     /** 
      * Filter faceted data
-     * @param array<int|string,array<int>|\SplFixedArray<int>> $facetedData
+     * @param FieldInterface $field
      * @param array<int,bool> $excludeRecords
      * @return array<int,bool> - results in keys
      */
-    private function filterData(array $facetedData, array $excludeRecords): array
+    private function filterData(FieldInterface $field, array $excludeRecords): array
     {
         $result = [];
 
         $emptyExclude = empty($excludeRecords);
 
+        $value = $field->value();
         // collect list for different values of one property
         foreach ($this->value as $item) {
 
-            if (!isset($facetedData[$item])) {
+            if (!$field->hasValue($item)) {
                 continue;
             }
 
-            if (is_array($facetedData[$item])) {
+            $field->linkValue($item, $value);
 
-                // fast fill unique records (memory allocation optimization)
-                if (empty($result) && $emptyExclude) {
-                    $result = array_fill_keys($facetedData[$item], true);
-                    continue;
-                }
+            // fast fill unique records (memory allocation optimization)
+            if (empty($result) && $emptyExclude) {
+                $result = $value->getIdMap();
+                continue;
+            }
 
-                foreach ($facetedData[$item] as $recId) {
-                    if ($emptyExclude || !isset($excludeRecords[$recId])) {
-                        /**
-                         * @var int $recId
-                         */
-                        $result[$recId] = true;
-                    }
-                }
-            } else {
-                // fast fill unique records (memory allocation optimization)
-                if (empty($result) && $emptyExclude) {
+            foreach ($value->ids() as $recId) {
+                if ($emptyExclude || !isset($excludeRecords[$recId])) {
                     /**
-                     * @var array<int,bool> $result
+                     * @var int $recId
                      */
-                    $result = array_fill_keys($facetedData[$item]->toArray(), true);
-                    continue;
-                }
-                // Performance patch SplFixedArray index access is faster than iteration
-                $count = count($facetedData[$item]);
-                for ($i = 0; $i < $count; $i++) {
-                    $recId = $facetedData[$item][$i];
-                    if ($emptyExclude || !isset($excludeRecords[$recId])) {
-                        /**
-                         * @var int $recId
-                         */
-                        $result[$recId] = true;
-                    }
+                    $result[$recId] = true;
                 }
             }
         }

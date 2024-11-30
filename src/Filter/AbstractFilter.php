@@ -30,6 +30,7 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Filter;
 
+use KSamuel\FacetedSearch\Index\Storage\FieldInterface;
 
 abstract class AbstractFilter implements FilterInterface
 {
@@ -91,7 +92,7 @@ abstract class AbstractFilter implements FilterInterface
     /**
      * @inheritDoc
      */
-    abstract public function filterInput(array $facetedData,  array &$inputIdKeys, array $excludeRecords): void;
+    abstract public function filterInput(FieldInterface $field,  array &$inputIdKeys, array $excludeRecords): void;
 
     /**
      * Enable/Disable self-filtering for current filter, disabled by default.

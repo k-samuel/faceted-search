@@ -4,7 +4,7 @@
  *
  * MIT License
  *
- * Copyright (C) 2020-2023  Kirill Yegorov https://github.com/k-samuel
+ * Copyright (C) 2020-2024  Kirill Yegorov https://github.com/k-samuel
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,46 +28,64 @@
 
 declare(strict_types=1);
 
-namespace KSamuel\FacetedSearch\Index\Intersection;
+namespace KSamuel\FacetedSearch\Index\Storage\ArrayStorage;
 
-/**
- *  Performance patch SplFixedArray index access is faster than iteration
- */
-class FixedArrayIntersection implements IntersectionInterface
+use KSamuel\FacetedSearch\Index\Storage\ValueInterface;
+
+use \Generator;
+
+class Value implements ValueInterface
 {
-    /**
-     * Get intersection count
-     * @param array<int>|\SplFixedArray<int> $a
-     * @param array<int,bool> $b
-     * @return int
-     */
-    public function getIntersectMapCount($a, array $b): int
-    {
-        $intersectLen = 0;
-        $count = count($a);
-        for ($i = 0; $i < $count; $i++) {
-            if (isset($b[$a[$i]])) {
-                $intersectLen++;
-            }
-        }
 
-        return $intersectLen;
+    /**
+     * Record id as value
+     * @var array<int,int>
+     */
+    private array $data;
+
+    /**
+     * @param array<int,int> $data
+     * @return void
+     */
+    public function setDataLink(&$data): void
+    {
+        $this->data = $data;
     }
 
     /**
-     * Check if arrays has intersection
-     * @param array<int>|\SplFixedArray<int> $a
-     * @param array<int,bool> $b
-     * @return bool
+     * @return array<int,int>
      */
-    public function hasIntersectIntMap($a, array $b): bool
+    public function getData(): array
     {
-        $count = count($a);
-        for ($i = 0; $i < $count; $i++) {
-            if (isset($b[$a[$i]])) {
-                return true;
-            }
-        }
-        return false;
+        return $this->data;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function ids(): array
+    {
+        return $this->data;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getIdMap(): array
+    {
+        return array_fill_keys($this->data, true);
+    }
+
+    public function isEmpty(): bool
+    {
+        return empty($this->data);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function count(): int
+    {
+        return count($this->data);
     }
 }

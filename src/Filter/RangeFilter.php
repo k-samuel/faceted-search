@@ -30,6 +30,8 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Filter;
 
+use KSamuel\FacetedSearch\Index\Storage\FieldInterface;
+
 /**
  * Range filter for faceted index. Filter item by range (min,max)
  * @package KSamuel\FacetedSearch\Filter
@@ -54,7 +56,7 @@ class RangeFilter extends AbstractFilter
     /**
      * @inheritDoc
      */
-    public function filterInput(array $facetedData,  array &$inputIdKeys, array $excludeRecords): void
+    public function filterInput(FieldInterface $field,  array &$inputIdKeys, array $excludeRecords): void
     {
         /**
          * @var array{min:int|float|null,max:int|float|null} $value
@@ -71,27 +73,27 @@ class RangeFilter extends AbstractFilter
 
         // collect list for different values of one property
         $limit = [];
-        foreach ($facetedData as $value => $records) {
+
+        $valueContainer = $field->value();
+
+        foreach ($field->values() as $value) {
             if ($min !== null && (float)$value < (float)$min) {
                 continue;
             }
             if ($max !== null && (float)$value > (float)$max) {
                 continue;
             }
+
+            $field->linkValue($value, $valueContainer);
+
             if (empty($limit) && empty($excludeRecords)) {
-                /**
-                 * @var array<int>|\SplFixedArray<int> $records
-                 */
-                if ($records instanceof \SplFixedArray) {
-                    $limit = $records->toArray();
-                } else {
-                    $limit = $records;
-                }
+                $limit = $valueContainer->getIdMap();
             } else {
-                // array sum (faster than array_merge here)
-                foreach ($records as $item) {
-                    if (!isset($excludeRecords[$item])) {
-                        $limit[] = $item;
+
+                foreach ($valueContainer->ids() as $recordId) {
+                    // array sum (faster than array_merge here)
+                    if (!isset($excludeRecords[$recordId])) {
+                        $limit[$recordId] = true;
                     }
                 }
             }
@@ -103,15 +105,13 @@ class RangeFilter extends AbstractFilter
         }
 
         if (empty($inputIdKeys)) {
-            foreach ($limit as $v) {
-                $inputIdKeys[$v] = true;
-            }
+            $inputIdKeys = $limit;
             return;
         }
 
         // Solution without allocating memory to a new index map.
         // Reuse of input data. Set mark "2" for the data that needs to be in result.
-        foreach ($limit as $index) {
+        foreach ($limit as $index => $v) {
             if (isset($inputIdKeys[$index])) {
                 $inputIdKeys[$index] = 2;
             }

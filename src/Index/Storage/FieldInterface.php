@@ -4,7 +4,7 @@
  *
  * MIT License
  *
- * Copyright (C) 2020-2023  Kirill Yegorov https://github.com/k-samuel
+ * Copyright (C) 2020-2024  Kirill Yegorov https://github.com/k-samuel
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,23 +28,48 @@
 
 declare(strict_types=1);
 
-namespace KSamuel\FacetedSearch\Index\Intersection;
+namespace KSamuel\FacetedSearch\Index\Storage;
 
-interface IntersectionInterface
+use Generator;
+
+interface FieldInterface
 {
     /**
-     * Get intersection count
-     * @param array<int>|\SplFixedArray<int> $a
-     * @param array<int,bool> $b
-     * @return int
+     *
+     * @param string|int $fieldName
+     * @param array<int|string,array<int,int>|\SplFixedArray<int>> $data
+     * @return void
      */
-    public function getIntersectMapCount($a, array $b): int;
+    public function setDataLink($fieldName, array &$data): void;
 
     /**
-     * Check if arrays has intersection
-     * @param array<int>|\SplFixedArray<int> $a
-     * @param array<int,bool> $b
+     * Get list of field values
+     * @return Generator<int|string>
+     */
+    public function values(): Generator;
+
+    /**
+     * @return ValueInterface
+     */
+    public function value(): ValueInterface;
+
+    /**
+     * Set value link into field container
+     *
+     * @param string|int $value
+     * @param ValueInterface $fieldContainer
+     * @return void
+     */
+    public function linkValue($value, ValueInterface $fieldContainer): void;
+
+    /**
+     * @return int|string
+     */
+    public function getName();
+
+    /**
+     * @param string|int $value
      * @return bool
      */
-    public function hasIntersectIntMap($a, array $b): bool;
+    public function hasValue($value): bool;
 }

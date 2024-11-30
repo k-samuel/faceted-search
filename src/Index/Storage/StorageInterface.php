@@ -116,8 +116,25 @@ interface StorageInterface
     public function getRecordsCount(string $field, $value): int;
 
     /**
-     * List data
-     * @return Generator
+     * List fields
+     * @return Generator<string|int>
      */
-    public function scan(): Generator;
+    public function fieldNames(): Generator;
+
+    /**
+     * Get Field container
+     *
+     * @return FieldInterface
+     */
+    public function field(): FieldInterface;
+
+    /**
+     * Link field data to FieldInterface container.
+     * Optimization based on reusable container
+     *
+     * @param string|int $fieldName
+     * @param FieldInterface $fieldContainer
+     * @return void
+     */
+    public function linkField($fieldName, FieldInterface $fieldContainer): void;
 }

@@ -4,7 +4,7 @@
  *
  * MIT License
  *
- * Copyright (C) 2020-2023  Kirill Yegorov https://github.com/k-samuel
+ * Copyright (C) 2020-2024  Kirill Yegorov https://github.com/k-samuel
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,20 +28,22 @@
 
 declare(strict_types=1);
 
-namespace KSamuel\FacetedSearch\Index\Storage;
+namespace KSamuel\FacetedSearch\Index\Storage\ArrayStorage;
 
 use KSamuel\FacetedSearch\Indexer\IndexerInterface;
+use KSamuel\FacetedSearch\Index\Storage\StorageInterface;
 use Generator;
+use KSamuel\FacetedSearch\Index\Storage\FieldInterface;
 
 /**
  * Simple faceted index
  * @package KSamuel\FacetedSearch
  */
-class ArrayStorage implements StorageInterface
+class Storage implements StorageInterface
 {
     /**
      * Index data
-     * @var array<int|string,array<int|string,array<int>>>
+     * @var array<int|string,array<int|string,array<int,int>>>
      */
     protected array $data = [];
     /**
@@ -63,6 +65,11 @@ class ArrayStorage implements StorageInterface
             }
 
             $values = array_unique($values);
+
+            // convert field name into string representation
+            if (!is_string($fieldName)) {
+                $fieldName = (string) $fieldName;
+            }
 
             if (isset($this->indexers[$fieldName])) {
                 if (!isset($this->data[$fieldName])) {
@@ -110,7 +117,7 @@ class ArrayStorage implements StorageInterface
 
     /**
      * Set index data. Can be used for restoring from DB
-     * @param array<int|string,array<int|string,array<int>>> $data
+     * @param array<int|string,array<int|string,array<int,int>>> $data
      */
     public function setData(array $data): void
     {
@@ -158,33 +165,6 @@ class ArrayStorage implements StorageInterface
     public function hasField(string $fieldName): bool
     {
         return (isset($this->data[$fieldName]) && !empty($this->data[$fieldName]));
-    }
-
-    /**
-     * @return array<int|string,array<string|int,true>>
-     */
-    protected function getValues(): array
-    {
-        $result = [];
-        foreach ($this->data as $filterName => $filterValues) {
-            foreach ($filterValues as $key => $info) {
-                $result[$filterName][$key] = true;
-            }
-        }
-        return $result;
-    }
-    /**
-     * @return array<int|string,array<string|int,int>>
-     */
-    protected function getValuesCount(): array
-    {
-        $result = [];
-        foreach ($this->data as $filterName => $filterValues) {
-            foreach ($filterValues as $key => $list) {
-                $result[$filterName][$key] = count($list);
-            }
-        }
-        return $result;
     }
 
     public function optimize(): void
@@ -264,13 +244,26 @@ class ArrayStorage implements StorageInterface
     }
 
     /**
-     * List data
-     * @return Generator
+     * @inheritDoc
      */
-    public function scan(): Generator
+    public function fieldNames(): Generator
     {
         foreach ($this->data as $k => $v) {
-            yield $k => $v;
+            yield $k;
         }
+    }
+
+    public function field(): FieldInterface
+    {
+        return new Field();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function linkField($fieldName, FieldInterface $fieldContainer): void
+    {
+        $link = &$this->data[$fieldName];
+        $fieldContainer->setDataLink($fieldName, $link);
     }
 }

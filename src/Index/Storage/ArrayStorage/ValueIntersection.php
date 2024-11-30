@@ -4,7 +4,7 @@
  *
  * MIT License
  *
- * Copyright (C) 2020  Kirill Yegorov https://github.com/k-samuel
+ * Copyright (C) 2020-2024  Kirill Yegorov https://github.com/k-samuel
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,40 +28,42 @@
 
 declare(strict_types=1);
 
-namespace KSamuel\FacetedSearch\Filter;
+namespace KSamuel\FacetedSearch\Index\Storage\ArrayStorage;
 
-use KSamuel\FacetedSearch\Index\Storage\FieldInterface;
+use KSamuel\FacetedSearch\Index\Storage\ValueInterface;
+use KSamuel\FacetedSearch\Index\Storage\ValueIntersectionInterface;
 
-/**
- * Simple filter for faceted index. Filter item by value
- * @package KSamuel\FacetedSearch\Filter
- */
-class ExcludeValueFilter extends ValueFilter implements ExcludeFilterInterface
+class ValueIntersection implements ValueIntersectionInterface
 {
     /**
      * @inheritDoc
      */
-    public function addExcluded(FieldInterface $field,  array &$excludeRecords): void
+    public function getIntersectionCount(ValueInterface $value, array $recordIds): int
     {
-        $value = $field->value();
-        // collect list for different values of one property
-        foreach ($this->value as $item) {
+        $data = $value->getData();
+        $intersectLen = 0;
 
-            if (!$field->hasValue($item)) {
-                continue;
-            }
-
-            $field->linkValue($item, $value);
-
-            // performance patch
-            if (empty($excludeRecords) && !$value->isEmpty()) {
-                $excludeRecords = $value->getIdMap();
-                continue;
-            }
-
-            foreach ($value->ids() as $recId) {
-                $excludeRecords[$recId] = true;
+        foreach ($data as $key) {
+            if (isset($recordIds[$key])) {
+                $intersectLen++;
             }
         }
+
+        return $intersectLen;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasIntersection(ValueInterface $value, array $recordIds): bool
+    {
+        $data = $value->getData();
+
+        foreach ($data as $key) {
+            if (isset($recordIds[$key])) {
+                return true;
+            }
+        }
+        return false;
     }
 }
