@@ -203,7 +203,7 @@ $query = (new AggregationQuery());
 $filterData = $search->aggregate($query);
 
 // You can sort search query results by field using FacetedIndex
-$query = (new SearchQuery())->filters($filters)->sort('price', Order::SORT_DESC);
+$query = (new SearchQuery())->filters($filters)->order('price', Order::SORT_DESC);
 $records = $search->query($query);
 
 
