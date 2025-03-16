@@ -214,6 +214,7 @@ $records = $search->query($query);
 If there are too many values for a certain field in your data, you may use Range Indexer to accelerate RangeFilter operation. For example, searching by price ranges of products. Prices can be divided into intervals with a required increment.
 
 Please, remember that RangeFilter is a rather slow solution, and it’s better to avoid facets with high value variability.
+Supports only integer ranges.
 
 ```php
 <?php
@@ -224,6 +225,7 @@ use KSamuel\FacetedSearch\Filter\RangeFilter;
 
 $search = (new Factory)->create(Factory::ARRAY_STORAGE);
 $storage = $search->getStorage();
+
 $rangeIndexer = new RangeIndexer(100);
 $storage->addIndexer('price', $rangeIndexer);
 

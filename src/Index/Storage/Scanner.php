@@ -47,7 +47,6 @@ class Scanner
             return $this->findInput($storage, $inputRecords, $excludeRecords);
         }
 
-        $data = $storage->getData();
         $field = $storage->field();
 
         foreach ($filters as $filter) {
@@ -84,7 +83,6 @@ class Scanner
             return;
         }
 
-        $data = $storage->getData();
         $field = $storage->field();
         foreach ($filters as $filter) {
             $fieldName = $filter->getFieldName();
