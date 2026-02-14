@@ -4,9 +4,11 @@ use KSamuel\FacetedSearch\Index\Factory;
 
 require '../../vendor/autoload.php';
 
-$dataDir = './';
+$config = include 'config.php';
+
 $t = microtime(true);
-$f = fopen($dataDir . 'data.json', "r");
+$f = fopen($config['data_dir'] . $config['result_size'] . '/'  . $config['data_file'], "r");
+
 $indexData = [];
 while ($row = fgets($f)) {
     if (!empty($row)) {
@@ -25,6 +27,6 @@ foreach ($indexData as $rec) {
     $storage->addRecord($id, $rec);
 }
 
-file_put_contents($dataDir . 'facet.json', json_encode($storage->export()));
+file_put_contents($config['data_dir'] . $config['result_size'] . '/' . $config['facet_file'], json_encode($storage->export()));
 
 echo 'total time: ' . number_format(microtime(true) - $t, 3) . PHP_EOL;

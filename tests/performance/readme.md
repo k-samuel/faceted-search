@@ -8,7 +8,7 @@ Generate dataset
 
     php ./create_dataset.php
 
-Create index for 100.000 goods
+Create index 
 
     php ./create_index.php
 

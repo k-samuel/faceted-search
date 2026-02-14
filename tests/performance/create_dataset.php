@@ -1,9 +1,10 @@
 <?php
-$resultsCount = 100000;
-
-
 $t = microtime(true);
-$filePath = '../data/' . $resultsCount . '/data.json';
+
+$config = include 'config.php';
+$resultsCount = $config['result_size'];
+$filePath = $config['data_dir'] . $config['result_size'] . '/' . $config['data_file'];
+
 if (!is_dir(dirname($filePath))) {
     if (!mkdir(dirname($filePath), 0775, true)) {
         trigger_error('Cannot create dir ' . dirname($filePath));
