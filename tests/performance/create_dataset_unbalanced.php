@@ -1,18 +1,29 @@
 <?php
 
 $t = microtime(true);
-$resultsCount = 1000000;
+
+$config = include 'config.php';
+$resultsCount = $config['result_size'];
+$filePath = $config['data_dir'] . $config['result_size'] . '/' . $config['ub_prefix'] . $config['data_file'];
+
+
 
 $colors = ['red', 'red',  'green', 'blue', 'yellow', 'black', 'black', 'black', 'black', 'white', 'white', 'white'];
 $brands = [
     'Nike',
-    'H&M', 'H&M', 'H&M', 'H&M',
+    'H&M',
+    'H&M',
+    'H&M',
+    'H&M',
     'Zara',
     'Adidas',
     'Louis Vuitton',
-    'Cartier', 'Cartier', 'Cartier',
+    'Cartier',
+    'Cartier',
+    'Cartier',
     'Hermes',
-    'Gucci', 'Gucci',
+    'Gucci',
+    'Gucci',
     'Uniqlo',
     'Rolex',
     'Coach',
@@ -25,7 +36,10 @@ $brands = [
     'Prada',
     'Under Armour',
     'Armani',
-    'Puma', 'Puma', 'Puma', 'Puma',
+    'Puma',
+    'Puma',
+    'Puma',
+    'Puma',
     'Ray-Ban'
 ];
 
@@ -54,7 +68,7 @@ for ($i = 1; $i <= $resultsCount; $i++) {
         'warehouse' => array_unique($wh),
         'type' => $type[rand(0, count($type) - 1)]
     ];
-    file_put_contents('./ub_data.json', json_encode($rec) . "\n", FILE_APPEND);
+    file_put_contents($filePath, json_encode($rec) . "\n", FILE_APPEND);
 }
 
 echo 'total time: ' . number_format(microtime(true) - $t, 3) . PHP_EOL;

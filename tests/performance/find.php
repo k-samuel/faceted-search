@@ -15,8 +15,9 @@ use KSamuel\FacetedSearch\Query\Order;
 
 use KSamuel\FacetedSearch\Query\SearchQuery;
 
+$config = include 'config.php';
 
-$dataFile = './facet.json';
+$dataFile = $config['data_dir'] . $config['result_size'] . '/' . $config['facet_file'];
 
 gc_collect_cycles();
 $t = microtime(true);
@@ -233,18 +234,22 @@ $testResultData[] = ['Method', 'Time, s.', 'Records', 'Extra / Total Mb.'];
 
 $tests = [
     ['func' => 'find', 'args' => [$search, $filters]],
-    // ['func' => 'findAndSort', 'args' => [$search, $filters]],
-    // ['func' => 'findWithExclude', 'args' => [$search, $filters3]],
-    // ['func' => 'findWithRange', 'args' => [$search, $filters2]],
+    ['func' => 'findAndSort', 'args' => [$search, $filters]],
+    ['func' => 'findWithExclude', 'args' => [$search, $filters3]],
+    ['func' => 'findWithRange', 'args' => [$search, $filters2]],
     ['func' => 'aggregate', 'args' => [$search, $filters]],
     ['func' => 'aggregateAndCount', 'args' => [$search, $filters]],
-    //['func' => 'aggregateAndCountWithExclude', 'args' => [$search, $filters3]],
-    // ['func' => 'sortTest', 'args' => [$search, $filters, $profile]]
+    ['func' => 'aggregateAndCountWithExclude', 'args' => [$search, $filters3]],
+    ['func' => 'sortTest', 'args' => [$search, $filters, $profile]]
 ];
 
 
 if (function_exists('memory_reset_peak_usage')) {
     foreach ($tests as $opts) {
+        // check if test is disabled
+        if (!isset($config['tests'][$opts['func']]) || !$config['tests'][$opts['func']]) {
+            continue;
+        }
         $tmp = [];
         gc_collect_cycles();
         $memUse = (int)((memory_get_usage() - $m) / 1024 / 1024);
