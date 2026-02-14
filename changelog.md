@@ -1,5 +1,11 @@
 # Changelog
 
+### v3.2.3 (14.02.2026)
+Minor updates
+ - FixedArrayStorage array intersection improvement
+ - Fix for demo perf test
+ - PHP 8.4, 8.5 test pipelines 
+
 ### v3.2.2 (13.06.2024)
 
 Documentation updated
