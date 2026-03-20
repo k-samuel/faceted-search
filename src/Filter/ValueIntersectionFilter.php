@@ -104,16 +104,28 @@ class ValueIntersectionFilter extends ValueFilter
             }
 
             // fast fill unique records (memory allocation optimization)
-            if ($isFirst && empty($result) && $emptyExclude) {
-                if (is_array($facetedData[$item])) {
-                    $result = array_fill_keys($facetedData[$item], true);
+            if ($isFirst) {
+                if ($emptyExclude) {
+                    if (is_array($facetedData[$item])) {
+                        $result = array_fill_keys($facetedData[$item], true);
+                    } else {
+                        // splFixedArray
+                        /**
+                         * @var array<int,bool> $result
+                         */
+                        $result = array_fill_keys($facetedData[$item]->toArray(), true);
+                    }
                 } else {
-                    // splFixedArray
-                    /**
-                     * @var array<int,bool> $result
-                     */
-                    $result = array_fill_keys($facetedData[$item]->toArray(), true);
+                    foreach ($facetedData[$item] as $recId) {
+                        if (!isset($excludeRecords[$recId])) {
+                            /**
+                             * @var int $recId
+                             */
+                            $result[$recId] = true;
+                        }
+                    }
                 }
+
                 $isFirst = false;
                 continue;
             }
