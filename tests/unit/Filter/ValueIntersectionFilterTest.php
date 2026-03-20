@@ -255,4 +255,30 @@ class ValueIntersectionFilterTest extends TestCase
         $this->assertEquals($expected, $result);
         $this->assertEquals($expected, $result2);
     }
+
+    public function testIntersectionWithExclude(): void
+    {
+        $index = (new Factory)->create(Factory::ARRAY_STORAGE);
+        $storage = $index->getStorage();
+        $data = [
+            1 => ['tag' => ['a', 'b', 'c']],
+            2 => ['tag' => ['a', 'b']],
+            3 => ['tag' => ['a', 'c']],
+            4 => ['tag' => ['b', 'c']],
+
+        ];
+        foreach ($data as $k => $v) {
+            $storage->addRecord($k, $v);
+        }
+        $storage->optimize();
+
+        $query = (new SearchQuery())->filters([
+            new ValueIntersectionFilter('tag', ['a', 'b']),
+            new ExcludeValueFilter('tag', ['c']),
+        ]);
+
+        $result = $index->query($query);
+
+        $this->assertEquals([2], $result);
+    }
 }

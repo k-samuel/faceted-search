@@ -1,5 +1,9 @@
 # Changelog
 
+### v3.2.4 (20.03.2026)
+Bug fix
+ - Fixed a rare bug: Incorrect processing of Intersection and Exclude filters when the required Intersection filter value was in the first row processed after the Exclude filters.
+
 ### v3.2.3 (14.02.2026)
 Minor updates
  - FixedArrayStorage array intersection improvement
