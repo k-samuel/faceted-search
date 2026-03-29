@@ -12,7 +12,7 @@ It can easily process up to 500,000 items with 10 properties. Create individual 
 
 In addition to faceted filters, it supports exclusive filters. The software is optimized for uncompromising performance.
 
-[Changelog](./changelog.md) | [2.x version](https://github.com/k-samuel/faceted-search/tree/2.x)
+[Changelog](./changelog.md) | [2.x version](https://github.com/k-samuel/faceted-search/tree/2.x) | [Golang Port](https://github.com/k-samuel/faceted)
 
 ## Install
 
@@ -86,28 +86,26 @@ FixedArrayIndex
 * UB - Unbalanced dataset (uneven distribution of values in fields)
 
 
-Benchmark of a library experimental port at Golang https://github.com/k-samuel/go-faceted-search
+#### Golang port benchmark 
+Port repo: https://github.com/k-samuel/faceted
 
-Bench v0.3.3 go 1.21.1 darwin/arm64 with parallel aggregates. 
+Golang (1.25) vs PHP (8.4.4 Opcache JIT, no xdebug) 1M records
 
-| Items count     | Memory   | Query            | Aggregate & Count        | Sort by field| Results Found    |
-|----------------:|---------:|-----------------:|-------------------------:|-------------:|-----------------:|
-| 10,000          | ~7Mb     | ~0.0002 s.       | ~0.002 s.                | ~0.0001 s.   | 907              |
-| 50,000          | ~14Mb    | ~0.001 s.        | ~0.017 s.                | ~0.001 s.    | 4550             |
-| 100,000         | ~21Mb    | ~0.002 s.        | ~0.037 s.                | ~0.001 s.    | 8817             |
-| 300,000         | ~47Mb    | ~0.008 s.        | ~0.107 s.                | ~0.004 s.    | 26891            |
-| 1,000,000       | ~140Mb   | ~0.031 s.        | ~0.363 s.                | ~0.015 s.    | 90520            |
-| 1,000,000 UB    | ~138Mb   | ~0.059 s.        | ~0.899 s.                | ~0.028 s.    | 179856           |
- 
- *(Apple M2 macOS 14.0)*
+|                             | GO         |     PHP   | 
+|:----------------------------|-----------:|----------:|
+| Total Memory, Mb            |  135 Mb    |   424 Mb  |
+| Find                        |  0.012627  |  0.022952 |
+| Find & Sort                 |  0.025829  |  0.030542 |
+| Find (unsets)               |  0.048186  |  0.030736 |
+| Find (ranges)               |  0.028761  |  0.032662 |
+| Filters                     |  0.087418  |  0.070283 |
+| Filters & count             |  0.307845  |  0.137206 |
+| Filters & count & exclude   |  0.321084  |  0.154704 |
 
-*The internal structure of index arrangement in versions on PHP and Golang will be different starting from experimental port ver. 0.0.3 due to peculiarities of the Hash Map internal structure in these languages. In Go, we had to stop using Hash Map to make data storage in slices more effective, which initially allowed us to match PHP version performance.*
 
-*In PHP, array (hashMap) is more effective for the current task due to using DoubleLinkedList and HashMap key packing.*
-
-*Go has more effective methods of reduction of the size of slices without copying data (used for list deduplication). This allows to find overlapping using sorted slices.*
-
-*Further comparison makes little sense because of different algorithms.*
+*The architecture of the Go version is slightly different.*
+- *In PHP, array (hashMap) is more effective for the current task due to using DoubleLinkedList and HashMap key packing.*
+- *Go has more effective methods of reduction of the size of slices without copying data (used for list deduplication). This allows to find intersection using sorted slices.*
 
 ## Examples
 
