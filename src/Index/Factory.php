@@ -4,7 +4,7 @@
  *
  * MIT License
  *
- * Copyright (C) 2020-2023  Kirill Yegorov https://github.com/k-samuel
+ * Copyright (C) 2020-2026  Kirill Yegorov https://github.com/k-samuel
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,7 +67,6 @@ final class Factory
         return new Index(
             $store,
             new Sort\Filters,
-            new Sort\AggregationResults,
             $resultSort,
             new Scanner,
             $intersection

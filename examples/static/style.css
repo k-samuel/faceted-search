@@ -45,6 +45,10 @@ li.selected {
     font-size: 16px;
     float: left;
 }
+.filterCount {
+    font-weight: normal;
+    font-size: 14px;
+}
 
 .filterValue {
     font-size: 10px;

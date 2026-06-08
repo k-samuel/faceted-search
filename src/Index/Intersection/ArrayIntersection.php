@@ -66,4 +66,24 @@ class ArrayIntersection implements IntersectionInterface
         }
         return false;
     }
+
+    /**
+     * Get intersection count from input and data, remove intersected from input
+     * @param array<int,bool> $input
+     * @param array<int> $data
+     * @return int
+     */
+    public function contIntersectionAndExclude(array &$input, array $data): int
+    {
+        $count = 0;
+
+        foreach ($data as $id) {
+            if (isset($input[$id])) {
+                $count++;
+                unset($input[$id]);
+            }
+        }
+
+        return $count;
+    }
 }

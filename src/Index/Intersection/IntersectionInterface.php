@@ -47,4 +47,12 @@ interface IntersectionInterface
      * @return bool
      */
     public function hasIntersectIntMap($a, array $b): bool;
+
+    /**
+     * Get intersection count from input and data, remove intersected from input
+     * @param array<int,bool> $input
+     * @param array<int> $data
+     * @return int
+     */
+    public function contIntersectionAndExclude(array &$input, array $data): int;
 }

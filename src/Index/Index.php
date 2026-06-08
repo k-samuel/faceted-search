@@ -4,7 +4,7 @@
  *
  * MIT License
  *
- * Copyright (C) 2020-2023  Kirill Yegorov https://github.com/k-samuel
+ * Copyright (C) 2020-2026  Kirill Yegorov https://github.com/k-samuel
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,12 +32,12 @@ namespace KSamuel\FacetedSearch\Index;
 
 use KSamuel\FacetedSearch\Filter\ExcludeFilterInterface;
 use KSamuel\FacetedSearch\Filter\FilterInterface;
-use KSamuel\FacetedSearch\Index\Sort\AggregationResults;
 use KSamuel\FacetedSearch\Index\Sort\Filters;
 
 use KSamuel\FacetedSearch\Index\Storage\StorageInterface;
 use KSamuel\FacetedSearch\Index\Storage\Scanner;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
+use KSamuel\FacetedSearch\Query\AggregationQueryResult;
 use KSamuel\FacetedSearch\Index\Intersection\IntersectionInterface;
 use KSamuel\FacetedSearch\Index\Sort\QueryResultsInterface;
 use KSamuel\FacetedSearch\Query\SearchQuery;
@@ -53,7 +53,6 @@ class Index implements IndexInterface
 {
     private StorageInterface $storage;
     private Filters $filterSort;
-    private AggregationResults $aggregationSort;
     private QueryResultsInterface $querySort;
     private Scanner $scanner;
     private IntersectionInterface $intersection;
@@ -63,14 +62,12 @@ class Index implements IndexInterface
     public function __construct(
         StorageInterface $storage,
         Filters $filterSort,
-        AggregationResults $aggregationSort,
         QueryResultsInterface $querySort,
         Scanner $scanner,
         IntersectionInterface $intersection
     ) {
         $this->storage = $storage;
         $this->filterSort = $filterSort;
-        $this->aggregationSort = $aggregationSort;
         $this->querySort = $querySort;
         $this->scanner = $scanner;
         $this->intersection = $intersection;
@@ -131,10 +128,23 @@ class Index implements IndexInterface
     /**
      * Find acceptable filter values
      * @param AggregationQuery $query
-     * @return array<int|string,array<int|string,int|true>>
+     * @return array<int|string,array<int|string,int|bool>>
+     * @deprecated since 3.3.0 use aggregation method
      */
     public function aggregate(AggregationQuery $query): array
     {
+        $result = $this->aggregation($query);
+        return $result->getValues();
+    }
+    /**
+     * Find acceptable filter values
+     * @param AggregationQuery $query
+     * @return AggregationQueryResult
+     */
+    public function aggregation(AggregationQuery $query): AggregationQueryResult
+    {
+        $result = new AggregationQueryResult();
+
         $input = $query->getInRecords();
 
         $filterList = $query->getFilters();
@@ -150,8 +160,8 @@ class Index implements IndexInterface
         }
 
         $countValues = $query->getCountItems();
+        $countByFields = $query->getCountTotal();
         $sort = $query->getSort();
-
 
         $excludeMap = [];
         if (!empty($exceptFilters)) {
@@ -162,13 +172,20 @@ class Index implements IndexInterface
         if (empty($filters) && empty($input)) {
 
             if ($countValues) {
-                $result = $this->getValuesCount($excludeMap);
+                $this->getValuesCount($excludeMap, $result);
             } else {
-                $result = $this->getValues($excludeMap);
+                $this->getValues($excludeMap, $result);
+            }
+
+            if ($countByFields) {
+                $totalRecords = $this->getCount($excludeMap);
+                foreach ($result->getValues() as $field => $cnt) {
+                    $result->setFieldTotal($field, $totalRecords);
+                }
             }
 
             if ($sort) {
-                $this->aggregationSort->sort($sort, $result);
+                $result->sort($sort);
             }
             return $result;
         }
@@ -176,6 +193,43 @@ class Index implements IndexInterface
         if (!empty($input)) {
             $input = $this->mapInputArray($input);
         }
+
+
+        // intersect index values and filtered records into $result object
+        $this->aggregationScan(
+            $countValues,
+            $countByFields,
+            $input,
+            $excludeMap,
+            $query->hasSelfFiltering(),
+            $filters,
+            $result
+        );
+
+        if ($sort !== null) {
+            $result->sort($sort);
+        }
+        return $result;
+    }
+    /**
+     * @param bool $countRecords
+     * @param bool $countByFields
+     * @param array<int,bool> $input
+     * @param array<int,bool> $exclude
+     * @param bool $selfFiltering
+     * @param array<FilterInterface> $filters
+     * @param AggregationQueryResult $result
+     * @return void
+     */
+    private function aggregationScan(
+        bool $countRecords,
+        bool $countByFields,
+        array $input,
+        array $exclude,
+        bool $selfFiltering,
+        array $filters,
+        AggregationQueryResult $result
+    ): void {
 
         $filteredRecords = [];
         $resultCache = [];
@@ -189,51 +243,15 @@ class Index implements IndexInterface
             // index filters by field
             foreach ($filters as $filter) {
                 $name = $filter->getFieldName();
-                $resultCache[$name] = $this->scanner->findRecordsMap($this->storage, [$filter], $input, $excludeMap);
+                $resultCache[$name] = $this->scanner->findRecordsMap($this->storage, [$filter], $input, $exclude);
             }
 
             // merge results
             $filteredRecords = $this->mergeFilters($resultCache);
         } elseif (!empty($input)) {
-            $filteredRecords = $this->scanner->findRecordsMap($this->storage, [], $input, $excludeMap);
+            $filteredRecords = $this->scanner->findRecordsMap($this->storage, [], $input, $exclude);
         }
 
-        // intersect index values and filtered records
-        $result = $this->aggregationScan(
-            $resultCache,
-            $filteredRecords,
-            $countValues,
-            $input,
-            $excludeMap,
-            $query->hasSelfFiltering(),
-            $filters
-        );
-
-        if ($sort !== null) {
-            $this->aggregationSort->sort($sort, $result);
-        }
-        return $result;
-    }
-    /**
-     * @param array<int|string,array<int,bool>> $resultCache
-     * @param array<int,bool> $filteredRecords
-     * @param bool $countRecords
-     * @param array<int,bool> $input
-     * @param array<int,bool> $exclude
-     * @param bool $selfFiltering
-     * @param array<FilterInterface> $filters
-     * @return array<int|string,array<int|string,int|true>>
-     */
-    private function aggregationScan(
-        array $resultCache,
-        array $filteredRecords,
-        bool $countRecords,
-        array $input,
-        array $exclude,
-        bool $selfFiltering,
-        array $filters
-    ): array {
-        $result = [];
         $cacheCount = count($resultCache);
 
         $indexedFilters = [];
@@ -278,77 +296,95 @@ class Index implements IndexInterface
                 $recordIds = $filteredRecords;
             }
 
+            $totalCount = 0;
+            $intersectionMap = $recordIds;
+
             foreach ($filterValues as $filterValue => $data) {
+
+                if ($countByFields) {
+                    $totalCount += $this->intersection->contIntersectionAndExclude($intersectionMap, $data);
+                }
 
                 if ($countRecords) {
                     $intersect = $this->intersection->getIntersectMapCount($data, $recordIds);
                     if ($intersect === 0) {
                         continue;
                     }
-                    $result[$filterName][$filterValue] = $intersect;
+                    $result->setValueCount($filterName, $filterValue, $intersect);
                     continue;
                 }
 
                 if ($this->intersection->hasIntersectIntMap($data, $recordIds)) {
-                    $result[$filterName][$filterValue] = true;
+                    $result->setValueCount($filterName, $filterValue, true);
                 }
             }
+
+            if ($countByFields) {
+                $result->setFieldTotal($filterName, $totalCount);
+            }
         }
-        return $result;
     }
 
     /**
      * @param array<int,bool> $excludeMap
-     * @return array<int|string,array<string|int,true>>
+     * @param AggregationQueryResult $result
+     * @return void
      */
-    protected function getValues(array $excludeMap): array
+    protected function getValues(array $excludeMap, AggregationQueryResult $result): void
     {
-        $result = [];
         if (empty($excludeMap)) {
             /**
-             * @var array<int|sting,array<int>> $filterValues
+             * @var array<int|string,array<int>> $filterValues
              */
             foreach ($this->scanner->scan($this->storage) as $filterName => $filterValues) {
                 foreach ($filterValues as $key => $info) {
-                    $result[$filterName][$key] = true;
+                    /**
+                     * @var string|int $filterName
+                     */
+                    $result->setValueCount($filterName, $key, true);
                 }
             }
         } else {
             /**
-             * @var array<int|sting,array<int>> $filterValues
+             * @var array<int|string,array<int>> $filterValues
              */
             foreach ($this->scanner->scan($this->storage) as $filterName => $filterValues) {
                 foreach ($filterValues as $key => $info) {
                     foreach ($info as $value) {
                         if (!isset($excludeMap[$value])) {
-                            $result[$filterName][$key] = true;
+                            /**
+                             * @var string|int $filterName
+                             */
+                            $result->setValueCount($filterName, $key, true);
                             continue;
                         }
                     }
                 }
             }
         }
-        return $result;
     }
     /**
      * @param array<int,bool> $excludeMap
-     * @return array<int|string,array<string|int,int>>
+     * @param AggregationQueryResult $result
+     * @return void
      */
-    protected function getValuesCount(array $excludeMap): array
+    protected function getValuesCount(array $excludeMap, AggregationQueryResult $result): void
     {
-        $result = [];
         if (empty($excludeMap)) {
             /**
-             * @var array<int|sting,array<int>> $filterValues
+             * @var array<int|string,array<int>> $filterValues
              */
             foreach ($this->scanner->scan($this->storage) as $filterName => $filterValues) {
                 foreach ($filterValues as $key => $list) {
-                    $result[$filterName][$key] = count($list);
+                    /**
+                     * @var string|int $filterName
+                     */
+                    $result->setValueCount($filterName, $key, count($list));
                 }
             }
         } else {
             /**
-             * @var array<int|sting,array<int>> $filterValues
+             * @var array<int|string,array<int>> $filterValues
              */
             foreach ($this->scanner->scan($this->storage) as $filterName => $filterValues) {
                 foreach ($filterValues as $key => $list) {
@@ -358,11 +394,10 @@ class Index implements IndexInterface
                             $count++;
                         }
                     }
-                    $result[$filterName][$key] = $count;
+                    $result->setValueCount($filterName, $key, $count);
                 }
             }
         }
-        return $result;
     }
 
     /**
@@ -410,11 +445,12 @@ class Index implements IndexInterface
 
     /**
      * Get count of unique records (ids)
+     * @param array<int|string,bool> $excludeMap, optional, default []
      * @return int
      */
-    public function getCount(): int
+    public function getCount(array $excludeMap = []): int
     {
-        return count($this->scanner->getAllRecordIdMap($this->storage));
+        return count($this->scanner->getAllRecordIdMap($this->storage, $excludeMap));
     }
 
     /**

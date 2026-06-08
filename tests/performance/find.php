@@ -120,6 +120,25 @@ function aggregateAndCount(IndexInterface $search, array $filters): array
 }
 
 /**
+ * Aggregate & count & total test
+ * @param IndexInterface $search
+ * @param array<FilterInterface> $filters
+ * @return array<int,int|string>
+ */
+function aggregateAndCountTotal(IndexInterface $search, array $filters): array
+{
+    $query = (new AggregationQuery())
+        ->filters($filters)
+        ->countItems(true)
+        ->countTotal(true);
+
+    $t = microtime(true);
+    $filtersData = $search->aggregation($query);
+    $time = microtime(true) - $t;
+    return ['Filters & count & total', number_format($time, 6), count($filters)];
+}
+
+/**
  * Aggregate & count test
  * @param IndexInterface $search
  * @param array<FilterInterface> $filters
@@ -239,6 +258,7 @@ $tests = [
     ['func' => 'findWithRange', 'args' => [$search, $filters2]],
     ['func' => 'aggregate', 'args' => [$search, $filters]],
     ['func' => 'aggregateAndCount', 'args' => [$search, $filters]],
+    ['func' => 'aggregateAndCountTotal', 'args' => [$search, $filters]],
     ['func' => 'aggregateAndCountWithExclude', 'args' => [$search, $filters3]],
     ['func' => 'sortTest', 'args' => [$search, $filters, $profile]]
 ];

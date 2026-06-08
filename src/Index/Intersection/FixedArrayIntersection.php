@@ -70,4 +70,24 @@ class FixedArrayIntersection implements IntersectionInterface
         }
         return false;
     }
+
+    /**
+     * Get intersection count from input and data, remove intersected from input
+     * @param array<int,bool> $input
+     * @param array<int> $data
+     * @return int
+     */
+    public function contIntersectionAndExclude(array &$input, array $data): int
+    {
+        $intersectLen = 0;
+
+        $count = count($data);
+        for ($i = 0; $i < $count; $i++) {
+            if (isset($input[$data[$i]])) {
+                $intersectLen++;
+                unset($input[$data[$i]]);
+            }
+        }
+        return $intersectLen;
+    }
 }

@@ -66,35 +66,42 @@ function showFilters(containerId, result, titles) {
     let stepSize = parseInt(result.price_step);
     let count = 0;
     let menuCls = 'hideButton vis';
-    let dataState ='vis';
+    let dataState = 'vis';
     let blockStyle = 'display:block';
 
     for (var field in result.data) {
         let fieldLabel = field;
-       
-        
-        if(titles && titles[field] !=undefined){
+
+        if (titles && titles[field] != undefined) {
             fieldLabel = titles[field];
         }
 
-        if (count  > 0 ){
+        if (count > 0) {
             menuCls = 'hideButton hid';
             dataState = 'hid';
             blockStyle = 'display:none';
         }
 
-        s +='<div class="filterBox">' + 
-                '<div class="filterHeader" data-field="'+field+'" data-state="' + dataState + '" onClick="javascript:menuClick(this);">' + 
-                    '<div class="filterLabel">' + fieldLabel + '</div>' + 
-                    '<div class="' + menuCls + '"></div>' +
-                '</div>' +
-                '<div class="clear"></div>' +
-                '<div class="filterGrid" data-field="' + field + '" style="' + blockStyle + '">' +
-                    '<div style="width:100%">' + 
-                        '<div style="float:left;font-size:10px;">include</div>' +
-                        '<div style="float:right;font-size:10px;padding-right:15px;">exclude</div>' +
-                    '</div>' +
-                    '<div class="clear"></div>' ;
+        let countHtml = '';
+        if (result.total != undefined && result.total[field] != undefined) {
+            let fieldCount = parseInt(result.total[field]);
+            if (fieldCount > 0) {
+               countHtml = '('+fieldCount+')';
+            }
+        } 
+
+        s += '<div class="filterBox">' +
+            '<div class="filterHeader" data-field="' + field + '" data-state="' + dataState + '" onClick="javascript:menuClick(this);">' +
+            '<div class="filterLabel">' + fieldLabel + ' <span class="filterCount">'+ countHtml +'</span></div>' +
+            '<div class="' + menuCls + '"></div>' +
+            '</div>' +
+            '<div class="clear"></div>' +
+            '<div class="filterGrid" data-field="' + field + '" style="' + blockStyle + '">' +
+            '<div style="width:100%">' +
+            '<div style="float:left;font-size:10px;">include</div>' +
+            '<div style="float:right;font-size:10px;padding-right:15px;">exclude</div>' +
+            '</div>' +
+            '<div class="clear"></div>';
 
         for (var value in result.data[field]) {
             let count = result.data[field][value];
@@ -102,21 +109,21 @@ function showFilters(containerId, result, titles) {
             let valueLabel = value;
 
             // customization for price ranges
-            if(field === 'price_range'){
-                valueLabel =  value + ' - ' + (parseInt(value) + stepSize - 1);
+            if (field === 'price_range') {
+                valueLabel = value + ' - ' + (parseInt(value) + stepSize - 1);
             }
 
-            s += '<div style="width:100%">' + 
-                    '<div style="float:left">' + 
-                        '<label class="filterValue">' + 
-                            '<input type="checkbox" autocomplete="off" onchange="javascript:filterChange(this)" data-type="include" name="' + field + '" value="' + value + '" /> ' + 
-                               '<span class="label">' + valueLabel + ' (' + count + ') </span>' +
-                        '</label>' +
-                    '</div>' +
-                    '<div style="float:right;padding-right:20px;">' +
-                        '<input type="checkbox" autocomplete="off" onchange="javascript:filterChange(this)" data-type="exclude" name="' + field + '" value="' + value + '">' +
-                    '</div>' +
-                '</div><div class="clear"></div>' ;
+            s += '<div style="width:100%">' +
+                '<div style="float:left">' +
+                '<label class="filterValue">' +
+                '<input type="checkbox" autocomplete="off" onchange="javascript:filterChange(this)" data-type="include" name="' + field + '" value="' + value + '" /> ' +
+                '<span class="label">' + valueLabel + ' (' + count + ') </span>' +
+                '</label>' +
+                '</div>' +
+                '<div style="float:right;padding-right:20px;">' +
+                '<input type="checkbox" autocomplete="off" onchange="javascript:filterChange(this)" data-type="exclude" name="' + field + '" value="' + value + '">' +
+                '</div>' +
+                '</div><div class="clear"></div>';
         }
         s += '</div></div><div class="clear"></div>';
         count++;
@@ -130,37 +137,49 @@ function updateFilters(containerId, result, initialFilters) {
     cmp = document.getElementById(containerId);
     for (let field in initialFilters) {
 
-        for (let value in initialFilters[field]){
+        let countHtml = '';
+        if (result.total != undefined && result.total[field] != undefined) {
+            let fieldCount = parseInt(result.total[field]);
+            if (fieldCount > 0) {
+               countHtml = '('+fieldCount+')';
+            }
+        } 
+
+        document.querySelectorAll('.filterHeader[data-field="' + field + '"] > div > span[class="filterCount"]').forEach(function (el) {
+          el.innerHTML = countHtml;
+        });
+
+        for (let value in initialFilters[field]) {
 
 
             let valueLabel = value;
             // customization for price ranges
-            if(field === 'price_range'){
-                valueLabel =  value + ' - ' + (parseInt(value) + stepSize - 1);
+            if (field === 'price_range') {
+                valueLabel = value + ' - ' + (parseInt(value) + stepSize - 1);
             }
 
-            if(result.data[field] && result.data[field][value]){
+            if (result.data[field] && result.data[field][value]) {
                 cmp.parentNode.parentNode.querySelectorAll('input[type="checkbox"][name="' + field + '"][value="' + value + '"][data-type="include"]').forEach(function (el) {
-                   
-                   if(checked['exclude'] && checked['exclude'][field] && checked['exclude'][field][value]){
-                    el.disabled = true;
-                    el.parentNode.classList.add("crossed");
 
-                   }else{
-                    el.disabled = false;
-                    el.parentNode.classList.remove("crossed");
-                   }
+                    if (checked['exclude'] && checked['exclude'][field] && checked['exclude'][field][value]) {
+                        el.disabled = true;
+                        el.parentNode.classList.add("crossed");
 
-                    el.parentNode.querySelectorAll('span[class="label"]').forEach(function(el){
+                    } else {
+                        el.disabled = false;
+                        el.parentNode.classList.remove("crossed");
+                    }
+
+                    el.parentNode.querySelectorAll('span[class="label"]').forEach(function (el) {
                         el.innerHTML = valueLabel + ' (' + result.data[field][value] + ')';
                     });
                 });
 
-            }else{
+            } else {
                 cmp.parentNode.parentNode.querySelectorAll('input[type="checkbox"][name="' + field + '"][value="' + value + '"][data-type="include"]').forEach(function (el) {
                     el.checked = false;
                     el.disabled = true;
-                    el.parentNode.querySelectorAll('span[class="label"]').forEach(function(el){
+                    el.parentNode.querySelectorAll('span[class="label"]').forEach(function (el) {
                         el.innerHTML = valueLabel + ' (0)';
                     });
                 });
@@ -170,11 +189,11 @@ function updateFilters(containerId, result, initialFilters) {
     }
 }
 
-function showSort(containerId, result, titles){
+function showSort(containerId, result, titles) {
     let selectBox = document.getElementById(containerId);
-    if(!selectBox){
+    if (!selectBox) {
         return;
-    } 
+    }
     while (selectBox.options.length > 0) {
         selectBox.remove(0);
     }
@@ -183,10 +202,10 @@ function showSort(containerId, result, titles){
     selectBox.add(new Option('Price', 'price', true));
 
     for (let field in result) {
-        if(field === 'price_range'){
+        if (field === 'price_range') {
             continue;
         }
-        selectBox.add(new Option(titles[field],field));
+        selectBox.add(new Option(titles[field], field));
     }
 }
 
@@ -196,7 +215,7 @@ function getChecked(containerId) {
         return [];
     }
     let checkboxes = el.querySelectorAll('input[type="checkbox"]');
-    let values = {include:{},exclude:{}};
+    let values = { include: {}, exclude: {} };
     for (let index = 0; index < checkboxes.length; index++) {
         if (checkboxes[index].checked) {
 
@@ -221,29 +240,29 @@ function hideLoader(containerId) {
 }
 
 // Filter menu show/hide
-function menuClick(el){
+function menuClick(el) {
     let state = el.dataset.state;
     let field = el.dataset.field;
 
-    if(state === 'vis'){
+    if (state === 'vis') {
         el.dataset.state = 'hid';
-        el.querySelectorAll('.hideButton').forEach(function(el){
+        el.querySelectorAll('.hideButton').forEach(function (el) {
             el.classList.add("hid");
             el.classList.remove("vis");
         });
-        
-        document.querySelectorAll('.filterGrid[data-field="' + field + '"]').forEach(function(el){
+
+        document.querySelectorAll('.filterGrid[data-field="' + field + '"]').forEach(function (el) {
             el.style.display = 'none';
         });
-       
-    }else{
+
+    } else {
         el.dataset.state = 'vis';
-        el.querySelectorAll('.hideButton').forEach(function(el){
+        el.querySelectorAll('.hideButton').forEach(function (el) {
             el.classList.add("vis");
             el.classList.remove("hid");
         });
 
-        document.querySelectorAll('.filterGrid[data-field="' + field + '"]').forEach(function(el){
+        document.querySelectorAll('.filterGrid[data-field="' + field + '"]').forEach(function (el) {
             el.style.display = 'block';
         });
     }

@@ -283,6 +283,76 @@ class IndexTest extends TestCase
     /**
      * @dataProvider storeProvider
      */
+    public function testAggregationCountTotal(IndexInterface $index): void
+    {
+        $records = [
+            ['color' => 'black', 'size' => 1, 'width' => 10],
+            ['color' => 'black', 'size' => 1, 'width' => 10],
+            ['color' => 'black', 'size' => 2, 'width' => 10],
+            ['color' => 'white', 'size' => 3, 'width' => 10],
+            ['color' => 'white', 'size' => 1, 'width' => 10],
+            ['color' => 'white', 'size' => 1, 'width' => 10],
+        ];
+        $storage = $index->getStorage();
+
+        foreach ($records as $id => $item) {
+            $storage->addRecord($id, $item);
+        }
+
+        $filters = [new ValueFilter('color', 'black'), new ValueFilter('size', 1)];
+
+        $result = $index->aggregation((new AggregationQuery())->filters($filters)->countItems()->countTotal());
+
+        $expectedTotals = [
+            'color' => 4,
+            'size' => 3,
+            'width' => 2
+        ];
+
+        $acceptableFilters = $result->getFields();
+
+        foreach ($expectedTotals as $field => $value) {
+            $this->assertEquals($value, $acceptableFilters[$field]);
+        }
+    }
+
+    /**
+     * @dataProvider storeProvider
+     */
+    public function testAggregationCountTotalNoFilters(IndexInterface $index): void
+    {
+        $records = [
+            ['color' => 'black', 'size' => 1, 'width' => 10],
+            ['color' => 'black', 'size' => 1, 'width' => 10],
+            ['color' => 'black', 'size' => 2, 'width' => 10],
+            ['color' => 'white', 'size' => 3, 'width' => 10],
+            ['color' => 'white', 'size' => 1, 'width' => 10],
+            ['color' => 'white', 'size' => 1, 'width' => 10],
+        ];
+        $storage = $index->getStorage();
+
+        foreach ($records as $id => $item) {
+            $storage->addRecord($id, $item);
+        }
+
+        $result = $index->aggregation((new AggregationQuery())->countTotal());
+
+        $expectedTotals = [
+            'color' => 6,
+            'size' => 6,
+            'width' => 6
+        ];
+
+        $acceptableFilters = $result->getFields();
+
+        foreach ($expectedTotals as $field => $value) {
+            $this->assertEquals($value, $acceptableFilters[$field]);
+        }
+    }
+
+    /**
+     * @dataProvider storeProvider
+     */
     public function testAggregationFiltersCountMulti(IndexInterface $index): void
     {
         $storage = $index->getStorage();

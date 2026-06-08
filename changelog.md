@@ -1,5 +1,28 @@
 # Changelog
 
+### v3.3.0 (08.06.2026)
+Count unique records by field added [Feature Request](https://github.com/k-samuel/faceted-search/issues/49)
+
+ ```IndexInterface->aggregate()``` method is marked as deprecated but retained for backward compatibility.
+ use
+ ```IndexInterface->aggregation()``` method instead, it returns AggregationQueryResult instead of an array
+
+
+```php
+$query = (new AggregationQuery())
+         ->filters($filters) 
+         ->countTotal() // count unique records by field
+         ->countItems() // count unique records by field value
+         ->sort();
+
+$queryResult =  $search->aggregation($query);
+$oldResults = $queryResult->getValues() // return results same as deprecated IndexInterface->aggregate()
+$fieldCounts = $queryResult->getFields() // return count of unique records for each field
+
+```
+[Demo updated](./examples)
+
+
 ### v3.2.4 (20.03.2026)
 Bug fix
  - Fixed a rare bug: Incorrect processing of Intersection and Exclude filters when the required Intersection filter value was in the first row processed after the Exclude filters.
