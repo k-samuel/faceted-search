@@ -47,7 +47,10 @@ class ArrayIndexBench
     protected SearchQuery $searchQueryExclude;
     protected AggregationQuery $aggregationQuery;
     protected AggregationQuery $aggregationQueryCount;
+    protected AggregationQuery $aggregationQueryCountTotal;
     protected AggregationQuery $aggregationExcludeQueryCount;
+
+
 
     protected bool $isBalanced = true;
 
@@ -71,8 +74,9 @@ class ArrayIndexBench
         $this->searchQuerySorted->order('quantity', Order::SORT_DESC);
         $this->searchQueryExclude = (new SearchQuery())->filters($this->excludeFilters);
         $this->aggregationQuery = (new AggregationQuery())->filters($this->filters);
-        $this->aggregationQueryCount = (new AggregationQuery())->filters($this->filters)->countItems();
-        $this->aggregationExcludeQueryCount = (new AggregationQuery())->filters($this->excludeFilters)->countItems();
+        $this->aggregationQueryCount = (new AggregationQuery())->filters($this->filters)->countItems(true);
+        $this->aggregationQueryCountTotal = (new AggregationQuery())->filters($this->filters)->countItems(true)->countTotal(true);
+        $this->aggregationExcludeQueryCount = (new AggregationQuery())->filters($this->excludeFilters)->countItems(true);
 
         $this->firstResults = $this->index->query($this->searchQuery);
     }
@@ -89,12 +93,17 @@ class ArrayIndexBench
 
     public function benchAggregations(): void
     {
-        $result = $this->index->aggregate($this->aggregationQuery);
+        $result = $this->index->aggregation($this->aggregationQuery);
     }
 
     public function benchAggregationsAndCount(): void
     {
-        $result = $this->index->aggregate($this->aggregationQueryCount);
+        $result = $this->index->aggregation($this->aggregationQueryCount);
+    }
+
+    public function benchAggregationsAndCountAndTotal(): void
+    {
+        $result = $this->index->aggregation($this->aggregationQueryCountTotal);
     }
 
     public function benchQueryExcludeFilters(): void
@@ -104,6 +113,6 @@ class ArrayIndexBench
 
     public function benchAggregateExcludeFilters(): void
     {
-        $result = $this->index->aggregate($this->aggregationExcludeQueryCount);
+        $result = $this->index->aggregation($this->aggregationExcludeQueryCount);
     }
 }

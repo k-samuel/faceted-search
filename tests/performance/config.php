@@ -12,6 +12,7 @@ return [
         // 'findWithRange' => true,
         'aggregate' => true,
         'aggregateAndCount' => true,
+        'aggregateAndCountTotal' => true,
         //'aggregateAndCountWithExclude' => true,
         //'sortTest' => true,
     ]

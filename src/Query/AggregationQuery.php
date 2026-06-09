@@ -40,6 +40,7 @@ class AggregationQuery
     protected array $filters = [];
 
     protected bool $needCount = false;
+    protected bool $needFieldCount = false;
     /**
      * @var array<int> $records
      */
@@ -72,6 +73,12 @@ class AggregationQuery
         return $this;
     }
 
+    /**
+     * Count unique records by field value
+     *
+     * @param boolean $count
+     * @return self
+     */
     public function countItems(bool $count = true): self
     {
         $this->needCount = $count;
@@ -81,6 +88,23 @@ class AggregationQuery
     public function getCountItems(): bool
     {
         return $this->needCount;
+    }
+
+    /**
+     * Count unique records by field
+     *
+     * @param boolean $count
+     * @return self
+     */
+    public function countTotal(bool $count = true): self
+    {
+        $this->needFieldCount = $count;
+        return $this;
+    }
+
+    public function getCountTotal(): bool
+    {
+        return $this->needFieldCount;
     }
 
     /**
