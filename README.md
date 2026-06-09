@@ -34,7 +34,7 @@ This is simple enough, even if products have different structure of properties.
 ```php
 <?php
   $query = (new AggregationQuery())->filters($filters);
-  $filterData = $search->aggregate($query);
+  $result = $search->aggregation($query);
 ```
 
 
@@ -156,6 +156,7 @@ use KSamuel\FacetedSearch\Filter\ValueIntersectionFilter;
 use KSamuel\FacetedSearch\Filter\RangeFilter;
 use KSamuel\FacetedSearch\Query\SearchQuery;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
+use KSamuel\FacetedSearch\Query\AggregationQueryResult;
 use KSamuel\FacetedSearch\Query\Order;
 
 // load index of the required product category (defined by query parameters)
@@ -187,19 +188,28 @@ $records = $search->query($query);
 // Also we can send acceptable filters values for current selection.
 // It can be used for updating client UI.
 $query = (new AggregationQuery())->filters($filters);
-$filterData = $search->aggregate($query);
+$result = $search->aggregation($query);
+$filterData = $result->getValues();
 
 // If you want to get acceptable filters values with items count use $search->aggregate
 // note that filters is not applied for itself for counting
 // values count of a particular field depends only on filters imposed on other fields.
 // Sort results using $query->sort(direction,flags)
 $query = (new AggregationQuery())->filters($filters)->countItems()->sort();
-$filterData = $search->aggregate($query);
+$result = $search->aggregation($query);
+$filterData = $result->getValues();
+
+// If you want to get count of unique records by field use ->countTotal() and 
+$query = (new AggregationQuery())->filters($filters)->countTotal()->countItems()->sort();
+$result = $search->aggregation($query);
+$filterData = $result->getValues();
+$countFieldRecords = $result->getFields();
 
 
 // If $filters is an empty array [] or not passed into AggregationQuery, all acceptable values will be returned
 $query = (new AggregationQuery());
-$filterData = $search->aggregate($query);
+$result = $search->aggregation($query);
+$filterData = $result->getValues();
 
 // You can sort search query results by field using FacetedIndex
 $query = (new SearchQuery())->filters($filters)->sort('price', Order::SORT_DESC);

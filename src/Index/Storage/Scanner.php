@@ -135,9 +135,10 @@ class Scanner
     /**
      * Get all records from index as map [$id1=>true,...]
      * @param StorageInterface $storage
+     * @param array<int|string,bool> $excludeMap, optional, default []
      * @return array<int,bool>
      */
-    public function getAllRecordIdMap(StorageInterface $storage): array
+    public function getAllRecordIdMap(StorageInterface $storage, array $excludeMap = []): array
     {
         $result = [];
         /**
@@ -146,7 +147,9 @@ class Scanner
         foreach ($storage->scan() as $values) {
             foreach ($values as $list) {
                 foreach ($list as $v) {
-                    $result[$v] = true;
+                    if (empty($excludeMap) || !isset($excludeMap[$v])) {
+                        $result[$v] = true;
+                    }
                 }
             }
         }
@@ -158,7 +161,7 @@ class Scanner
     }
     /**
      * List data
-     * @return Generator
+     * @return Generator <int|string,array<int>>
      */
     public function scan(StorageInterface $storage): Generator
     {

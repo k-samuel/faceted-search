@@ -45,8 +45,9 @@ class FixedArrayIndexBench extends ArrayIndexBench
         $this->searchQuerySorted->order('quantity', Order::SORT_DESC);
         $this->searchQueryExclude = (new SearchQuery())->filters($this->excludeFilters);
         $this->aggregationQuery = (new AggregationQuery())->filters($this->filters);
-        $this->aggregationQueryCount = (new AggregationQuery())->filters($this->filters)->countItems();
-        $this->aggregationExcludeQueryCount = (new AggregationQuery())->filters($this->excludeFilters)->countItems();
+        $this->aggregationQueryCount = (new AggregationQuery())->filters($this->filters)->countItems(true);
+        $this->aggregationQueryCountTotal = (new AggregationQuery())->filters($this->filters)->countItems(true)->countTotal(true);
+        $this->aggregationExcludeQueryCount = (new AggregationQuery())->filters($this->excludeFilters)->countItems(true);
 
         $this->firstResults = $this->index->query($this->searchQuery);
     }

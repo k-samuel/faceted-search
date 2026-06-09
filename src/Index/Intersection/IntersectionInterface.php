@@ -41,6 +41,15 @@ interface IntersectionInterface
     public function getIntersectMapCount($a, array $b): int;
 
     /**
+     * Get intersection count
+     * @param array<int>|\SplFixedArray<int> $a
+     * @param array<int,bool> $map
+     * @param array<int|string,bool> $result - set flag into result map
+     * @return int
+     */
+    public function getIntersectMapCountAndMark($a, array $map, array &$result): int;
+
+    /**
      * Check if arrays has intersection
      * @param array<int>|\SplFixedArray<int> $a
      * @param array<int,bool> $b

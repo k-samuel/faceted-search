@@ -30,11 +30,10 @@ declare(strict_types=1);
 
 namespace KSamuel\FacetedSearch\Index;
 
-use KSamuel\FacetedSearch\Filter\FilterInterface;
 use KSamuel\FacetedSearch\Index\Storage\Scanner;
 use KSamuel\FacetedSearch\Index\Storage\StorageInterface;
-use KSamuel\FacetedSearch\Indexer\IndexerInterface;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
+use KSamuel\FacetedSearch\Query\AggregationQueryResult;
 use KSamuel\FacetedSearch\Query\SearchQuery;
 
 /**
@@ -43,10 +42,12 @@ use KSamuel\FacetedSearch\Query\SearchQuery;
  */
 interface IndexInterface
 {
+
     /**
      * Find acceptable filter values. Note that the format of the result has changed compared to the "aggregate" method
      * @param AggregationQuery $query
      * @return array<string,array<int|string,int|true>>
+     * @deprecated since 3.3.0 use aggregation method
      * [
      *   'field1' => [
      *          'value1' => int count | true,  (Depending on AggregationQuery settings)
@@ -57,6 +58,13 @@ interface IndexInterface
      * ]
      */
     public function aggregate(AggregationQuery $query): array;
+
+    /**
+     * Find acceptable filter values. Note that the format of the result has changed compared to the "aggregate" method
+     * @param AggregationQuery $query
+     * @return AggregationQueryResult
+     */
+    public function aggregation(AggregationQuery $query): AggregationQueryResult;
 
     /**
      * Find records using Query
@@ -86,9 +94,10 @@ interface IndexInterface
 
     /**
      * Get records count
+     * @param array<int|string,bool> $excludeMap, optional, default []
      * @return integer
      */
-    public function getCount(): int;
+    public function getCount(array $excludeMap = []): int;
     /**
      * Load saved data
      * @param array<mixed> $data

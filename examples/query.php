@@ -10,35 +10,38 @@ use KSamuel\FacetedSearch\Filter\RangeFilter;
 use KSamuel\FacetedSearch\Index\Factory;
 use KSamuel\FacetedSearch\Index\IndexInterface;
 use KSamuel\FacetedSearch\Query\AggregationQuery;
-use KSamuel\FacetedSearch\Query\AggregationSort;
 use KSamuel\FacetedSearch\Query\Order;
 use KSamuel\FacetedSearch\Query\SearchQuery;
 
 /**
  * Find acceptable filters
- * @param Search $search
+ * @param IndexInterface $search
  * @param array<FilterInterface> $filters
  * @return array<string,mixed>
  */
 function findFilters(IndexInterface $search, array $filters, array $filterList): array
 {
-    $query = (new AggregationQuery())->filters($filters)->countItems()->sort();
-    $data =  $search->aggregate($query);
-    $result = [];
+    $query = (new AggregationQuery())->filters($filters)->countTotal()->countItems()->sort();
+    $queryResult =  $search->aggregation($query);
 
-    if (!empty($filterList)) {
-        foreach ($filterList as $key) {
-            if (!isset($data[$key])) {
-                continue;
-            }
-            $result[$key] = $data[$key];
+    $data = $queryResult->getValues();
+    $totalCount = $queryResult->getFields();
+    $result = [];
+    $totals = [];
+
+    foreach ($filterList as $key) {
+        if (!isset($data[$key])) {
+            continue;
         }
-    } else {
-        $result = $data;
+        $result[$key] = $data[$key];
+        if (isset($totalCount[$key])) {
+            $totals[$key] = $totalCount[$key];
+        }
     }
 
     return [
         'data' => $result,
+        'total' => $totals,
         'price_step' => 200, // step of RangeIndexer for mobile
     ];
 }
