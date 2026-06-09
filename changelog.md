@@ -1,6 +1,6 @@
 # Changelog
 
-### v3.3.0 (08.06.2026)
+### v3.3.0 (09.06.2026)
 Count unique records by field added [Feature Request](https://github.com/k-samuel/faceted-search/issues/49)
 
  ```IndexInterface->aggregate()``` method is marked as deprecated but retained for backward compatibility.
@@ -11,16 +11,17 @@ Count unique records by field added [Feature Request](https://github.com/k-samue
 ```php
 $query = (new AggregationQuery())
          ->filters($filters) 
-         ->countTotal() // count unique records by field
-         ->countItems() // count unique records by field value
+         ->countTotal(); // count unique records by field
+         ->countItems(); // count unique records by field value
          ->sort();
 
 $queryResult =  $search->aggregation($query);
-$oldResults = $queryResult->getValues() // return results same as deprecated IndexInterface->aggregate()
-$fieldCounts = $queryResult->getFields() // return count of unique records for each field
+$oldResults = $queryResult->getValues(); // return results same as deprecated IndexInterface->aggregate()
+$fieldCounts = $queryResult->getFields(); // return count of unique records for each field
 
 ```
 [Demo updated](./examples)
+Keep in mind that value calculations slow down queries and require additional RAM. They should be used only when absolutely necessary.
 
 
 ### v3.2.4 (20.03.2026)

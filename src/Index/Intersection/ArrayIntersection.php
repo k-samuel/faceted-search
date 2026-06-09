@@ -52,6 +52,27 @@ class ArrayIntersection implements IntersectionInterface
     }
 
     /**
+     * Get intersection count
+     * @param array<int>|\SplFixedArray<int> $a
+     * @param array<int,bool> $b
+     * @param array<int|string,bool> $result - set flag into result map
+     * @return int
+     */
+    public function getIntersectMapCountAndMark($a, array $b, array &$result): int
+    {
+        $intersectLen = 0;
+
+        foreach ($a as $key) {
+            if (isset($b[$key])) {
+                $intersectLen++;
+                $result[$key] = true;
+            }
+        }
+
+        return $intersectLen;
+    }
+
+    /**
      * Check if arrays has intersection
      * @param array<int,int> $a
      * @param array<int,bool> $b

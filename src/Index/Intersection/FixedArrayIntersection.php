@@ -55,6 +55,27 @@ class FixedArrayIntersection implements IntersectionInterface
     }
 
     /**
+     * Get intersection count
+     * @param array<int>|\SplFixedArray<int> $a
+     * @param array<int,bool> $b
+     * @param array<int|string,bool> $result - set flag into result map
+     * @return int
+     */
+    public function getIntersectMapCountAndMark($a, array $b, array &$result): int
+    {
+        $intersectLen = 0;
+        $count = count($a);
+        for ($i = 0; $i < $count; $i++) {
+            if (isset($b[$a[$i]])) {
+                $intersectLen++;
+                $result[$a[$i]] = true;
+            }
+        }
+
+        return $intersectLen;
+    }
+
+    /**
      * Check if arrays has intersection
      * @param array<int>|\SplFixedArray<int> $a
      * @param array<int,bool> $b
@@ -69,25 +90,5 @@ class FixedArrayIntersection implements IntersectionInterface
             }
         }
         return false;
-    }
-
-    /**
-     * Get intersection count from input and data, remove intersected from input
-     * @param array<int,bool> $input
-     * @param array<int> $data
-     * @return int
-     */
-    public function contIntersectionAndExclude(array &$input, array $data): int
-    {
-        $intersectLen = 0;
-
-        $count = count($data);
-        for ($i = 0; $i < $count; $i++) {
-            if (isset($input[$data[$i]])) {
-                $intersectLen++;
-                unset($input[$data[$i]]);
-            }
-        }
-        return $intersectLen;
     }
 }

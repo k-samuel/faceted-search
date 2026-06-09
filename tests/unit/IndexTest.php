@@ -353,6 +353,41 @@ class IndexTest extends TestCase
     /**
      * @dataProvider storeProvider
      */
+    public function testAggregationCountTotalExclude(IndexInterface $index): void
+    {
+        $records = [
+            ['color' => 'black', 'size' => 1, 'width' => 10],
+            ['color' => 'black', 'size' => 1, 'width' => 10],
+            ['color' => 'black', 'size' => 2, 'width' => 10],
+            ['color' => 'white', 'size' => 3, 'width' => 10],
+            ['color' => 'white', 'size' => 1, 'width' => 10],
+            ['color' => 'white', 'size' => 1, 'width' => 10],
+        ];
+        $storage = $index->getStorage();
+
+        foreach ($records as $id => $item) {
+            $storage->addRecord($id, $item);
+        }
+
+        $filter = new ExcludeValueFilter('size', [3]);
+        $result = $index->aggregation((new AggregationQuery())->countTotal()->filter($filter));
+
+        $expectedTotals = [
+            'color' => 5,
+            'size' => 5,
+            'width' => 5
+        ];
+
+        $acceptableFilters = $result->getFields();
+
+        foreach ($expectedTotals as $field => $value) {
+            $this->assertEquals($value, $acceptableFilters[$field]);
+        }
+    }
+
+    /**
+     * @dataProvider storeProvider
+     */
     public function testAggregationFiltersCountMulti(IndexInterface $index): void
     {
         $storage = $index->getStorage();

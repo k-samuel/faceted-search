@@ -96,7 +96,7 @@ function findAndSort(IndexInterface $search, array $filters): array
 function aggregate(IndexInterface $search, array $filters): array
 {
     $t = microtime(true);
-    $filtersData = $search->aggregate((new AggregationQuery())->filters($filters));
+    $filtersData = $search->aggregation((new AggregationQuery())->filters($filters));
     $time = microtime(true) - $t;
     return ['Filters', number_format($time, 6), count($filters)];
 }
@@ -114,7 +114,7 @@ function aggregateAndCount(IndexInterface $search, array $filters): array
         ->countItems(true);
 
     $t = microtime(true);
-    $filtersData = $search->aggregate($query);
+    $filtersData = $search->aggregation($query);
     $time = microtime(true) - $t;
     return ['Filters & count', number_format($time, 6), count($filters)];
 }
@@ -151,7 +151,7 @@ function aggregateAndCountWithExclude(IndexInterface $search, array $filters): a
         ->countItems(true);
 
     $t = microtime(true);
-    $filtersData = $search->aggregate($query);
+    $filtersData = $search->aggregation($query);
     $time = microtime(true) - $t;
     return ['Filters & count & exc', number_format($time, 6), count($filters)];
 }

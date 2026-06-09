@@ -296,13 +296,24 @@ class Index implements IndexInterface
                 $recordIds = $filteredRecords;
             }
 
-            $totalCount = 0;
-            $intersectionMap = $recordIds;
+
+            $intersectionMap = [];
 
             foreach ($filterValues as $filterValue => $data) {
 
+                // count field total and values in one pass through 
                 if ($countByFields) {
-                    $totalCount += $this->intersection->contIntersectionAndExclude($intersectionMap, $data);
+                    $intersect = $this->intersection->getIntersectMapCountAndMark($data, $recordIds, $intersectionMap);
+                    if ($intersect === 0) {
+                        continue;
+                    }
+
+                    if ($countRecords) {
+                        $result->setValueCount($filterName, $filterValue, $intersect);
+                    } else {
+                        $result->setValueCount($filterName, $filterValue, true);
+                    }
+                    continue;
                 }
 
                 if ($countRecords) {
@@ -320,7 +331,7 @@ class Index implements IndexInterface
             }
 
             if ($countByFields) {
-                $result->setFieldTotal($filterName, $totalCount);
+                $result->setFieldTotal($filterName, count($intersectionMap));
             }
         }
     }
